@@ -1,4 +1,5 @@
 import sqlite3
+from flask import current_app, g
 
 class User:
     def __init__(self, id, username, password, is_judge):
@@ -13,11 +14,23 @@ class Database:
         self.cursor = self.conn.cursor()
         self.init_users()
         self.init_db()
+    
+    @staticmethod
+    def get_db():
+        if 'db' not in g:
+            g.db = sqlite3.connect(
+                current_app.config['DATABASE'],
+                detect_types=sqlite3.PARSE_DECLTYPES
+            )
+            g.db.row_factory = sqlite3.Row
+
+        return g.db
+
 
     def init_users(self):
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS users
-            (id INTEGER PRIMARY KEY, username TEXT, password TEXT, is_judge BOOL)
+            (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, is_judge BOOL)
         ''')
         self.conn.commit()
 

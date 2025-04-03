@@ -10,9 +10,9 @@ from .form import ScoreForm
 @home_blueprint.route('/')
 def home():
     if current_user.is_authenticated:
-        return render_template('home.html', editable=True)
+        return render_template('scoreboard/home.html', editable=True)
     else:
-        return render_template('home.html', editable=False)
+        return render_template('scoreboard/home.html', editable=False)
 
 
 @scoreboard_blueprint.route('/scoreboard')
@@ -28,7 +28,7 @@ def index():
         player2_name = match_info['player2_name']
         score1 = match_info['score1']
         score2 = match_info['score2']
-        return render_template('scoreboard.html', player1_name=player1_name, player2_name=player2_name, score1=score1, score2=score2)
+        return render_template('scoreboard/scoreboard.html', player1_name=player1_name, player2_name=player2_name, score1=score1, score2=score2)
     else:
         return "No match found."
     

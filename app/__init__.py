@@ -9,6 +9,7 @@ login_manager = LoginManager()
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.config.from_mapping(SECRET_KEY='dev')
     # app.register_blueprint(routes_app)
 
     # initialize login manager
@@ -24,6 +25,8 @@ def create_app(config_class=Config):
     app.register_blueprint(home_blueprint)
     app.register_blueprint(scoreboard_blueprint)
     app.register_blueprint(umpire_blueprint)
+    from . import auth
+    app.register_blueprint(auth.bp)
     
     # initialize database
     with app.app_context():
