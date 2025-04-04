@@ -81,13 +81,11 @@ class Database:
     def add_player(self, name):
         self.cursor.execute('INSERT INTO players (name) VALUES (?)', (name,))
         self.conn.commit()
-        # self.conn.close()
     
     # add match into table matches
     def add_match(self, player1_id, player2_id):
         self.cursor.execute('INSERT INTO matches (player1_id, player2_id) VALUES (?, ?)', (player1_id, player2_id))
         self.conn.commit()
-        # self.conn.close()
 
     # update scores
     def update_score(self, player_id, match_info):

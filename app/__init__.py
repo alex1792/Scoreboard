@@ -4,16 +4,19 @@ from config import Config
 from flask_login import LoginManager, current_user
 from .db import Database, User
 from .routes import home_blueprint, scoreboard_blueprint, umpire_blueprint
+from .extensions import socketio
+# from flask_socketio import SocketIO
 
-# login_manager = LoginManager()
-
-
+# socketio = SocketIO()   #   used for broadcasting scoore
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     app.config.from_mapping(SECRET_KEY='dev')
-    # app.register_blueprint(routes_app)
+
+    # used for broadcasting scoore
+    # socketio.init_app(app, cors_allowed_origins="*")
+    # socketio.init_app(app)
 
     # initialize login manager
     login_manager = LoginManager()
@@ -50,5 +53,13 @@ def create_app(config_class=Config):
         db_name = 'database.db'
         db = Database(db_name)
         db.close()
+
+    # initialize SocketIO
+    socketio.init_app(app, 
+        cors_allowed_origins="*",
+        logger=True,
+        engineio_logger=True,
+        async_mode='eventlet'  # make sure its eventlet async_mode
+    )
     
     return app
