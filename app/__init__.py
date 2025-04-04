@@ -1,10 +1,13 @@
+import sqlite3
 from flask import Flask
 from config import Config
 from flask_login import LoginManager, current_user
-from .db import Database, load_user
+from .db import Database, User
 from .routes import home_blueprint, scoreboard_blueprint, umpire_blueprint
 
-login_manager = LoginManager()
+# login_manager = LoginManager()
+
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -14,12 +17,26 @@ def create_app(config_class=Config):
 
     # initialize login manager
     login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
 
     # define user_loader function
     @login_manager.user_loader
-    def load_user_wrapper(user_id):
-        return load_user(user_id)
+    def load_user(user_id):
+        try:
+            conn = sqlite3.connect('database.db', timeout=10.0)
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+            user_info = cursor.fetchone()
+            if user_info:
+                return User(user_info[0], user_info[1], user_info[2])
+            else:
+                return None
+        except sqlite3.OperationalError as e:
+            print(f"Error loading user: {e}")
+            return None
+        finally:
+            conn.close()
 
     # register blueprints
     app.register_blueprint(home_blueprint)

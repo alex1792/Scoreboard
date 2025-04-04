@@ -10,5 +10,14 @@
     <h1>Scoreboard</h1>
     <p>{{ player1_name }} vs {{ player2_name }}</p>
     <p>score: {{ score1 }} - {{ score2 }}</p>
+    <form action="/update_score" method="post">
+        <input type="hidden" name="player" value="Player1">
+        <button type="submit">Player1 +1</button>
+    </form>
+    
+    <form action="/update_score" method="post">
+        <input type="hidden" name="player" value="Player2">
+        <button type="submit">Player2 +1</button>
+    </form>
 </body>
 </html>

@@ -3,9 +3,9 @@ import functools
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
+from flask_login import login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
-
-from .db import Database
+from .db import Database, User
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -55,8 +55,8 @@ def login():
             error = 'Incorrect password.'
 
         if error is None:
-            session.clear()
-            session['user_id'] = user['id']
+            user_info = User(user['id'], user['username'], user['password'])
+            login_user(user_info)  # 使用 login_user
             return redirect(url_for('home_blueprint.home'))
 
         flash(error)
@@ -76,6 +76,7 @@ def load_logged_in_user():
 
 @bp.route('/logout')
 def logout():
+    logout_user()
     session.clear()
     # redirect to the new url. If we use render_template(), we will not redirect to the page we want!
     # when we want to use the function 'url_for()', the parameter should be blueprint we registered at blueprints.py
