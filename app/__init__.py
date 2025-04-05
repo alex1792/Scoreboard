@@ -5,18 +5,12 @@ from flask_login import LoginManager, current_user
 from .db import Database, User
 from .routes import home_blueprint, scoreboard_blueprint, umpire_blueprint
 from .extensions import socketio
-# from flask_socketio import SocketIO
-
-# socketio = SocketIO()   #   used for broadcasting scoore
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     app.config.from_mapping(SECRET_KEY='dev')
 
-    # used for broadcasting scoore
-    # socketio.init_app(app, cors_allowed_origins="*")
-    # socketio.init_app(app)
 
     # initialize login manager
     login_manager = LoginManager()
@@ -54,7 +48,7 @@ def create_app(config_class=Config):
         db = Database(db_name)
         db.close()
 
-    # initialize SocketIO
+    # initialize SocketIO, used for broadcasting scoore
     socketio.init_app(app, 
         cors_allowed_origins="*",
         logger=True,
