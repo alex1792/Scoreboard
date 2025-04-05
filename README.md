@@ -11,66 +11,33 @@ Umpire: 裁判可以更新分數
 尚未完成：修改分數
 
 ## Project Structure
-|-Scoreboard:
-|---app:
-|---|-static:
-|---|-|-style.css
-|---|-templates:
-|---|-|-auth:
-|---|-|-|-login.html
-|---|-|-|-register.html
-|---|-|-scoreboard:
-|---|-|-|-home.html
-|---|-|-|-scoreboard.html
-|---|-|-|-umpire.html
-|---|-|-base.html
-|---|-__init__.py
-|---|-auth.py
-|---|-blueprints.py
-|---|-db.py
-|---|-extensions.py
-|---|-form.py
-|---|-routes.py
-|-config.py
-|-database.db
-|-requirements.txt
-|-run.py
+```
+- Scoreboard:
+  - app:
+    - static:
+      - style.css  # Stylesheet for the application
+    - templates:
+      - auth:
+        - login.html     # Login page template
+        - register.html  # Registration page template
+      - scoreboard:
+        - home.html       # Home page template
+        - scoreboard.html # Scoreboard page template
+        - umpire.html     # Umpire page template
+      - base.html         # Base layout template for the application
+    - __init__.py         # Initializes the app module
+    - auth.py             # Handles authentication-related logic
+    - blueprints.py       # Manages Flask blueprints
+    - db.py               # Database-related utilities and models
+    - extensions.py       # Extensions used in the project (e.g., Flask extensions)
+    - form.py             # Defines forms for user input
+    - routes.py           # Defines application routes
+  - config.py             # Configuration file for the project
+  - database.db           # SQLite database file
+  - requirements.txt      # List of dependencies for the project
+  - run.py                # Main entry point to run the application
 
-## Project Structure: Scoreboard
-
-### Root Directory
-- `config.py` - Configuration file for the project.
-- `database.db` - SQLite database file.
-- `requirements.txt` - List of dependencies for the project.
-- `run.py` - Main entry point to run the application.
-
-### app Directory
-- `__init__.py` - Initializes the app module.
-- `auth.py` - Handles authentication-related logic.
-- `blueprints.py` - Manages Flask blueprints.
-- `db.py` - Database-related utilities and models.
-- `extensions.py` - Extensions used in the project (e.g., Flask extensions).
-- `form.py` - Defines forms for user input.
-- `routes.py` - Defines application routes.
-
-#### app/static
-- `style.css` - Stylesheet for the application.
-
-#### app/templates
-##### auth
-- `login.html` - Login page template.
-- `register.html` - Registration page template.
-
-##### scoreboard
-- `home.html` - Home page template.
-- `scoreboard.html` - Scoreboard page template.
-- `umpire.html` - Umpire page template.
-
-##### Base Template
-- `base.html` - Base layout template for the application.
-
-
-
+```
 
 ## 開發日誌：
 2025/04/02 - 完成登入功能
