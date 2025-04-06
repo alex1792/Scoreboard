@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Update User Role{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <!-- Username input -->
+    <label for="username">Username</label>
+    <input name="username" id="username" required>
+
+    <!-- Dropdown menu for is_judge -->
+    <label for="is_judge">Set Judge Role</label>
+    <select name="is_judge" id="is_judge" required>
+      <option value="true">True</option>
+      <option value="false">False</option>
+    </select>
+
+    <!-- Submit button -->
+    <input type="submit" value="Update Role">
+  </form>
+{% endblock %}

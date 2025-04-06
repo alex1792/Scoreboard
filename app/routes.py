@@ -1,11 +1,14 @@
 import functools
-from flask import render_template, redirect, url_for, request
+import sqlite3
+from flask import Flask, render_template, redirect, url_for, request
 from flask_login import current_user, login_required
-from .blueprints import home_blueprint, scoreboard_blueprint, umpire_blueprint
+from .blueprints import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint
 from .db import Database
 from .form import ScoreForm
 from .extensions import socketio
 
+app = Flask(__name__)
+app.config['DATABASE'] = 'database.db'
 
 @home_blueprint.route('/')
 def home():
@@ -53,7 +56,7 @@ def update_score():
         # broadcast updated score to all clients viewing the this match
         match_info = db.get_match_info()
         data = {'score1': match_info['score1'], 'score2': match_info['score2']}
-        print(data)
+        # print(data)
         socketio.emit('score_update', data,namespace='/scoreboard', room=None, include_self=True)
 
     
@@ -76,3 +79,32 @@ def handle_connect():
 @socketio.on('disconnect', namespace='/scoreboard')
 def handle_disconnect():
     print(f"User {request.sid} has disconnected with the live scoreboard")
+
+
+@admin_blueprint.route('/admin', methods=['POST', 'GET'])
+def set_umpire():
+    if request.method == 'POST':
+        username = request.form['username']
+        is_judge = request.form['is_judge'] == 'true'
+        print(is_judge)
+        
+        # connect to database and update the user is_judge status
+        db = Database.get_db()
+        cursor = db.cursor()
+        cursor.execute('UPDATE users SET is_judge = ? WHERE username = ?', (is_judge, username,))
+        db.commit()
+        
+        # broadcast to the user so the stataus is now changed
+        data = {'username':username, 'is_judge':is_judge}
+        socketio.emit('user_role_updated', data, namespace='/admin', room=None, include_self=True)
+        
+        # redirect to home
+        return redirect(url_for('home_blueprint.home'))
+    else:
+        # print("set_umpire()")
+        return render_template('scoreboard/admin.html')
+    
+@socketio.on('connect', namespace='/admin')
+def admin_connect():
+    print("User is connected to /admin namespace")
+

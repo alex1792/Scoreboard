@@ -143,6 +143,10 @@ class Database:
         else:
             return None
 
+    # set user as umpire or not
+    def set_umpire(self, username, is_umpire):
+        self.cursor.execute('UPDATE users SET is_judge = ? WHERE username = ?', (is_umpire, username,))
+
     # close database when terminate
     def close(self):
         self.conn.close()

@@ -24,6 +24,7 @@ Umpire: 裁判可以更新分數
         - home.html       # Home page template
         - scoreboard.html # Scoreboard page template
         - umpire.html     # Umpire page template
+        - admin.html      # Manage Users to be umpire or not
       - base.html         # Base layout template for the application
     - __init__.py         # Initializes the app module
     - auth.py             # Handles authentication-related logic
@@ -43,3 +44,4 @@ Umpire: 裁判可以更新分數
 2025/04/02 - 完成登入功能
 2025/04/03 - 完成增加分數, 只有登入後才能增加分數
 2025/04/04 - 加入更新完比分 所有用戶都會即時看到更新的分數
+2025/04/05 - 加入編輯user是否為裁判的功能, 目前設定只有alex才能manage其他user是不是裁判
