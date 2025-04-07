@@ -42,11 +42,11 @@ Umpire: 裁判可以更新分數
 ```
 
 ## all pages links:
-home: http://0.0.0.0:5001/ 
-scoreboard: http://0.0.0.0:5001/scoreboard
-update_score(login required): http://0.0.0.0:5001/update_score
-admin(only 'alex' can access): http://0.0.0.0:5001/admin
-users: http://0.0.0.0:5001/users
+home: http://0.0.0.0:5001/  
+scoreboard: http://0.0.0.0:5001/scoreboard  
+update_score(login required): http://0.0.0.0:5001/update_score  
+admin(only 'alex' can access): http://0.0.0.0:5001/admin  
+users: http://0.0.0.0:5001/users  
 
 ## 開發日誌：
 2025/04/02 - 完成登入功能
