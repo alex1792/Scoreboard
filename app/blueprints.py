@@ -4,3 +4,4 @@ home_blueprint = Blueprint('home_blueprint', __name__, template_folder='template
 scoreboard_blueprint = Blueprint('scoreboard_blueprint', __name__, template_folder='templates')
 umpire_blueprint = Blueprint('umpire_blueprint', __name__, template_folder='templates')
 admin_blueprint = Blueprint('admin_blueprint', __name__, template_folder='templates')
+users_blueprint = Blueprint('users_blueprint', __name__, template_folder='templates')

@@ -2,7 +2,7 @@ import functools
 import sqlite3
 from flask import Flask, render_template, redirect, url_for, request
 from flask_login import current_user, login_required
-from .blueprints import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint
+from .blueprints import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint, users_blueprint
 from .db import Database
 from .form import ScoreForm
 from .extensions import socketio
@@ -38,7 +38,8 @@ def index():
 @login_required
 def update_score():
     player = request.form.get('player') # player belongs to the set {Player1, Player2}
-    print(player)
+    score = int(request.form.get('score'))
+    # print(player)
     
     db_name = 'database.db'
     db = Database(db_name)
@@ -48,10 +49,10 @@ def update_score():
     if match_info:        
         if player == 'Player1':
             player1_id = match_info['player1_id']
-            db.update_score(player1_id, match_info)
+            db.update_score(player1_id, match_info, score)
         else:
             player2_id = match_info['player2_id']
-            db.update_score(player2_id, match_info)
+            db.update_score(player2_id, match_info, score)
         
         # broadcast updated score to all clients viewing the this match
         match_info = db.get_match_info()
@@ -108,3 +109,9 @@ def set_umpire():
 def admin_connect():
     print("User is connected to /admin namespace")
 
+@users_blueprint.route('/users')
+def query_users():
+    db = Database.get_db()
+    query = 'SELECT * FROM users'
+    all_users = db.execute(query).fetchall()
+    return render_template('scoreboard/users.html', users=all_users)

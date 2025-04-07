@@ -1,65 +1,65 @@
-<!-- app/templates/index.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scoreboard</title>
-</head>
-<body>
-    <!-- <h1>Scoreboard</h1>
+{% extends "base.html" %}
+
+{% block title %}
+Scoreboard
+{% endblock %}
+
+{% block header %}
+<h2>Scoreboard Page</h2>
+{% endblock %}
+
+{% block content %}
+<div class="match-info">
     <p>{{ player1_name }} vs {{ player2_name }}</p>
-    <p>score: {{ score1 }} - {{ score2 }}</p> -->
-    <h1>Scoreboard</h1>
-    <div class="match-info">
-        <p>{{ player1_name }} <span id="player1-name"></span> vs {{ player2_name }} <span id="player2-name"></span></p>
+</div>
+
+<div class="scores">
+    <div class="score-container">
+        <span id="player1-score">{{ score1 }}</span> - 
+        <span id="player2-score">{{ score2 }}</span>
     </div>
-    <div class="scores">
-        <div class="score-container">
-            <span id="player1-score">{{ score1 }}</span>
-            <span class="separator">-</span>
-            <span id="player2-score">{{ score2 }}</span>
-        </div>
-    </div>
+</div>
+
+{% if current_user.is_judge %}
+<div class="button-container">
+    <!-- Player1 +1 -->
     <form action="/update_score" method="post">
         <input type="hidden" name="player" value="Player1">
+        <input type="hidden" name="score" value="1">
         <button type="submit">Player1 +1</button>
     </form>
-    
+
+    <!-- Player2 +1 -->
     <form action="/update_score" method="post">
         <input type="hidden" name="player" value="Player2">
+        <input type="hidden" name="score" value="1">
         <button type="submit">Player2 +1</button>
     </form>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script>
-        // 修复后（强制IPv4）
-        // const socket = io('http://127.0.0.1:5001/scoreboard', {
-        // transports: ['websocket'],
-        // reconnection: true
-        // });
+    <!-- Player1 -1 -->
+    <form action="/update_score" method="post">
+        <input type="hidden" name="player" value="Player1">
+        <input type="hidden" name="score" value="-1">
+        <button type="submit">Player1 -1</button>
+    </form>
 
-        // const socket = io('http://127.0.0.1:5001/scoreboard');
-        const socket = io('http://127.0.0.1:5001/scoreboard', {
-            transports: ['websocket'],
-            reconnection: true,
-            reconnectionDelay: 3000,
-        });
+    <!-- Player2 -1 -->
+    <form action="/update_score" method="post">
+        <input type="hidden" name="player" value="Player2">
+        <input type="hidden" name="score" value="-1">
+        <button type="submit">Player2 -1</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
 
-        socket.on('connect', () => {
-            console.log('WebSocket connected! ID:', socket.id);
-        });
-
-        socket.on('score_update', (data) => {
-            console.log('Received data:', data);
-            document.getElementById('player1-score').textContent = data.score1;
-            document.getElementById('player2-score').textContent = data.score2;
-        });
-
-        socket.on('connect_error', (err) => {
-            console.error('Connection error:', err.message);
-            setTimeout(() => socket.connect(), 5000);
-        });
-    </script>
-</body>
-</html>
+{% block scripts %}
+<script src="{{ url_for('static', filename='scoreboard.js') }}"></script>
+<script>
+// Custom JavaScript for scoreboard page
+socket.on('score_update', (data) => {
+    document.getElementById('player1-score').textContent = data.score1;
+    document.getElementById('player2-score').textContent = data.score2;
+});
+</script>
+{% endblock %}

@@ -88,20 +88,32 @@ class Database:
         self.conn.commit()
 
     # update scores
-    def update_score(self, player_id, match_info):
+    def update_score(self, player_id, match_info, score):
         # update player1 score
         if player_id == match_info['player1_id']:
-            self.cursor.execute('''
-                                UPDATE matches 
-                                SET score1 = score1 + 1 
-                                WHERE player1_id = ?''', (player_id,))
-    
+            if score == 1:
+                self.cursor.execute('''
+                                    UPDATE matches 
+                                    SET score1 = score1 + 1 
+                                    WHERE player1_id = ?''', (player_id,))
+            elif score == -1:
+                self.cursor.execute('''
+                                    UPDATE matches 
+                                    SET score1 = score1 - 1 
+                                    WHERE player1_id = ? AND score1 > 0''', (player_id,))
+        
         # update player2 score
         elif player_id == match_info['player2_id']:
-            self.cursor.execute('''
-                                UPDATE matches 
-                                SET score2 = score2 + 1 
-                                WHERE player2_id = ?''', (player_id,))
+            if score == 1:
+                self.cursor.execute('''
+                                    UPDATE matches 
+                                    SET score2 = score2 + 1 
+                                    WHERE player2_id = ?''', (player_id,))
+            elif score == -1:
+                self.cursor.execute('''
+                                    UPDATE matches 
+                                    SET score2 = score2 - 1 
+                                    WHERE player2_id = ? AND score2 > 0''', (player_id,))
         
         self.conn.commit()
 

@@ -3,7 +3,7 @@ from flask import Flask
 from config import Config
 from flask_login import LoginManager, current_user
 from .db import Database, User
-from .routes import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint
+from .routes import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint, users_blueprint
 from .extensions import socketio
 
 def create_app(config_class=Config):
@@ -26,7 +26,7 @@ def create_app(config_class=Config):
             cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
             user_info = cursor.fetchone()
             if user_info:
-                return User(user_info[0], user_info[1], user_info[2])
+                return User(*user_info)
             else:
                 return None
         except sqlite3.OperationalError as e:
@@ -40,6 +40,7 @@ def create_app(config_class=Config):
     app.register_blueprint(scoreboard_blueprint)
     app.register_blueprint(umpire_blueprint)
     app.register_blueprint(admin_blueprint)
+    app.register_blueprint(users_blueprint)
     from . import auth
     app.register_blueprint(auth.bp)
     
