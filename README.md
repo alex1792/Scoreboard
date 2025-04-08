@@ -1,5 +1,11 @@
 # Scoreboard
-Scoreboard project
+Scoreboard project  
+I want to build a live scoreboard system for all kind of ball games. The umpire can 
+update the score by using smartphones, other users can check the live score by accessing 
+the scoreboard page.  
+  
+As for backend, the admin can manipulate users to be an umpire or not. Maintaining the 
+database etc.
 
 ## introduction
 Homepage: 登入來修改分數, 訪客觀看scores
@@ -42,11 +48,11 @@ Umpire: 裁判可以更新分數
 ```
 
 ## all pages links:
-home: http://0.0.0.0:5001/  
-scoreboard: http://0.0.0.0:5001/scoreboard  
-update_score(login required): http://0.0.0.0:5001/update_score  
-admin(only 'alex' can access): http://0.0.0.0:5001/admin  
-users: http://0.0.0.0:5001/users  
+home: http://127.0.0.1:5001/  
+scoreboard: http://127.0.0.1:5001/scoreboard  
+update_score(login required): http://127.0.0.1:5001/update_score  
+admin(only 'alex' can access): http://127.0.0.1:5001/admin  
+users: http://127.0.0.1:5001/users  
 
 ## 開發日誌：
 2025/04/02 - 完成登入功能  
