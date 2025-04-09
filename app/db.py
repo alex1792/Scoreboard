@@ -16,6 +16,7 @@ class Database:
     # constructor
     def __init__(self, db_name):
         self.conn = sqlite3.connect(db_name)
+        self.conn.row_factory = sqlite3.Row # 這行可以解決我把一些query function封裝在Database class中後 在routes.py中沒辦法顯示的問題
         self.cursor = self.conn.cursor()
         self.init_users()
         self.init_db()
@@ -67,14 +68,6 @@ class Database:
         self.add_player('Player1')
         self.add_player('Player2')
 
-        self.cursor.execute('SELECT id FROM players WHERE name = ?', ('Player1',))
-        p1_id = self.cursor.fetchone()[0]
-
-        self.cursor.execute('SELECT id FROM players WHERE name = ?', ('Player2',))
-        p2_id = self.cursor.fetchone()[0]
-
-        # create a new game
-        self.add_match(p1_id, p2_id)
         self.conn.commit()
 
     # add player into table players
@@ -155,13 +148,49 @@ class Database:
         else:
             return None
 
+    # get user id by username
+    def get_user_id_by_username(self, username):
+        query = 'SELECT id FROM users WHERE username=?'
+        self.cursor.execute(query, (username,))
+        row = self.cursor.fetchone()
+        print(row)
+        if row:
+            return row['id']
+        else:
+            return None
+
     # set user as umpire or not
     def set_umpire(self, username, is_umpire):
         self.cursor.execute('UPDATE users SET is_judge = ? WHERE username = ?', (is_umpire, username,))
+        self.conn.commit()
 
     # close database when terminate
     def close(self):
         self.conn.close()
+
+    # delete match by match_id
+    def clear_match_by_id(self, match_id):
+        query = 'DELETE FROM matches WHERE id=' + str(match_id)
+        self.cursor.execute(query)
+        self.conn.commit()
+
+    # delete all match
+    def clear_all_match(self):
+        query = 'DELETE FROM matches'
+        self.cursor.execute(query)
+        self.conn.commit()
+
+    # get all match
+    def get_all_match(self):
+        query = 'SELECT * FROM matches'
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+    
+    # get all users
+    def get_all_users(self):
+        query = 'SELECT * FROM users'
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
 def load_user(user_id):
     return Database.get_user(user_id)

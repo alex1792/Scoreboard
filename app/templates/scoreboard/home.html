@@ -10,9 +10,13 @@
 {% block content %}
   <p>Welcome to the Score Board!</p>
   <a href="{{ url_for('scoreboard_blueprint.index') }}">Score Board</a>
-  <a href="{{ url_for('auth.login') }}">Login</a>
-  <a href="{{ url_for('auth.register') }}">Register</a>
+  <!-- <a href="{{ url_for('auth.login') }}">Login</a>
+  <a href="{{ url_for('auth.register') }}">Register</a> -->
   {% if current_user.username == 'alex' %}
     <a href="{{url_for('admin_blueprint.set_umpire')}}">Manage Umpires</a>
+    <a href="{{url_for('users_blueprint.query_users')}}">Check All Users</a>
+    <a href="{{url_for('manage_match_blueprint.manage_match')}}">Manage Matches</a>
+    <a href="{{url_for('match_blueprint.query_matches')}}">Check All Matches</a>
+    <a href="{{url_for('create_match_blueprint.create_match')}}">Create New Match</a>
   {% endif %}
 {% endblock %}

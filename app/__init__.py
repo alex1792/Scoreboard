@@ -3,7 +3,9 @@ from flask import Flask
 from config import Config
 from flask_login import LoginManager, current_user
 from .db import Database, User
-from .routes import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint, users_blueprint
+from .routes import (home_blueprint, scoreboard_blueprint, umpire_blueprint, 
+                     admin_blueprint, users_blueprint, match_blueprint,
+                     manage_match_blueprint, create_match_blueprint, clear_all_match_blueprint)
 from .extensions import socketio
 
 def create_app(config_class=Config):
@@ -41,6 +43,10 @@ def create_app(config_class=Config):
     app.register_blueprint(umpire_blueprint)
     app.register_blueprint(admin_blueprint)
     app.register_blueprint(users_blueprint)
+    app.register_blueprint(match_blueprint)
+    app.register_blueprint(manage_match_blueprint)
+    app.register_blueprint(create_match_blueprint)
+    app.register_blueprint(clear_all_match_blueprint)
     from . import auth
     app.register_blueprint(auth.bp)
     

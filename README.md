@@ -27,10 +27,13 @@ Umpire: 裁判可以更新分數
         - login.html     # Login page template
         - register.html  # Registration page template
       - scoreboard:
+        - admin.html      # Manage Users to be umpire or not
+        - create_match.html # Create a new match
         - home.html       # Home page template
+        - manage_match.html # Delete match by match_id
+        - matches.html    # List all the matches in database
         - scoreboard.html # Scoreboard page template
         - umpire.html     # Umpire page template
-        - admin.html      # Manage Users to be umpire or not
         - users.html      # Query all users in database, it can show the ID, username, is_judge
       - base.html         # Base layout template for the application
     - __init__.py         # Initializes the app module
@@ -52,7 +55,11 @@ home: http://127.0.0.1:5001/
 scoreboard: http://127.0.0.1:5001/scoreboard  
 update_score(login required): http://127.0.0.1:5001/update_score  
 admin(only 'alex' can access): http://127.0.0.1:5001/admin  
-users: http://127.0.0.1:5001/users  
+users: http://127.0.0.1:5001/users 
+
+## activate and deactivate virtual environment
+. .venv/bin/activate  
+deactivate
 
 ## 開發日誌：
 2025/04/02 - 完成登入功能  
@@ -61,3 +68,5 @@ users: http://127.0.0.1:5001/users
 2025/04/05 - 加入編輯user是否為裁判的功能, 目前設定只有alex才能manage其他user是不是裁判  
 2025/04/06 - 加入只有裁判可以使用編輯分數的按鈕  
 2025/04/07 - 加入減分按鈕, 修改scoreboard.html, 讓他繼承base.html; 加入/users的頁面來query all users in database  
+2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可
+           - 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id

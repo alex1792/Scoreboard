@@ -2,7 +2,9 @@ import functools
 import sqlite3
 from flask import Flask, render_template, redirect, url_for, request
 from flask_login import current_user, login_required
-from .blueprints import home_blueprint, scoreboard_blueprint, umpire_blueprint, admin_blueprint, users_blueprint
+from .blueprints import (home_blueprint, scoreboard_blueprint, umpire_blueprint, 
+                         admin_blueprint, users_blueprint, match_blueprint, 
+                         manage_match_blueprint, create_match_blueprint, clear_all_match_blueprint)
 from .db import Database
 from .form import ScoreForm
 from .extensions import socketio
@@ -24,6 +26,7 @@ def index():
     db_name = 'database.db'
     db = Database(db_name)
     match_info = db.get_match_info()
+    db.close()
     
     if match_info:
         player1_name = match_info['player1_name']
@@ -60,7 +63,9 @@ def update_score():
         # print(data)
         socketio.emit('score_update', data,namespace='/scoreboard', room=None, include_self=True)
 
-    
+    # close database connection
+    db.close()
+
     # instead of render the page, we should use redirect
     return redirect(url_for('scoreboard_blueprint.index'))
 
@@ -90,10 +95,9 @@ def set_umpire():
         print(is_judge)
         
         # connect to database and update the user is_judge status
-        db = Database.get_db()
-        cursor = db.cursor()
-        cursor.execute('UPDATE users SET is_judge = ? WHERE username = ?', (is_judge, username,))
-        db.commit()
+        db = Database('database.db')
+        db.set_umpire(username, is_judge)
+        db.close()
         
         # broadcast to the user so the stataus is now changed
         data = {'username':username, 'is_judge':is_judge}
@@ -102,7 +106,6 @@ def set_umpire():
         # redirect to home
         return redirect(url_for('home_blueprint.home'))
     else:
-        # print("set_umpire()")
         return render_template('scoreboard/admin.html')
     
 @socketio.on('connect', namespace='/admin')
@@ -111,7 +114,56 @@ def admin_connect():
 
 @users_blueprint.route('/users')
 def query_users():
-    db = Database.get_db()
-    query = 'SELECT * FROM users'
-    all_users = db.execute(query).fetchall()
+    db = Database('database.db')
+    all_users = db.get_all_users()
+    db.close()
     return render_template('scoreboard/users.html', users=all_users)
+
+@manage_match_blueprint.route('/manage_match', methods=['POST', 'GET'])
+def manage_match():
+    db = Database('database.db')
+    
+    if request.method == 'POST':
+        match_id = request.form['match_id']
+        db.clear_match_by_id(match_id)
+        db.close()
+        return redirect(url_for('match_blueprint.query_matches'))  # 重定向到 GET, follow PRG mode (POST/REDIRECT/GET)
+
+    else:
+        db.close()
+        return render_template('scoreboard/manage_match.html')
+
+
+@match_blueprint.route('/match')
+def query_matches():
+    db = Database('database.db')
+    all_matches = db.get_all_match()
+    db.close()
+    return render_template('scoreboard/matches.html', matches=all_matches)
+
+@create_match_blueprint.route('/create_match', methods=['POST', 'GET'])
+def create_match():
+    if request.method == 'POST':
+        player1_username = request.form['player1_username']
+        player2_username = request.form['player2_username']
+        print(player1_username)
+        print(player2_username)
+
+        # query ids of player1 and player2
+        db = Database('database.db')
+        player1_id = db.get_user_id_by_username(player1_username)
+        player2_id = db.get_user_id_by_username(player2_username)
+
+        # add match
+        db.add_match(player1_id, player2_id)
+        db.close()
+        return redirect(url_for('create_match_blueprint.create_match'))
+    else:
+        return render_template('scoreboard/create_match.html')
+    
+@clear_all_match_blueprint.route('/clear_match', methods=['POST'])
+def clear_all_match():
+    db = Database('database.db')
+    db.clear_all_match()
+    db.close()
+    return redirect(url_for('manage_match_blueprint.manage_match'))
