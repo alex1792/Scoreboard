@@ -9,3 +9,4 @@ match_blueprint = Blueprint('match_blueprint', __name__, template_folder='templa
 manage_match_blueprint = Blueprint('manage_match_blueprint', __name__, template_folder='templates')
 create_match_blueprint = Blueprint('create_match_blueprint', __name__, template_folder='templates')
 clear_all_match_blueprint = Blueprint('clear_all_match_blueprint', __name__, template_folder='templates')
+change_match_status_blueprint = Blueprint('change_match_status_blueprint', __name__, template_folder='templates')

@@ -8,13 +8,10 @@ As for backend, the admin can manipulate users to be an umpire or not. Maintaini
 database etc.
 
 ## introduction
-Homepage: 登入來修改分數, 訪客觀看scores
-Socres: 非裁判可以查看即時分數
-Umpire: 裁判可以更新分數
+Homepage: 主頁面, 註冊與登入, 登入可以看到更多功能, 訪客只能訪問scoreboard而已
+Scoreboard: 分數頁面, 裁判可以更新分數, 訪客只能查看分數
 
 額外功能:紀錄當前比賽的分數紀錄 以防裁判更新錯誤要修改
-
-尚未完成：修改分數
 
 ## Project Structure
 ```
@@ -68,5 +65,4 @@ deactivate
 2025/04/05 - 加入編輯user是否為裁判的功能, 目前設定只有alex才能manage其他user是不是裁判  
 2025/04/06 - 加入只有裁判可以使用編輯分數的按鈕  
 2025/04/07 - 加入減分按鈕, 修改scoreboard.html, 讓他繼承base.html; 加入/users的頁面來query all users in database  
-2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可
-           - 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id
+2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可. 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id. 加入顯示match status: schedule, ongoing, finished 並且同步更新在scoreboard中

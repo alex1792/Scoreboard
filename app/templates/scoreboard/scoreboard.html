@@ -13,6 +13,8 @@ Scoreboard
     <!-- Match Info -->
     <div class="match-info">
         <p><strong>{{ player1_name }}</strong> vs <strong>{{ player2_name }}</strong></p>
+        <p>Match Status: <span id="match-status">{{ match_status }}</span></p>
+        <p>Match ID: {{ match_id }}</p>
     </div>
 
     <!-- Scores -->
@@ -32,11 +34,13 @@ Scoreboard
             <form action="/update_score" method="post">
                 <input type="hidden" name="player" value="Player1">
                 <input type="hidden" name="score" value="1">
+                <input type="hidden" name="match_id" value="{{ match_id }}">
                 <button type="submit" class="btn btn-add">Player1 +1</button>
             </form>
             <form action="/update_score" method="post">
                 <input type="hidden" name="player" value="Player1">
                 <input type="hidden" name="score" value="-1">
+                <input type="hidden" name="match_id" value="{{ match_id }}">
                 <button type="submit" class="btn btn-minus">Player1 -1</button>
             </form>
         </div>
@@ -46,12 +50,28 @@ Scoreboard
             <form action="/update_score" method="post">
                 <input type="hidden" name="player" value="Player2">
                 <input type="hidden" name="score" value="1">
+                <input type="hidden" name="match_id" value="{{ match_id }}">
                 <button type="submit" class="btn btn-add">Player2 +1</button>
             </form>
             <form action="/update_score" method="post">
                 <input type="hidden" name="player" value="Player2">
                 <input type="hidden" name="score" value="-1">
+                <input type="hidden" name="match_id" value="{{ match_id }}">
                 <button type="submit" class="btn btn-minus">Player2 -1</button>
+            </form>
+        </div>
+
+        <!-- Match Status Button -->
+        <div class="match-status-container">
+            <form action="/change_match_status" method="post">
+                <input type="hidden" name="match_id" value="{{ match_id }}">
+                {% if match_status == 'ongoing' %}
+                    <input type="hidden" name="new_status" value="finished">
+                    <button type="submit" class="btn btn-status">End Match</button>
+                {% else %}
+                    <input type="hidden" name="new_status" value="ongoing">
+                    <button type="submit" class="btn btn-status">Start Match</button>
+                {% endif %}
             </form>
         </div>
     </div>
@@ -60,12 +80,48 @@ Scoreboard
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='scoreboard.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-// Custom JavaScript for scoreboard page
-socket.on('score_update', (data) => {
-    document.getElementById('player1-score').textContent = data.score1;
-    document.getElementById('player2-score').textContent = data.score2;
-});
+    // 連接到後端 Socket.IO 伺服器（假設後端運行在 5001 端口）
+    const socket = io('http://127.0.0.1:5001/scoreboard', {
+        transports: ['websocket'],  // 強制使用 WebSocket
+        reconnection: true,
+        reconnectionDelay: 3000
+    });
+
+    // 獲取當前比賽的 match_id（從模板變量注入）
+    const currentMatchId = "{{ match_id }}";
+
+    // WebSocket 連接成功時觸發
+    socket.on('connect', () => {
+        console.log('WebSocket 已連接！Socket ID:', socket.id);
+    });
+
+    // 處理分數更新事件
+    socket.on('score_update', (data) => {
+        console.log('收到分數更新:', data);
+        console.log('currrentMatchId', currentMatchId);
+        // 僅更新當前比賽的分數
+        if (data.match_id === currentMatchId) {
+            document.getElementById('player1-score').textContent = data.score1;
+            document.getElementById('player2-score').textContent = data.score2;
+        }
+    });
+
+    // 處理比賽狀態更新事件（新增此監聽器）
+    socket.on('match_status_update', (data) => {
+        console.log('收到狀態更新:', data);
+        // 僅更新當前比賽的狀態
+        if (data.match_id === currentMatchId) {
+            document.getElementById('match-status').textContent = data.match_status;
+        }
+    });
+
+    // 處理連接錯誤
+    socket.on('connect_error', (err) => {
+        console.error('連接錯誤:', err.message);
+        // 5 秒後嘗試重新連接
+        setTimeout(() => socket.connect(), 5000);
+    });
 </script>
 {% endblock %}

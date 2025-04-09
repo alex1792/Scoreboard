@@ -59,6 +59,7 @@ class Database:
                     player2_id INTEGER,
                     score1 INTEGER NOT NULL DEFAULT 0,
                     score2 INTEGER NOT NULL DEFAULT 0,
+                    status TEXT,
                     FOREIGN KEY (player1_id) REFERENCES players (id),
                     FOREIGN KEY (player2_id) REFERENCES players (id)
                 )
@@ -77,7 +78,7 @@ class Database:
     
     # add match into table matches
     def add_match(self, player1_id, player2_id):
-        self.cursor.execute('INSERT INTO matches (player1_id, player2_id) VALUES (?, ?)', (player1_id, player2_id))
+        self.cursor.execute('INSERT INTO matches (player1_id, player2_id, status) VALUES (?, ?, ?)', (player1_id, player2_id, 'scheduled'))
         self.conn.commit()
 
     # update scores
@@ -114,31 +115,34 @@ class Database:
     def get_match_info(self):
         self.cursor.execute('''
             SELECT 
-                p1.name AS player1_name, 
-                p1.id AS player1_id, 
-                p2.name AS player2_name, 
-                p2.id AS player2_id, 
-                m.score1, 
-                m.score2
+                m.id AS match_id,
+                m.player1_id,
+                p1.name AS player1_name,
+                m.player2_id,
+                p2.name AS player2_name,
+                m.score1,
+                m.score2,
+                m.status
             FROM matches m
             JOIN players p1 ON m.player1_id = p1.id
             JOIN players p2 ON m.player2_id = p2.id;
         ''')
         row = self.cursor.fetchone()
-        # self.conn.close()
         
         if row:
             return {
-                'player1_name': row[0],
+                'match_id': row[0],
                 'player1_id': row[1],
-                'player2_name': row[2],
+                'player1_name': row[2],
                 'player2_id': row[3],
-                'score1': row[4],
-                'score2': row[5]
+                'player2_name': row[4],
+                'score1': row[5],
+                'score2': row[6],
+                'status': row[7]
             }
         else:
             return None
-        
+
     # get user info
     def get_user(self, user_id):
         self.cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
@@ -191,6 +195,12 @@ class Database:
         query = 'SELECT * FROM users'
         self.cursor.execute(query)
         return self.cursor.fetchall()
+
+    # change match status
+    def change_match_status(self, new_status, match_id):
+        query = 'UPDATE matches SET status = ? WHERE id = ?'
+        self.cursor.execute(query, (new_status, match_id,))
+        self.conn.commit()
 
 def load_user(user_id):
     return Database.get_user(user_id)

@@ -4,7 +4,8 @@ from flask import Flask, render_template, redirect, url_for, request
 from flask_login import current_user, login_required
 from .blueprints import (home_blueprint, scoreboard_blueprint, umpire_blueprint, 
                          admin_blueprint, users_blueprint, match_blueprint, 
-                         manage_match_blueprint, create_match_blueprint, clear_all_match_blueprint)
+                         manage_match_blueprint, create_match_blueprint, clear_all_match_blueprint,
+                         change_match_status_blueprint)
 from .db import Database
 from .form import ScoreForm
 from .extensions import socketio
@@ -29,11 +30,13 @@ def index():
     db.close()
     
     if match_info:
+        match_id = match_info['match_id']
         player1_name = match_info['player1_name']
         player2_name = match_info['player2_name']
         score1 = match_info['score1']
         score2 = match_info['score2']
-        return render_template('scoreboard/scoreboard.html', player1_name=player1_name, player2_name=player2_name, score1=score1, score2=score2)
+        status = match_info['status']
+        return render_template('scoreboard/scoreboard.html', player1_name=player1_name, player2_name=player2_name, score1=score1, score2=score2, match_id=match_id, match_status=status)
     else:
         return "No match found."
     
@@ -59,7 +62,7 @@ def update_score():
         
         # broadcast updated score to all clients viewing the this match
         match_info = db.get_match_info()
-        data = {'score1': match_info['score1'], 'score2': match_info['score2']}
+        data = {'match_id': str(match_info['match_id']), 'score1': match_info['score1'], 'score2': match_info['score2']}
         # print(data)
         socketio.emit('score_update', data,namespace='/scoreboard', room=None, include_self=True)
 
@@ -92,7 +95,6 @@ def set_umpire():
     if request.method == 'POST':
         username = request.form['username']
         is_judge = request.form['is_judge'] == 'true'
-        print(is_judge)
         
         # connect to database and update the user is_judge status
         db = Database('database.db')
@@ -146,8 +148,6 @@ def create_match():
     if request.method == 'POST':
         player1_username = request.form['player1_username']
         player2_username = request.form['player2_username']
-        print(player1_username)
-        print(player2_username)
 
         # query ids of player1 and player2
         db = Database('database.db')
@@ -167,3 +167,19 @@ def clear_all_match():
     db.clear_all_match()
     db.close()
     return redirect(url_for('manage_match_blueprint.manage_match'))
+
+@change_match_status_blueprint.route('/change_match_status', methods=['POST'])
+def change_match_status():
+    new_status = request.form['new_status']
+    match_id = request.form['match_id']
+    db = Database('database.db')
+    db.change_match_status(new_status, match_id)
+    db.close()
+
+    # broadcast
+    socketio.emit('match_status_update', {'match_id': str(match_id), 'match_status': new_status}, namespace='/scoreboard', include_self=True)
+
+    return redirect(url_for('scoreboard_blueprint.index', match_id=match_id))
+
+    
+

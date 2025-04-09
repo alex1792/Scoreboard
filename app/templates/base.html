@@ -23,18 +23,6 @@
     <div class="flash">{{ message }}</div>
   {% endfor %}
   {% block content %}{% endblock %}
-</section>
 
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
-<!-- 在此处添加全局脚本或扩展点 -->
-<!-- <script src="{{ url_for('static', filename='socketio.js') }}"></script> include Socket.IO client library -->
-<script>
-    // global Socket.IO client logic
-    const socket = io('/admin'); // connect to namespace '/admin'
-    socket.on('user_role_updated', (data) => {
-        console.log('User role updated:', data);
-        // update page logic
-    });
-</script>
 
 {% block scripts %}{% endblock %}
