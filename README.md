@@ -1,7 +1,7 @@
 # Scoreboard
 Scoreboard project  
 I want to build a live scoreboard system for all kind of ball games. The umpire can 
-update the score by using smartphones, other users can check the live score by accessing 
+update the score by using smartphones or laptop, other users can check the live score by accessing 
 the scoreboard page.  
   
 As for backend, the admin can manipulate users to be an umpire or not. Maintaining the 
@@ -70,6 +70,7 @@ deactivate
 2025/04/05 - 加入編輯user是否為裁判的功能, 目前設定只有alex才能manage其他user是不是裁判  
 2025/04/06 - 加入只有裁判可以使用編輯分數的按鈕  
 2025/04/07 - 加入減分按鈕, 修改scoreboard.html, 讓他繼承base.html; 加入/users的頁面來query all users in database  
-2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可. 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id. 加入顯示match status: schedule, ongoing, finished 並且同步更新在scoreboard中
+2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可. 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id. 加入顯示match status: schedule, ongoing, finished 並且同步更新在scoreboard中  
 2025/04/09 - 查看所有match的頁面改成是match_id, player1_name, player2_name, score1, score2, status;合併braodcast分數更新與狀態更新功能到同一個broadcast function內
 目前在check_all_match中也可以即時更新分數與狀態, 並且加入了不同的css增加美觀(尚待加強)  
+
