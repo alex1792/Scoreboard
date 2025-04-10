@@ -66,14 +66,14 @@ class Database:
             ''')
         
         # add two players
-        self.add_player('Player1')
-        self.add_player('Player2')
+        # self.add_player('Player1')
+        # self.add_player('Player2')
 
         self.conn.commit()
 
     # add player into table players
-    def add_player(self, name):
-        self.cursor.execute('INSERT INTO players (name) VALUES (?)', (name,))
+    def add_player(self, player_id, name):
+        self.cursor.execute('INSERT INTO players (id, name) VALUES (?)', (player_id, name))
         self.conn.commit()
     
     # add match into table matches
@@ -186,9 +186,41 @@ class Database:
 
     # get all match
     def get_all_match(self):
-        query = 'SELECT * FROM matches'
+        # query = 'SELECT * FROM matches'
+        # self.cursor.execute(query)
+        # return self.cursor.fetchall()
+        query = '''
+            SELECT 
+                m.id AS match_id,
+                m.player1_id,
+                p1.name AS player1_name,
+                m.player2_id,
+                p2.name AS player2_name,
+                m.score1,
+                m.score2,
+                m.status
+            FROM matches m
+            JOIN players p1 ON m.player1_id = p1.id
+            JOIN players p2 ON m.player2_id = p2.id;
+        '''
         self.cursor.execute(query)
-        return self.cursor.fetchall()
+        rows = self.cursor.fetchall()
+        
+        # using list is because in my query, I use JOIN, the fetchall() for frontend is not the correct format to render
+        matches = []
+        for row in rows:
+            matches.append({
+                'match_id': row[0],
+                'player1_id': row[1],
+                'player1_name': row[2],
+                'player2_id': row[3],
+                'player2_name': row[4],
+                'score1': row[5],
+                'score2': row[6],
+                'status': row[7]
+            })
+        return matches 
+        
     
     # get all users
     def get_all_users(self):

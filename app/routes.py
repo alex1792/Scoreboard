@@ -43,28 +43,32 @@ def index():
 @scoreboard_blueprint.route('/update_score', methods=['POST'])
 @login_required
 def update_score():
-    player = request.form.get('player') # player belongs to the set {Player1, Player2}
-    score = int(request.form.get('score'))
-    # print(player)
-    
+    action_type = request.form.get('action_type')
+
     db_name = 'database.db'
     db = Database(db_name)
     match_info = db.get_match_info()
     
+    if action_type == 'update_score':
+        if match_info:        
+            player = request.form.get('player') # player belongs to the set {Player1, Player2}
+            score = int(request.form.get('score'))
+            if player == 'Player1':
+                player1_id = match_info['player1_id']
+                db.update_score(player1_id, match_info, score)
+            else:
+                player2_id = match_info['player2_id']
+                db.update_score(player2_id, match_info, score)
 
-    if match_info:        
-        if player == 'Player1':
-            player1_id = match_info['player1_id']
-            db.update_score(player1_id, match_info, score)
-        else:
-            player2_id = match_info['player2_id']
-            db.update_score(player2_id, match_info, score)
-        
-        # broadcast updated score to all clients viewing the this match
-        match_info = db.get_match_info()
-        data = {'match_id': str(match_info['match_id']), 'score1': match_info['score1'], 'score2': match_info['score2']}
-        # print(data)
-        socketio.emit('score_update', data,namespace='/scoreboard', room=None, include_self=True)
+    elif action_type == 'change_status':
+        new_status = request.form.get('new_status')
+        match_id = request.form.get('match_id')
+        db.change_match_status(new_status, match_id)
+
+    # broadcast updated score to all clients viewing the this match
+    match_info = db.get_match_info()
+    data = {'match_id': str(match_info['match_id']), 'score1': match_info['score1'], 'score2': match_info['score2'], 'match_status': match_info['status']}
+    socketio.emit('match_update', data,namespace='/scoreboard', room=None, include_self=True)
 
     # close database connection
     db.close()
@@ -168,8 +172,8 @@ def clear_all_match():
     db.close()
     return redirect(url_for('manage_match_blueprint.manage_match'))
 
-@change_match_status_blueprint.route('/change_match_status', methods=['POST'])
-def change_match_status():
+# @change_match_status_blueprint.route('/change_match_status', methods=['POST'])
+# def change_match_status():
     new_status = request.form['new_status']
     match_id = request.form['match_id']
     db = Database('database.db')
@@ -182,4 +186,3 @@ def change_match_status():
     return redirect(url_for('scoreboard_blueprint.index', match_id=match_id))
 
     
-

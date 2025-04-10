@@ -1,33 +1,185 @@
 {% extends "base.html" %}
 
-{% block title %}
-All Matches
-{% endblock %}
+{% block title %}All Matches{% endblock %}
 
 {% block content %}
-<h1>All Matches</h1>
-<table>
-    <thead>
-        <tr>
-            <th>Match ID</th>
-            <th>Player1_ID</th>
-            <th>Player2_ID</th>
-            <th>Score1</th>
-            <th>score2</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
+<style>
+    .matches-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        padding: 2rem 0;
+    }
+
+    .match-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        border-left: 4px solid;
+        transition: transform 0.2s ease;
+    }
+
+    .match-card:hover {
+        transform: translateY(-3px);
+    }
+
+    /* 状态颜色标识 */
+    .status-ended { border-color: #4CAF50; }
+    .status-ongoing { border-color: #FFC107; }
+    .status-pending { border-color: #9E9E9E; }
+
+    .score {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2196F3;
+        margin: 1rem 0;
+        text-align: center;
+    }
+
+    .players {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .player {
+        text-align: center;
+        flex: 1;
+    }
+
+    .player-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .match-id {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="container">
+    <h1 class="page-title">All Matches</h1>
+    
+    <div class="matches-grid">
         {% for match in matches %}
-        <tr>
-            <td>{{ match['id'] }}</td>
-            <td>{{ match['player1_id'] }}</td>
-            <td>{{ match['player2_id'] }}</td>
-            <td>{{ match['score1'] }}</td>
-            <td>{{ match['score2'] }}</td>
-            <td>{{ match['status'] }}</td>
-        </tr>
+        <div class="match-card status-{{ match['status']|lower }}" data-match-id="{{ match['match_id'] }}">
+            <div class="match-id">#{{ match['match_id'] }}</div>
+            
+            <div class="players">
+                <div class="player">
+                    <div class="player-name">{{ match['player1_name'] }}</div>
+                    <small>ID: {{ match['player1_id'] }}</small>
+                </div>
+                
+                <div class="vs">vs</div>
+                
+                <div class="player">
+                    <div class="player-name">{{ match['player2_name'] }}</div>
+                    <small>ID: {{ match['player2_id'] }}</small>
+                </div>
+            </div>
+    
+            <div class="score">
+                {{ match['score1'] }} : {{ match['score2'] }}
+            </div>
+    
+            <div class="status">
+                <span class="status-badge status-{{ match['status']|lower }}">
+                    {{ match['status']|upper }}
+                </span>
+            </div>
+        </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+</div>
+
+<script>
+// 动态设置状态标签颜色
+document.querySelectorAll('.status-badge').forEach(badge => {
+    const status = badge.classList[1].split('-')[1];
+    const colorMap = {
+        'ended': '#4CAF50',
+        'ongoing': '#FFC107',
+        'pending': '#9E9E9E'
+    };
+    badge.style.backgroundColor = colorMap[status] + '20'; // 20% 透明度
+    badge.style.color = colorMap[status];
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    // 連接到後端 Socket.IO 伺服器（假設後端運行在 5001 端口）
+    const socket = io('http://127.0.0.1:5001/scoreboard', {
+        transports: ['websocket'],  // 強制使用 WebSocket
+        reconnection: true,
+        reconnectionDelay: 3000
+    });
+
+    // 獲取當前比賽的 match_id（從模板變量注入）
+    const currentMatchId = "{{ match_id }}";
+
+    // WebSocket 連接成功時觸發
+    socket.on('connect', () => {
+        console.log('WebSocket 已連接！Socket ID:', socket.id);
+    });
+
+    // 监听比赛更新事件
+    socket.on('match_update', (data) => {
+        console.log('收到比赛更新:', data);
+
+        // 根据 match_id 找到对应的比赛卡片
+        const matchCard = document.querySelector(`.match-card[data-match-id="${data.match_id}"]`);
+
+        if (matchCard) {
+            // 更新比分
+            const scoreElement = matchCard.querySelector('.score');
+            scoreElement.textContent = `${data.score1} : ${data.score2}`;
+
+            // 修复1: 取消注释并更新状态徽章
+            const statusBadge = matchCard.querySelector('.status-badge');
+            if (statusBadge && data.match_status) {  // 确保 data.status 存在
+                statusBadge.textContent = data.match_status.toUpperCase();
+                statusBadge.className = `status-badge status-${data.match_status.toLowerCase()}`;
+                
+                // 修复2: 同步更新卡片边框颜色
+                matchCard.className = `match-card status-${data.match_status.toLowerCase()}`;
+            }
+
+            // 添加视觉反馈（可选）
+            matchCard.style.transition = 'transform 0.2s ease';
+            matchCard.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                matchCard.style.transform = 'scale(1)';
+            }, 200);
+        } else {
+            console.warn(`未找到 match_id 为 ${data.match_id} 的比赛卡片`);
+        }
+    });
+
+    // 處理比賽狀態更新事件（新增此監聽器）
+    // socket.on('match_status_update', (data) => {
+    //     console.log('收到狀態更新:', data);
+    //     // 僅更新當前比賽的狀態
+    //     if (data.match_id === currentMatchId) {
+    //         document.getElementById('match-status').textContent = data.match_status;
+    //     }
+    // });
+
+    // 處理連接錯誤
+    socket.on('connect_error', (err) => {
+        console.error('連接錯誤:', err.message);
+        // 5 秒後嘗試重新連接
+        setTimeout(() => socket.connect(), 5000);
+    });
+</script>
 {% endblock %}

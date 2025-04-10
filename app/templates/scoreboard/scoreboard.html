@@ -32,12 +32,14 @@ Scoreboard
         <!-- Player1 Buttons -->
         <div class="button-group">
             <form action="/update_score" method="post">
+                <input type="hidden" name="action_type" value="update_score">
                 <input type="hidden" name="player" value="Player1">
                 <input type="hidden" name="score" value="1">
                 <input type="hidden" name="match_id" value="{{ match_id }}">
                 <button type="submit" class="btn btn-add">Player1 +1</button>
             </form>
             <form action="/update_score" method="post">
+                <input type="hidden" name="action_type" value="update_score">
                 <input type="hidden" name="player" value="Player1">
                 <input type="hidden" name="score" value="-1">
                 <input type="hidden" name="match_id" value="{{ match_id }}">
@@ -48,12 +50,14 @@ Scoreboard
         <!-- Player2 Buttons -->
         <div class="button-group">
             <form action="/update_score" method="post">
+                <input type="hidden" name="action_type" value="update_score">
                 <input type="hidden" name="player" value="Player2">
                 <input type="hidden" name="score" value="1">
                 <input type="hidden" name="match_id" value="{{ match_id }}">
                 <button type="submit" class="btn btn-add">Player2 +1</button>
             </form>
             <form action="/update_score" method="post">
+                <input type="hidden" name="action_type" value="update_score">
                 <input type="hidden" name="player" value="Player2">
                 <input type="hidden" name="score" value="-1">
                 <input type="hidden" name="match_id" value="{{ match_id }}">
@@ -63,7 +67,8 @@ Scoreboard
 
         <!-- Match Status Button -->
         <div class="match-status-container">
-            <form action="/change_match_status" method="post">
+            <form action="/update_score" method="post">
+                <input type="hidden" name="action_type" value="change_status">
                 <input type="hidden" name="match_id" value="{{ match_id }}">
                 {% if match_status == 'ongoing' %}
                     <input type="hidden" name="new_status" value="finished">
@@ -98,21 +103,13 @@ Scoreboard
     });
 
     // 處理分數更新事件
-    socket.on('score_update', (data) => {
+    socket.on('match_update', (data) => {
         console.log('收到分數更新:', data);
         console.log('currrentMatchId', currentMatchId);
-        // 僅更新當前比賽的分數
+        // 僅更新當前比賽的分數與狀態
         if (data.match_id === currentMatchId) {
             document.getElementById('player1-score').textContent = data.score1;
             document.getElementById('player2-score').textContent = data.score2;
-        }
-    });
-
-    // 處理比賽狀態更新事件（新增此監聽器）
-    socket.on('match_status_update', (data) => {
-        console.log('收到狀態更新:', data);
-        // 僅更新當前比賽的狀態
-        if (data.match_id === currentMatchId) {
             document.getElementById('match-status').textContent = data.match_status;
         }
     });
