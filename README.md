@@ -11,7 +11,12 @@ database etc.
 Homepage: 主頁面, 註冊與登入, 登入可以看到更多功能, 訪客只能訪問scoreboard而已
 Scoreboard: 分數頁面, 裁判可以更新分數, 訪客只能查看分數
 
-額外功能:紀錄當前比賽的分數紀錄 以防裁判更新錯誤要修改
+額外功能:紀錄當前比賽的分數紀錄 以防裁判更新錯誤要修改  
+
+修改的想法：
+  1. 可以透過check_all_match的頁面點進去看每一個match的scoreboard
+  2. 建立多個match, 多個umpire, 管理每場match只能由特定的umpire去編輯分數
+  3. 更好看的排版 javascript, css
 
 ## Project Structure
 ```
@@ -67,4 +72,4 @@ deactivate
 2025/04/07 - 加入減分按鈕, 修改scoreboard.html, 讓他繼承base.html; 加入/users的頁面來query all users in database  
 2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可. 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id. 加入顯示match status: schedule, ongoing, finished 並且同步更新在scoreboard中
 2025/04/09 - 查看所有match的頁面改成是match_id, player1_name, player2_name, score1, score2, status;合併braodcast分數更新與狀態更新功能到同一個broadcast function內
-目前在check_all_match中也可以即時更新分數與狀態, 並且加入了不同的css增加美觀  
+目前在check_all_match中也可以即時更新分數與狀態, 並且加入了不同的css增加美觀(尚待加強)  
