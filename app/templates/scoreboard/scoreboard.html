@@ -3,7 +3,9 @@
 {% block title %}
 Scoreboard
 {% endblock %}
-
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='scoreboard.css') }}">
+{% endblock %}
 {% block header %}
 <h2>Scoreboard Page</h2>
 {% endblock %}

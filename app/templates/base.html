@@ -1,28 +1,33 @@
-<!doctype html>
-<title>{% block title %}{% endblock %} - Scoreboard</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Score Board{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block extra_css %}{% endblock %}  <!-- 專用 CSS 區塊 -->
+</head>
+<body>
 <nav>
-  <h1><a href="http://127.0.0.1:5001/">Score Board</a></h1>
-  <ul>
-    {% if current_user.is_authenticated %}
-      <!-- 用戶已登入，顯示用戶名和登出選項 -->
-      <li><span>Welcome, {{ current_user.username }}</span></li>
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
-    {% else %}
-      <!-- 用戶未登入，顯示註冊和登入選項 -->
-      <li><a href="{{ url_for('auth.register') }}">Register</a></li>
-      <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
-    {% endif %}
-  </ul>
+    <h1><a href="/">Score Board</a></h1>
+    <ul>
+        <li><a href="{{ url_for('scoreboard_blueprint.index') }}">Score Board</a></li>
+        <li><a href="{{ url_for('match_blueprint.query_matches') }}">Matches</a></li>
+        {% if current_user.is_authenticated %}
+            <li><span>Welcome, {{ current_user.username }}</span></li>
+            <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% if current_user.username == 'alex' %}
+                <li><a href="{{ url_for('admin_blueprint.set_umpire') }}">Manage Umpires</a></li>
+            {% endif %}
+        {% else %}
+            <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+            <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+        {% endif %}
+    </ul>
 </nav>
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
 
-
-{% block scripts %}{% endblock %}
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

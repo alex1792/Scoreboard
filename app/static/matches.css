@@ -1,0 +1,75 @@
+/* matches.css */
+.matches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0;
+}
+
+/* 修复底线问题 */
+.match-card-link {
+    text-decoration: none; /* 移除链接的默认下划线 */
+    color: inherit; /* 保持文字颜色 */
+    display: block; /* 确保链接覆盖整个卡片区域 */
+}
+
+/* 确保子元素不继承 text-decoration */
+.match-card-link * {
+    text-decoration: none; /* 强制移除子元素的下划线 */
+}
+
+/* 卡片样式 */
+.match-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border-left: 4px solid;
+    transition: transform 0.2s ease;
+}
+
+.match-card:hover {
+    transform: translateY(-3px);
+}
+
+/* 状态颜色标识 */
+.status-ended { border-color: #4CAF50; }
+.status-ongoing { border-color: #FFC107; }
+.status-pending { border-color: #9E9E9E; }
+
+.score {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2196F3;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.players {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.player {
+    text-align: center;
+    flex: 1;
+}
+
+.player-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.match-id {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}

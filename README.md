@@ -17,17 +17,20 @@ Scoreboard: 分數頁面, 裁判可以更新分數, 訪客只能查看分數
   1. 可以透過check_all_match的頁面點進去看每一個match的scoreboard
   2. 建立多個match, 多個umpire, 管理每場match只能由特定的umpire去編輯分數
   3. 更好看的排版 javascript, css
+  4. match-card的link要連結到正該scoreboard, 目前只會direct到固定一個
 
 ## Project Structure
 ```
 - Scoreboard:
   - app:
     - static:
-      - style.css  # Stylesheet for the application
+      - matches.css       # Stylesheet for matches.html
+      - scoreboard.css    # Stylesheet for scoreboard.html
+      - style.css         # Stylesheet for the application
     - templates:
       - auth:
-        - login.html     # Login page template
-        - register.html  # Registration page template
+        - login.html      # Login page template
+        - register.html   # Registration page template
       - scoreboard:
         - admin.html      # Manage Users to be umpire or not
         - create_match.html # Create a new match
@@ -73,4 +76,5 @@ deactivate
 2025/04/08 - 新增一些Query function到Database class中, 現在在routes.py要執行query, 直接db = Database('database.db'); db.query_function(); db.close()三步驟即可. 加入管理match的功能與頁面 現在可以一件清空database中的所有match, 也可以delete match by match_id. 加入顯示match status: schedule, ongoing, finished 並且同步更新在scoreboard中  
 2025/04/09 - 查看所有match的頁面改成是match_id, player1_name, player2_name, score1, score2, status;合併braodcast分數更新與狀態更新功能到同一個broadcast function內
 目前在check_all_match中也可以即時更新分數與狀態, 並且加入了不同的css增加美觀(尚待加強)  
+2025/04/10 - 修改排版, 把原本一些寫在html中的css code移出來 變成獨立的.css; 然後在check all matches的頁面中所有的match-card都是一個href, link to the scoreboard  
 

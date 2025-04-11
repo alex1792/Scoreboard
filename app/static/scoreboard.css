@@ -1,0 +1,119 @@
+/* Enhanced scoreboard.css */
+.scoreboard-container {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid #ddd; /* Subtle border for better definition */
+}
+
+/* Match Info */
+.match-info {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: #333; /* Consistent text color */
+}
+
+.match-info p {
+    margin: 0.5rem 0;
+}
+
+/* Scores Section */
+.scores {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    font-size: 3rem;
+    margin: 2rem 0;
+}
+
+.score-container {
+    display: flex;
+    align-items: center;
+}
+
+.separator {
+    font-size: 2.5rem;
+    color: #555; /* Subtle separator color */
+}
+
+/* Buttons Section */
+.button-container {
+    margin-top: 2rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+}
+
+.btn-add {
+    background-color: #4CAF50; /* Green for add */
+    color: white;
+}
+
+.btn-add:hover {
+    background-color: #45a049; /* Darker green on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+}
+
+.btn-minus {
+    background-color: #f44336; /* Red for minus */
+    color: white;
+}
+
+.btn-minus:hover {
+    background-color: #e53935; /* Darker red on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+}
+
+.btn-status {
+    background-color: #2196F3; /* Blue for status button */
+    color: white;
+}
+
+.btn-status:hover {
+    background-color: #1976D2; /* Darker blue on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .scoreboard-container {
+        padding: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        max-width: calc(100% - 2rem); /* Adjust width for smaller screens */
+        box-shadow: none; /* Simplify shadow for mobile devices */
+        border-radius: 5px; /* Reduce border radius for smaller screens */
+    }
+
+    .scores {
+        font-size: 2rem; /* Reduce font size on smaller screens */
+        flex-direction: column; /* Stack scores vertically */
+        gap: 1rem;
+        text-align: center; /* Center align scores */
+    }
+
+    .button-group {
+        flex-direction: column; /* Stack buttons vertically for mobile view */
+        gap: 0.5rem; /* Reduce gap between buttons on smaller screens */
+        align-items: center; /* Center align buttons */
+        width :100%
+        
+    }
+}

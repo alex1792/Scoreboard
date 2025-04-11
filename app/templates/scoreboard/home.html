@@ -1,23 +1,36 @@
-<!-- app/templates/scoreboard/home.html -->
 {% extends "base.html" %}
 
 {% block title %}Home{% endblock %}
 
 {% block header %}
-  <h1>Homepage</h1>
+  <header class="header">
+    <h1>Welcome to the Score Board</h1>
+    <p>Your one-stop platform for managing matches and scores.</p>
+  </header>
 {% endblock %}
 
 {% block content %}
-  <p>Welcome to the Score Board!</p>
-  <a href="{{ url_for('scoreboard_blueprint.index') }}">Score Board</a>
-  <a href="{{url_for('match_blueprint.query_matches')}}">Check All Matches</a>
-  <!-- <a href="{{ url_for('auth.login') }}">Login</a>
-  <a href="{{ url_for('auth.register') }}">Register</a> -->
-  {% if current_user.username == 'alex' %}
-    <a href="{{url_for('admin_blueprint.set_umpire')}}">Manage Umpires</a>
-    <a href="{{url_for('users_blueprint.query_users')}}">Check All Users</a>
-    <a href="{{url_for('manage_match_blueprint.manage_match')}}">Manage Matches</a>
-    <a href="{{url_for('match_blueprint.query_matches')}}">Check All Matches</a>
-    <a href="{{url_for('create_match_blueprint.create_match')}}">Create New Match</a>
-  {% endif %}
+  <main class="content-container">
+    <!-- 一般用戶功能 -->
+    <section class="card">
+      <h2>General Features</h2>
+      <ul class="link-list">
+        <li><a href="{{ url_for('scoreboard_blueprint.index') }}">View Score Board</a></li>
+        <li><a href="{{ url_for('match_blueprint.query_matches') }}">Check All Matches</a></li>
+      </ul>
+    </section>
+
+    <!-- 管理員專屬功能 -->
+    {% if current_user.username == 'alex' %}
+      <section class="card admin-section">
+        <h2>Admin Features</h2>
+        <ul class="link-list">
+          <li><a href="{{ url_for('admin_blueprint.set_umpire') }}">Manage Umpires</a></li>
+          <li><a href="{{ url_for('users_blueprint.query_users') }}">Check All Users</a></li>
+          <li><a href="{{ url_for('manage_match_blueprint.manage_match') }}">Manage Matches</a></li>
+          <li><a href="{{ url_for('create_match_blueprint.create_match') }}">Create New Match</a></li>
+        </ul>
+      </section>
+    {% endif %}
+  </main>
 {% endblock %}

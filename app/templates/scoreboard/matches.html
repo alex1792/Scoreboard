@@ -3,102 +3,44 @@
 {% block title %}All Matches{% endblock %}
 
 {% block content %}
-<style>
-    .matches-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        padding: 2rem 0;
-    }
-
-    .match-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        border-left: 4px solid;
-        transition: transform 0.2s ease;
-    }
-
-    .match-card:hover {
-        transform: translateY(-3px);
-    }
-
-    /* 状态颜色标识 */
-    .status-ended { border-color: #4CAF50; }
-    .status-ongoing { border-color: #FFC107; }
-    .status-pending { border-color: #9E9E9E; }
-
-    .score {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #2196F3;
-        margin: 1rem 0;
-        text-align: center;
-    }
-
-    .players {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-    }
-
-    .player {
-        text-align: center;
-        flex: 1;
-    }
-
-    .player-name {
-        font-weight: 600;
-        color: #333;
-    }
-
-    .match-id {
-        color: #666;
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-    }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='matches.css') }}">
+{% endblock %}
 
 <div class="container">
     <h1 class="page-title">All Matches</h1>
     
     <div class="matches-grid">
         {% for match in matches %}
-        <div class="match-card status-{{ match['status']|lower }}" data-match-id="{{ match['match_id'] }}">
-            <div class="match-id">#{{ match['match_id'] }}</div>
-            
-            <div class="players">
-                <div class="player">
-                    <div class="player-name">{{ match['player1_name'] }}</div>
-                    <small>ID: {{ match['player1_id'] }}</small>
-                </div>
-                
-                <div class="vs">vs</div>
-                
-                <div class="player">
-                    <div class="player-name">{{ match['player2_name'] }}</div>
-                    <small>ID: {{ match['player2_id'] }}</small>
-                </div>
-            </div>
+            <a href="{{ url_for('scoreboard_blueprint.index') }}" class="match-card-link">
+                <div class="match-card status-{{ match['status']|lower }}" data-match-id="{{ match['match_id'] }}">
+                    <div class="match-id">#{{ match['match_id'] }}</div>
+                    
+                    <div class="players">
+                        <div class="player">
+                            <div class="player-name">{{ match['player1_name'] }}</div>
+                            <small>ID: {{ match['player1_id'] }}</small>
+                        </div>
+                        
+                        <div class="vs">vs</div>
+                        
+                        <div class="player">
+                            <div class="player-name">{{ match['player2_name'] }}</div>
+                            <small>ID: {{ match['player2_id'] }}</small>
+                        </div>
+                    </div>
     
-            <div class="score">
-                {{ match['score1'] }} : {{ match['score2'] }}
-            </div>
+                    <div class="score">
+                        {{ match['score1'] }} : {{ match['score2'] }}
+                    </div>
     
-            <div class="status">
-                <span class="status-badge status-{{ match['status']|lower }}">
-                    {{ match['status']|upper }}
-                </span>
-            </div>
-        </div>
+                    <div class="status">
+                        <span class="status-badge status-{{ match['status']|lower }}">
+                            {{ match['status']|upper }}
+                        </span>
+                    </div>
+                </div>
+            </a>
         {% endfor %}
     </div>
 </div>
