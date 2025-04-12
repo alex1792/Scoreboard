@@ -14,11 +14,11 @@
         <li><a href="{{ url_for('scoreboard_blueprint.index') }}">Score Board</a></li>
         <li><a href="{{ url_for('match_blueprint.query_matches') }}">Matches</a></li>
         {% if current_user.is_authenticated %}
-            <li><span>Welcome, {{ current_user.username }}</span></li>
-            <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
             {% if current_user.username == 'alex' %}
                 <li><a href="{{ url_for('admin_blueprint.set_umpire') }}">Manage Umpires</a></li>
             {% endif %}
+            <li><span>Welcome, {{ current_user.username }}</span></li>
+            <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
         {% else %}
             <li><a href="{{ url_for('auth.login') }}">Login</a></li>
             <li><a href="{{ url_for('auth.register') }}">Register</a></li>

@@ -8,16 +8,16 @@ As for backend, the admin can manipulate users to be an umpire or not. Maintaini
 database etc.
 
 ## introduction
-Homepage: 主頁面, 註冊與登入, 登入可以看到更多功能, 訪客只能訪問scoreboard而已
-Scoreboard: 分數頁面, 裁判可以更新分數, 訪客只能查看分數
+Homepage: Homepage with register and login function. When logged in, user can see more function. Guest can only access scoreboard.
+Scoreboard: Scoreboard page, where umpire can update score, guests can check the score.
 
-額外功能:紀錄當前比賽的分數紀錄 以防裁判更新錯誤要修改  
+ideas (not implemented yet): Stack all the score adjustment history, implementing the recovery function to re-do the score update.
 
-修改的想法：
-  1. 可以透過check_all_match的頁面點進去看每一個match的scoreboard
-  2. 建立多個match, 多個umpire, 管理每場match只能由特定的umpire去編輯分數
-  3. 更好看的排版 javascript, css
-  4. match-card的link要連結到正該scoreboard, 目前只會direct到固定一個
+ideas for current version adjustment：
+  1. check each score info(Scoreboard) via check_all_match page 
+  2. create multiple matches, umpire. manage each match with assigning particular umpire to adjust the game.
+  3. better javascript, css
+  4. each match-card links individual scoreboard, now only links to the same scoreboard
 
 ## Project Structure
 ```
@@ -68,62 +68,66 @@ deactivate
 
 ## 開發日誌
 ### 2025/04/02
-- 完成登入功能
+- Finish login function
 ---
 
 ### 2025/04/03
-- 完成增加分數功能（僅限登入後使用）
+- Score adjustment funciton (only when logged in)
 ---
 
 ### 2025/04/04
-- 加入分數更新的即時同步功能：  
-  - 所有用戶均可即時看到更新的分數
+- Score update in real time and syncronization:
+  - Every user will upadte the score in real time.
 ---
 
 ### 2025/04/05
-- 新增裁判管理功能：  
-  - 設定只有 `alex` 能管理其他用戶是否為裁判
+- 新增裁判管理功能：  Creating Manage Umpire funciton: 
+  - only `alex` can access the manage function, can assign users to be an umpire or not
 ---
 
 ### 2025/04/06
-- 限制分數編輯權限：  
-  - 只有裁判可以使用編輯分數的按鈕
+- Set the upper bound of score and access to score adjustment:  
+  - Only umpire can adjust the score by clicking the button  
 ---
 
 ### 2025/04/07
-- 新增減分按鈕  
-- 修改 `scoreboard.html`：  
-  - 繼承 `base.html`  
-- 新增 `/users` 頁面：  
-  - 用於查詢資料庫中的所有用戶
+- Creating minus points button
+- Update `scoreboard.html`：  
+  - inherits `base.html`  
+- Update `/users` page：  
+  - used for query all users in database
 ---
 
 ### 2025/04/08
-- 擴展 Database class 功能：  
-  - 新增多個 Query function，簡化在 `routes.py` 中執行查詢的流程：
+- Expand Database class functions：  
+  - Adding more Query function, simplify the process of executing queries in `routes.py`：
     ```
     db = Database('database.db')
     db.query_function()
     db.close()
     ```
-- 新增比賽管理功能與頁面：  
-  - 一鍵清空資料庫中的所有比賽  
-  - 根據 `match_id` 刪除比賽  
-  - 顯示比賽狀態（schedule, ongoing, finished），並同步更新到記分板中  
+- Added new competition management functions and pages：  
+  - Clear all matches in the database with one click  
+  - Delete match according to `match_id` 
+  - Showing (schedule, ongoing, finished), and synchronously update to the scoreboard  
 ---
 
 ### 2025/04/09
-- 改善查看所有比賽的頁面：  
-  - 顯示 `match_id`, `player1_name`, `player2_name`, `score1`, `score2`, `status`  
-- 合併分數更新與狀態更新至同一個 broadcast function 中  
-- 即時更新分數與狀態至 `check_all_match` 頁面  
-- 增加不同 CSS 美化效果（尚待加強）
+- Improvements to the page for viewing all matches: 
+  - showing `match_id`, `player1_name`, `player2_name`, `score1`, `score2`, `status`  
+- Combine score updates and status updates into the same broadcast function   
+- Instantly update the score and status to the `check all_match` page
+- Add different CSS beautification effects (to be enhanced)
 ---
 
 ### 2025/04/10
-- 修改排版：  
-  - 將 HTML 中的 CSS 移至獨立 `.css` 文件  
-- 改善 `check all matches` 頁面：  
-  - 所有 match-card 均為超連結，指向記分板頁面
+- Modify the layout：  
+  - Move CSS from HTML to separate `.css` files  
+- Improve `check all matches` page：  
+  - All match-cards are hyperlinks pointing to the scoreboard page
+---
+
+### 2025/04/11
+- Modify the layout
 ---
 

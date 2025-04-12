@@ -19,6 +19,34 @@ nav ul {
     gap: 1rem;
 }
 
+/* Navigation bar */
+nav {
+    background: #4CAF50;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between; /* Distribute items to both sides */
+    align-items: center;
+}
+
+/* Left navigation items */
+.nav-left {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1rem; /* Space between items */
+}
+
+/* Right navigation items */
+.nav-right {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1rem; /* Space between items */
+}
+    
+/* Links styling */
 nav a {
     color: white;
     text-decoration: none;
@@ -27,6 +55,15 @@ nav a {
 nav a:hover {
     text-decoration: underline;
 }
+
+/* nav a {
+    color: white;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+} */
 
 /* 主內容區域 */
 .content {
