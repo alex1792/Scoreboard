@@ -73,3 +73,31 @@
     border-radius: 20px;
     font-size: 0.85rem;
 }
+
+/* set umpire */
+.umpire-section {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.set-umpire-btn {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.set-umpire-btn:hover {
+    background: #1565c0;
+}
+.umpire-label {
+    font-size: 0.95em;
+}
+.umpire-name {
+    font-weight: bold;
+    color: #1976d2;
+}
+

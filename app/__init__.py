@@ -6,7 +6,7 @@ from .db import Database, User
 from .routes import (home_blueprint, scoreboard_blueprint, umpire_blueprint, 
                      admin_blueprint, users_blueprint, match_blueprint,
                      manage_match_blueprint, create_match_blueprint, clear_all_match_blueprint,
-                     change_match_status_blueprint)
+                     change_match_status_blueprint, assign_umpire_blueprint)
 from .extensions import socketio
 
 def create_app(config_class=Config):
@@ -49,6 +49,7 @@ def create_app(config_class=Config):
     app.register_blueprint(create_match_blueprint)
     app.register_blueprint(clear_all_match_blueprint)
     app.register_blueprint(change_match_status_blueprint)
+    app.register_blueprint(assign_umpire_blueprint)
     from . import auth
     app.register_blueprint(auth.bp)
     

@@ -61,12 +61,13 @@ scoreboard: http://127.0.0.1:5001/scoreboard
 update_score(login required): http://127.0.0.1:5001/update_score  
 admin(only 'alex' can access): http://127.0.0.1:5001/admin  
 users: http://127.0.0.1:5001/users 
+assign_umpire: http://127.0.0.1:5001/assign_umpire
 
 ## activate and deactivate virtual environment
 . .venv/bin/activate  
 deactivate
 
-## 開發日誌
+## Developing Diary
 ### 2025/04/02
 - Finish login function
 ---
@@ -81,7 +82,7 @@ deactivate
 ---
 
 ### 2025/04/05
-- 新增裁判管理功能：  Creating Manage Umpire funciton: 
+- Creating Manage Umpire funciton: 
   - only `alex` can access the manage function, can assign users to be an umpire or not
 ---
 
@@ -131,3 +132,7 @@ deactivate
 - Modify the layout
 ---
 
+### 2025/05/01
+- Add assigning umpire to each match in the update_score function. Slightly change the database table matches, adding a umpire_name in each match.
+- http://127.0.0.1:5001/assign_umpire
+---

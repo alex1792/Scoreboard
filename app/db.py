@@ -60,6 +60,7 @@ class Database:
                     score1 INTEGER NOT NULL DEFAULT 0,
                     score2 INTEGER NOT NULL DEFAULT 0,
                     status TEXT,
+                    umpire_name TEXT,
                     FOREIGN KEY (player1_id) REFERENCES players (id),
                     FOREIGN KEY (player2_id) REFERENCES players (id)
                 )
@@ -82,7 +83,7 @@ class Database:
         self.conn.commit()
 
     # update scores
-    def update_score(self, player_id, match_info, score):
+    def update_score(self, player_id, match_info, score, umpire_name=None):
         # update player1 score
         if player_id == match_info['player1_id']:
             if score == 1:
@@ -109,6 +110,10 @@ class Database:
                                     SET score2 = score2 - 1 
                                     WHERE player2_id = ? AND score2 > 0''', (player_id,))
         
+        # update umpire name
+        if umpire_name != None:
+            self.cursor.execute('UPDATE matches SET umpire_name = ? WHERE id = ?', (umpire_name, match_info['match_id'],))
+        
         self.conn.commit()
 
     # get match information, can be used for search match
@@ -122,7 +127,8 @@ class Database:
                 p2.name AS player2_name,
                 m.score1,
                 m.score2,
-                m.status
+                m.status,
+                m.umpire_name
             FROM matches m
             JOIN players p1 ON m.player1_id = p1.id
             JOIN players p2 ON m.player2_id = p2.id;
@@ -138,7 +144,8 @@ class Database:
                 'player2_name': row[4],
                 'score1': row[5],
                 'score2': row[6],
-                'status': row[7]
+                'status': row[7],   
+                'umpire_name': row[8]
             }
         else:
             return None
@@ -198,7 +205,8 @@ class Database:
                 p2.name AS player2_name,
                 m.score1,
                 m.score2,
-                m.status
+                m.status,
+                m.umpire_name
             FROM matches m
             JOIN players p1 ON m.player1_id = p1.id
             JOIN players p2 ON m.player2_id = p2.id;
@@ -217,7 +225,8 @@ class Database:
                 'player2_name': row[4],
                 'score1': row[5],
                 'score2': row[6],
-                'status': row[7]
+                'status': row[7],
+                'umpire_name': row[8]
             })
         return matches 
         
@@ -234,5 +243,9 @@ class Database:
         self.cursor.execute(query, (new_status, match_id,))
         self.conn.commit()
 
+    
+
 def load_user(user_id):
     return Database.get_user(user_id)
+
+

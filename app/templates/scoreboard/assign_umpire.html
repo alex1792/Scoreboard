@@ -12,7 +12,7 @@
     
     <div class="matches-grid">
         {% for match in matches %}
-            <a href="{{ url_for('scoreboard_blueprint.index') }}" class="match-card-link">
+            <!-- <a href="{{ url_for('scoreboard_blueprint.index') }}" class="match-card-link"> -->
                 <div class="match-card status-{{ match['status']|lower }}" data-match-id="{{ match['match_id'] }}">
                     <div class="match-id">#{{ match['match_id'] }}</div>
                     
@@ -44,10 +44,10 @@
                         <span class="umpire-label">
                             Umpire: <span class="umpire-name">{{ match['umpire_name'] or 'To Be Assigned' }}</span>
                         </span>
-                        <!-- <button class="set-umpire-btn" data-match-id="{{ match['match_id'] }}">Assign Umpire</button> -->
-                    </div>      
+                        <button class="set-umpire-btn" data-match-id="{{ match['match_id'] }}">Assign Umpire</button>
+                    </div>                    
                 </div>
-            </a>
+            <!-- </a> -->
         {% endfor %}
     </div>
 </div>
@@ -133,6 +133,39 @@ document.querySelectorAll('.status-badge').forEach(badge => {
         console.error('連接錯誤:', err.message);
         // 5 秒後嘗試重新連接
         setTimeout(() => socket.connect(), 5000);
+    });
+</script>
+<script>
+    document.querySelectorAll('.set-umpire-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            event.stopPropagation();
+            event.preventDefault();
+            
+            const matchId = this.dataset.matchId;
+            const umpireName = prompt('Umpire Name：');
+
+            // send the umpireName to backend
+            if(umpireName && umpireName.trim() != ' ') {
+                fetch(`/assign_umpire/${matchId}`, {  // 使用反引號和斜線
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'  // 必須設定
+                    },
+                    body: new URLSearchParams({ umpire_name: umpireName })  // 傳送表單數據
+                }).then(response => {
+                    if (response.ok) {
+                        // 手動更新前端顯示（避免重載頁面）
+                        const umpireSpan = this.closest('.umpire-section').querySelector('.umpire-name');
+                        umpireSpan.textContent = umpireName.trim();
+                    } else {
+                        alert('設定失敗');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });;
+            }
+        });
     });
 </script>
 {% endblock %}
