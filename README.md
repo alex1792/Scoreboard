@@ -136,3 +136,9 @@ deactivate
 - Add assigning umpire to each match in the update_score function. Slightly change the database table matches, adding a umpire_name in each match.
 - http://127.0.0.1:5001/assign_umpire
 ---
+
+### 2025/05/23
+- Modify the structure by implementing SQLAlchemy, and improve permision checking on users
+- Add the assign_umpire link to home page
+- still have bugs to be fixed. (assign umpires, etc)
+---

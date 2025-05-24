@@ -14,35 +14,35 @@
         {% for match in matches %}
             <a href="{{ url_for('scoreboard_blueprint.index') }}" class="match-card-link">
                 <div class="match-card status-{{ match['status']|lower }}" data-match-id="{{ match['match_id'] }}">
-                    <div class="match-id">#{{ match['match_id'] }}</div>
+                    <div class="match-id">#{{ match.id }}</div>
                     
                     <div class="players">
                         <div class="player">
-                            <div class="player-name">{{ match['player1_name'] }}</div>
-                            <small>ID: {{ match['player1_id'] }}</small>
+                            <div class="player-name">{{ match.player1.name }}</div>
+                            <small>ID: {{ match.player1_id }}</small>
                         </div>
                         
                         <div class="vs">vs</div>
                         
                         <div class="player">
-                            <div class="player-name">{{ match['player2_name'] }}</div>
-                            <small>ID: {{ match['player2_id'] }}</small>
+                            <div class="player-name">{{ match.player2.name }}</div>
+                            <small>ID: {{ match.player2_id }}</small>
                         </div>
                     </div>
     
                     <div class="score">
-                        {{ match['score1'] }} : {{ match['score2'] }}
+                        {{ match.score1 }} : {{ match.score2 }}
                     </div>
     
                     <div class="status">
                         <span class="status-badge status-{{ match['status']|lower }}">
-                            {{ match['status']|upper }}
+                            {{ match.status | upper }}
                         </span>
                     </div>
 
                     <div class="umpire-section">
                         <span class="umpire-label">
-                            Umpire: <span class="umpire-name">{{ match['umpire_name'] or 'To Be Assigned' }}</span>
+                            Umpire: <span class="umpire-name">{{ match.umpire_name or 'To Be Assigned' }}</span>
                         </span>
                         <!-- <button class="set-umpire-btn" data-match-id="{{ match['match_id'] }}">Assign Umpire</button> -->
                     </div>      

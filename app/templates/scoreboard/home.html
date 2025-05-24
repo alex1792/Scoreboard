@@ -21,7 +21,7 @@
     </section>
 
     <!-- 管理員專屬功能 -->
-    {% if current_user.username == 'alex' %}
+    {% if current_user.role == 'admin' %}
       <section class="card admin-section">
         <h2>Admin Features</h2>
         <ul class="link-list">
@@ -29,6 +29,7 @@
           <li><a href="{{ url_for('users_blueprint.query_users') }}">Check All Users</a></li>
           <li><a href="{{ url_for('manage_match_blueprint.manage_match') }}">Manage Matches</a></li>
           <li><a href="{{ url_for('create_match_blueprint.create_match') }}">Create New Match</a></li>
+          <li><a href="{{ url_for('assign_umpire.assign_umpire') }}">Assign Umpire</a></li>
         </ul>
       </section>
     {% endif %}
