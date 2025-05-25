@@ -13,7 +13,7 @@
     <div class="matches-grid">
         {% for match in matches %}
             <a href="{{ url_for('scoreboard_blueprint.index') }}" class="match-card-link">
-                <div class="match-card status-{{ match['status']|lower }}" data-match-id="{{ match['match_id'] }}">
+                <div class="match-card status-{{ match.status|lower }}" data-match-id="{{ match.id }}">
                     <div class="match-id">#{{ match.id }}</div>
                     
                     <div class="players">
@@ -42,10 +42,13 @@
 
                     <div class="umpire-section">
                         <span class="umpire-label">
-                            Umpire: <span class="umpire-name">{{ match.umpire.name or 'To Be Assigned' }}</span>
+                            Umpire: 
+                            <span class="umpire-name">
+                                {{ match.umpire.username if match.umpire else 'To Be Assigned' }}
+                            </span>
                         </span>
-                        <!-- <button class="set-umpire-btn" data-match-id="{{ match['match_id'] }}">Assign Umpire</button> -->
-                    </div>      
+                        <button class="set-umpire-btn" data-match-id="{{ match.id }}">Assign Umpire</button>
+                    </div>
                 </div>
             </a>
         {% endfor %}
@@ -95,8 +98,13 @@ document.querySelectorAll('.status-badge').forEach(badge => {
             scoreElement.textContent = `${data.score1} : ${data.score2}`;
 
             // update umpire name
+            // const umpireNameElement = matchCard.querySelector('.umpire-name');
+            // umpireNameElement.textContent = `${data.umpire_name}`;
             const umpireNameElement = matchCard.querySelector('.umpire-name');
-            umpireNameElement.textContent = `${data.umpire_name}`;
+            console.log('umpire name: ', data.umpire_name);
+            if (umpireNameElement) {
+                umpireNameElement.textContent = data.umpire_name || 'To Be Assigned';
+            }
 
             // 修复1: 取消注释并更新状态徽章
             const statusBadge = matchCard.querySelector('.status-badge');
@@ -118,15 +126,6 @@ document.querySelectorAll('.status-badge').forEach(badge => {
             console.warn(`未找到 match_id 为 ${data.match_id} 的比赛卡片`);
         }
     });
-
-    // 處理比賽狀態更新事件（新增此監聽器）
-    // socket.on('match_status_update', (data) => {
-    //     console.log('收到狀態更新:', data);
-    //     // 僅更新當前比賽的狀態
-    //     if (data.match_id === currentMatchId) {
-    //         document.getElementById('match-status').textContent = data.match_status;
-    //     }
-    // });
 
     // 處理連接錯誤
     socket.on('connect_error', (err) => {

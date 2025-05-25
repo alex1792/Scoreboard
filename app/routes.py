@@ -33,7 +33,8 @@ def index():
             score1=match.score1,
             score2=match.score2,
             match_id=match.id,
-            match_status=match.status
+            match_status=match.status,
+            umpire_id=match.umpire_id 
         )
     else:
         return "No match found."
@@ -50,24 +51,38 @@ def update_score():
         player = request.form.get('player')
         score = int(request.form.get('score'))
         if player == 'Player1':
-            match.score1 = score
+            match.score1 += score
         else:
-            match.score2 = score
+            match.score2 += score
     elif action_type == 'change_status':
         new_status = request.form.get('new_status')
         match.status = new_status
 
     db.session.commit()
+    
+    print('\n\n\n')
+    print(match.score1)
+    print('\n\n\n')
 
     # 廣播分數
     data = {
         'match_id': str(match.id),
         'score1': match.score1,
         'score2': match.score2,
-        'match_status': match.status
+        'match_status': match.status,
+        'umpire_name': match.umpire.username
     }
-    socketio.emit('match_update', data, namespace='/scoreboard', room=None, include_self=True)
+    try:
+        print('emit data...')
+        print(socketio.emit('match_update', data, namespace='/scoreboard', room=None, include_self=True))
+    except:
+        print('\n\nemit error...\n\n')
     return redirect(url_for('scoreboard_blueprint.index'))
+
+@socketio.on('connect', namespace='/scoreboard')
+def scoreboard_connect():
+    print(f"Client connected to /scoreboard namespace: {request.sid}")
+
 
 @admin_blueprint.route('/admin', methods=['POST', 'GET'])
 def set_umpire():
@@ -151,7 +166,10 @@ def set_umpire(match_id):
     umpire = User.query.get(umpire_id)
     if match and umpire:
         match.umpire_id = umpire.id
+        umpire.role = 'umpire'
         db.session.commit()
+        
+        # broadcast update on umpire_name
         data = {
             'match_id': str(match.id),
             'score1': match.score1,

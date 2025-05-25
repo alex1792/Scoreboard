@@ -28,7 +28,7 @@ Scoreboard
         </div>
     </div>
 
-    {% if current_user.is_judge %}
+    {% if current_user.is_authenticated and current_user.id == umpire_id %}
     <!-- Buttons -->
     <div class="button-container">
         <!-- Player1 Buttons -->
@@ -87,6 +87,7 @@ Scoreboard
 {% endblock %}
 
 {% block scripts %}
+<script>console.log('jinja match_id:', "{{ match_id }}");</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
     // 連接到後端 Socket.IO 伺服器（假設後端運行在 5001 端口）
@@ -98,6 +99,7 @@ Scoreboard
 
     // 獲取當前比賽的 match_id（從模板變量注入）
     const currentMatchId = "{{ match_id }}";
+    console.log('match id: ', currentMatchId);
 
     // WebSocket 連接成功時觸發
     socket.on('connect', () => {

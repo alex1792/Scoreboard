@@ -15,7 +15,9 @@
     <section class="card">
       <h2>General Features</h2>
       <ul class="link-list">
-        <li><a href="{{ url_for('scoreboard_blueprint.index') }}">View Score Board</a></li>
+        {% if current_user.id == 1 or current_user.role == 'umpire' %}
+          <li><a href="{{ url_for('scoreboard_blueprint.index') }}">View Score Board</a></li>
+        {% endif %}
         <li><a href="{{ url_for('match_blueprint.query_matches') }}">Check All Matches</a></li>
       </ul>
     </section>

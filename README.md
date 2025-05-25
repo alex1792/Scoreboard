@@ -147,4 +147,6 @@ deactivate
 - Fixing previous bugs
 - Modified database tables structures and HTML code for better maintainance
 - Remove redundant codes
+- Issues to be resolved: assign user as umpire, need to update user.role ✅
+- Issues to be resolved: when updating score, all pages that have scores should update ✅
 ---
