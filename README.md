@@ -142,3 +142,9 @@ deactivate
 - Add the assign_umpire link to home page
 - still have bugs to be fixed. (assign umpires, etc)
 ---
+
+### 2025/05/24
+- Fixing previous bugs
+- Modified database tables structures and HTML code for better maintainance
+- Remove redundant codes
+---
