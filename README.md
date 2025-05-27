@@ -150,3 +150,7 @@ deactivate
 - Issues to be resolved: assign user as umpire, need to update user.role ✅
 - Issues to be resolved: when updating score, all pages that have scores should update ✅
 ---
+
+### 2025/05/26
+- Modified matches.html
+---
