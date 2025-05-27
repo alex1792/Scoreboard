@@ -59,10 +59,6 @@ def update_score():
         match.status = new_status
 
     db.session.commit()
-    
-    print('\n\n\n')
-    print(match.score1)
-    print('\n\n\n')
 
     # 廣播分數
     data = {
@@ -73,10 +69,10 @@ def update_score():
         'umpire_name': match.umpire.username
     }
     try:
-        print('emit data...')
-        print(socketio.emit('match_update', data, namespace='/scoreboard', room=None, include_self=True))
+        socketio.emit('match_update', data, namespace='/scoreboard', room=None, include_self=True)
     except:
         print('\n\nemit error...\n\n')
+    
     return redirect(url_for('scoreboard_blueprint.index'))
 
 @socketio.on('connect', namespace='/scoreboard')
