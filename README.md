@@ -1,11 +1,34 @@
 # Scoreboard
-Scoreboard project  
-I want to build a live scoreboard system for all kind of ball games. The umpire can 
-update the score by using smartphones or laptop, other users can check the live score by accessing 
-the scoreboard page.  
-  
-As for backend, the admin can manipulate users to be an umpire or not. Maintaining the 
-database etc.
+---
+
+## Project Overview
+
+- Provides real-time scoring, viewing, and management of games
+- Umpire can instantly update scores; all users can view the latest results
+- Admin can assign umpires and manage matches and users
+
+## Key Features
+
+- User login and registration
+- Real-time score update and viewing
+- Multi-match management and umpire assignment
+- Role-based access control (Admin / Umpire / User)
+- Match status management (Scheduled / Ongoing / Finished)
+
+## Tech Stack
+
+- **Backend:** Python Flask, SQLAlchemy, SQLite
+- **Frontend:** HTML, CSS, JavaScript
+- **Template Engine:** Jinja2
+- **Version Control:** Git
+
+## Highlights
+
+- Clear architecture with robust permission control
+- Supports multiple matches and collaborative management
+- Ongoing database and feature enhancement
+
+---
 
 ## introduction
 Homepage: Homepage with register and login function. When logged in, user can see more function. Guest can only access scoreboard.
