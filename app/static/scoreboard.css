@@ -1,119 +1,179 @@
-/* Enhanced scoreboard.css */
+/* 主容器美化 */
 .scoreboard-container {
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    margin: 2rem auto;
-    max-width: 800px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border: 1px solid #ddd; /* Subtle border for better definition */
+  background: #fff;
+  border-radius: 18px;
+  padding: 2.5rem 2rem;
+  margin: 2.5rem auto;
+  max-width: 600px;
+  box-shadow: 0 8px 32px rgba(44,62,80,0.13);
+  border: 1px solid #e0e6ed;
 }
 
-/* Match Info */
+/* 比賽資訊區塊 */
 .match-info {
-    text-align: center;
-    font-size: 1.2rem;
-    margin-bottom: 1.5rem;
-    color: #333; /* Consistent text color */
+  text-align: center;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #222;
+  background: #f6fafd;
+  border-radius: 12px;
+  padding: 1.2rem 0.5rem;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.06);
 }
-
 .match-info p {
-    margin: 0.5rem 0;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  letter-spacing: 1px;
 }
 
-/* Scores Section */
+/* 分數區塊：雙欄排版，名稱與分數明顯分隔 */
 .scores {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    font-size: 3rem;
-    margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 3rem;
+  margin: 2rem 0;
 }
-
 .score-container {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
-
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110px;
+  padding: 1.2rem 0.7rem;
+  border-radius: 16px;
+  background: #e3f2fd;
+  box-shadow: 0 2px 12px rgba(58,123,213,0.07);
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #1976d2;
+  position: relative;
+}
+.score::before {
+  content: attr(data-player);
+  display: block;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #3a7bd5;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
 .separator {
-    font-size: 2.5rem;
-    color: #555; /* Subtle separator color */
+  font-size: 2.5rem;
+  color: #bbb;
+  font-weight: bold;
 }
 
-/* Buttons Section */
+/* 按鈕區塊美化 */
 .button-container {
-    margin-top: 2rem;
+  margin-top: 2.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem;
 }
-
 .button-group {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+.button-group form {
+  display: inline-block;
 }
 
 .btn {
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+  padding: 0.7rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0.2rem 0;
+  transition: background 0.2s, transform 0.13s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.06);
 }
-
 .btn-add {
-    background-color: #4CAF50; /* Green for add */
-    color: white;
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  color: #fff;
 }
-
 .btn-add:hover {
-    background-color: #45a049; /* Darker green on hover */
-    transform: scale(1.05); /* Slightly enlarge button on hover */
+  background: linear-gradient(90deg, #34d36b 0%, #27e5c3 100%);
+  transform: scale(1.08);
 }
-
 .btn-minus {
-    background-color: #f44336; /* Red for minus */
-    color: white;
+  background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+  color: #fff;
 }
-
 .btn-minus:hover {
-    background-color: #e53935; /* Darker red on hover */
-    transform: scale(1.05); /* Slightly enlarge button on hover */
+  background: linear-gradient(90deg, #e05a84 0%, #eedd44 100%);
+  transform: scale(1.08);
 }
-
 .btn-status {
-    background-color: #2196F3; /* Blue for status button */
-    color: white;
+  background: #2196F3;
+  color: #fff;
+  padding: 0.9rem 2.5rem;
+  border-radius: 12px;
+  margin-top: 0.8rem;
+  font-size: 1.1rem;
 }
-
 .btn-status:hover {
-    background-color: #1976D2; /* Darker blue on hover */
+  background: #1976D2;
+  transform: scale(1.04);
 }
 
-/* Responsive Design */
+.match-status-container {
+  display: flex;
+  justify-content: center; /* 水平置中 */
+  align-items: center;     /* 垂直置中（可選） */
+  margin-top: 2rem;        /* 與上方區塊留白 */
+}
+
+
+/* Match Status 顏色提示 */
+#match-status {
+  font-weight: bold;
+  padding: 0.2em 0.8em;
+  border-radius: 6px;
+}
+#match-status:contains('ongoing') {
+  background: #e0f7fa;
+  color: #00796b;
+}
+#match-status:contains('finished') {
+  background: #ffe0e0;
+  color: #c62828;
+}
+
+/* 響應式設計 */
 @media (max-width: 768px) {
-    .scoreboard-container {
-        padding: 1rem;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        max-width: calc(100% - 2rem); /* Adjust width for smaller screens */
-        box-shadow: none; /* Simplify shadow for mobile devices */
-        border-radius: 5px; /* Reduce border radius for smaller screens */
-    }
-
-    .scores {
-        font-size: 2rem; /* Reduce font size on smaller screens */
-        flex-direction: column; /* Stack scores vertically */
-        gap: 1rem;
-        text-align: center; /* Center align scores */
-    }
-
-    .button-group {
-        flex-direction: column; /* Stack buttons vertically for mobile view */
-        gap: 0.5rem; /* Reduce gap between buttons on smaller screens */
-        align-items: center; /* Center align buttons */
-        width :100%
-        
-    }
+  .scoreboard-container {
+    padding: 1rem;
+    margin: 1rem 0;
+    max-width: 98vw;
+    border-radius: 8px;
+  }
+  .scores {
+    flex-direction: column;
+    gap: 1.2rem;
+    margin: 1rem 0;
+  }
+  .score-container {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .score {
+    min-width: 70px;
+    font-size: 2rem;
+    padding: 0.7rem 0.2rem;
+    border-radius: 8px;
+  }
+  .button-container {
+    gap: 1rem;
+    flex-direction: column;
+  }
 }

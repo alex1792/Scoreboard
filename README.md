@@ -153,4 +153,5 @@ deactivate
 
 ### 2025/05/26
 - Modified matches.html
+- Modified scoreboard.html, and scoreoard.css
 ---
