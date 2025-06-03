@@ -79,3 +79,84 @@ nav a:hover {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* 2025/05/30更新 */
+nav {
+  background: linear-gradient(90deg, #4CAF50, #2E7D32);
+  padding: 1.2rem 2rem;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+nav a:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.content {
+  background: #f9f9f9;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+}
+
+:root {
+  --primary: #4CAF50;
+  --primary-dark: #2E7D32;
+  --secondary: #2196F3;
+  --background: #f9f9f9;
+  --card-bg: #fff;
+  --text: #333;
+}
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: var(--background);
+  color: var(--text);
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+}
+
+.btn {
+  background: linear-gradient(90deg, #4CAF50, #2E7D32);
+  color: white;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 8px;
+  }
+  .card {
+    padding: 1rem;
+  }
+}
+
+

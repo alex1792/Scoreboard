@@ -67,7 +67,7 @@ ideas for current version adjustment：
     - __init__.py         # Initializes the app module
     - auth.py             # Handles authentication-related logic
     - blueprints.py       # Manages Flask blueprints
-    - db.py               # Database-related utilities and models
+    - models.py           # Database-related utilities and models
     - extensions.py       # Extensions used in the project (e.g., Flask extensions)
     - form.py             # Defines forms for user input
     - routes.py           # Defines application routes
@@ -178,3 +178,14 @@ deactivate
 - Modified matches.html
 - Modified scoreboard.html, and scoreoard.css
 ---
+
+### 2025/05/30
+- Modified frontend
+---
+
+
+### 2025/05/31
+- ideas: in all matches, add a attribute match_type {men single, men double, women single, women double, mix doble} and show it on the score card
+- ideas: for doubles, if player name is too long, use abbreviation
+- ideas: use Figma to design the frontend
+- ideas: use react frarme for the project
