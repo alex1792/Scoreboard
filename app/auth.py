@@ -1,92 +1,138 @@
-import functools
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
-from flask_login import login_user, logout_user, current_user
+from flask import Blueprint, request, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from .extensions import db  # 從 extensions.py 導入 SQLAlchemy 實例
-from .models import User, Player  # 導入 ORM 模型
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity
+)
+from .extensions import db
+from .models import User, Player
+import datetime  # 用於設定 JWT 過期時間
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+bp = Blueprint('auth', __name__, url_prefix='/api/auth')  # 加上 /api 前綴
 
-@bp.route('/register', methods=('GET', 'POST'))
+@bp.route('/register', methods=['POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        error = None
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-        if not username:
-            error = 'Username is required.'
-        elif not password:
-            error = 'Password is required.'
+    if not username or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Username and password are required."
+        }), 400
 
-        if error is None:
-            try:
-                # 使用 ORM 建立 User 和 Player
-                new_user = User(
-                    username=username,
-                    password=generate_password_hash(password),
-                    role='user'  # 新增角色欄位
-                )
-                db.session.add(new_user)
-                db.session.flush()  # 獲取自動生成的 user.id
+    # 檢查用戶名是否已存在
+    if User.query.filter_by(username=username).first():
+        return jsonify({
+            "status": "error",
+            "message": "Username already exists."
+        }), 409
 
-                new_player = Player(id=new_user.id, name=username)
-                db.session.add(new_player)
-                
-                db.session.commit()
-                return redirect(url_for("auth.login"))
+    try:
+        new_user = User(
+            username=username,
+            password=generate_password_hash(password),
+            role='user'
+        )
+        db.session.add(new_user)
+        db.session.flush()
 
-            except Exception as e:
-                db.session.rollback()
-                if 'UNIQUE constraint failed: users.username' in str(e):
-                    error = f"User {username} is already registered."
-                else:
-                    error = "Registration failed. Please try again."
+        new_player = Player(id=new_user.id, name=username)
+        db.session.add(new_player)
+        db.session.commit()
 
-        flash(error)
+        # 註冊後直接登入（可選）
+        access_token = create_access_token(identity={
+            "id": new_user.id,
+            "username": new_user.username,
+            "role": new_user.role
+        })
 
-    return render_template('auth/register.html')
+        return jsonify({
+            "status": "success",
+            "message": "User registered successfully.",
+            "data": {
+                "user": {
+                    "id": new_user.id,
+                    "username": new_user.username,
+                    "role": new_user.role
+                },
+                "access_token": access_token
+            }
+        }), 201
 
-@bp.route('/login', methods=('GET', 'POST'))
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": "Registration failed."
+        }), 500
+
+@bp.route('/login', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        error = None
-        
-        # 使用 ORM 查詢
-        user = User.query.filter_by(username=username).first()
+    print("\n---收到 /api/auth/login 請求---")  # 強制換行方便識別
+    print("請求方法:", request.method)
+    print("請求 headers:\n", request.headers)
+    print("原始請求 body (request.data):", request.data)
+    print("解析後的 JSON (request.get_json()):", request.get_json())
+    
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-        if user is None:
-            error = 'Incorrect username.'
-        elif not check_password_hash(user.password, password):
-            error = 'Incorrect password.'
+    print('\n\n\n\n')
+    print(data)
+    print(username)
+    print(password)
+    print('\n\n\n\n')
 
-        if error is None:
-            login_user(user)  # 直接傳入 ORM 物件
-            return redirect(url_for('home_blueprint.home'))
+    user = User.query.filter_by(username=username).first()
 
-        flash(error)
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid username or password."
+        }), 401
 
-    return render_template('auth/login.html')
+    # 生成 JWT Token（有效期 7 天）
+    access_token = create_access_token(
+        identity={
+            "id": user.id,
+            "username": user.username,
+            "role": user.role
+        },
+        expires_delta=datetime.timedelta(days=7)
+    )
 
-@bp.before_app_request
-def load_logged_in_user():
-    # Flask-Login 已自動處理 current_user
-    # 此函式可移除或用於其他用途
-    pass
+    return jsonify({
+        "status": "success",
+        "message": "Login successful.",
+        "data": {
+            "access_token": access_token,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "role": user.role
+            }
+        }
+    }), 200
 
-@bp.route('/logout')
+@bp.route('/logout', methods=['POST'])
+@jwt_required()
 def logout():
-    logout_user()
-    return redirect(url_for('home_blueprint.home'))
+    # JWT 是無狀態的，前端只需刪除 token 即可
+    return jsonify({
+        "status": "success",
+        "message": "Successfully logged out."
+    }), 200
 
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if not current_user.is_authenticated:
-            return redirect(url_for('auth.login'))
-        return view(**kwargs)
-    return wrapped_view
+@bp.route('/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    current_user = get_jwt_identity()
+    return jsonify({
+        "status": "success",
+        "data": current_user
+    }), 200

@@ -189,3 +189,12 @@ deactivate
 - ideas: for doubles, if player name is too long, use abbreviation
 - ideas: use Figma to design the frontend
 - ideas: use react frarme for the project
+---
+
+### 2025/06/03
+- Introduce REACT frame to the project
+- Frontend and Backend are separated
+- Not every page is correctly addapted to the REACT frame
+- Login info received, but not updating the frontend page
+- The rest of the page is not tested yet
+---
