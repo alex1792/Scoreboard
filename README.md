@@ -216,12 +216,12 @@ deactivate
 ### 2025/06/11
 - Add missing link: AssignUmpire, ManageMatch, CreateMatch, AssignUmpire
 - Backend Functions to be implemented: ManageMatch
-- Note: The 'Websocket is closed before the connection is etablished' warning message is generated 
-  from React server. 
-  
-  Since React server has a default hot-reload mechanism, it will establish a websocket at localhost:3000 to monitor file changes. 
+- Note: The 'Websocket is closed before the connection is etablished' warning message is generated from React server.   
+- Since React server has a default hot-reload mechanism, it will establish a websocket at localhost:3000 to monitor file changes.   
 
-  This connection may be temporarily disconnected due to browser refresh, network latency, or other reasons, causing you to see this warning.
 
-  This warning message will not affect your socket.io service, as well as the functionality provided in the page.
+- This connection may be temporarily disconnected due to browser refresh, network latency, or other reasons, causing you to see this warning.  
+
+
+- This warning message will not affect your socket.io service, as well as the functionality provided in the page.
 ---
