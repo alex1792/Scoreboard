@@ -198,3 +198,16 @@ deactivate
 - Login info received, but not updating the frontend page
 - The rest of the page is not tested yet
 ---
+
+### 2025/06/09
+- ScoreboarPage.jsx implemented
+- To be fix: umpire updating score still return 422, "subject must be a string"
+---
+
+### 2025/06/10
+- Fix login and logout in BaseLayout.jsx
+- Fix Check All Users page
+- When return 422 "Subject must be a string", check the token, make sure when
+  you creating the token, it must be a string. create_access_token(identity=str(user.id))
+- To be fixed: Update Score via socketio.emit()
+---

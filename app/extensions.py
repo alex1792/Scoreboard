@@ -9,7 +9,11 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 
 # used for broadcasting updated scores
-socketio = SocketIO()
+# socketio = SocketIO(cors_allowed_origins="*")
+socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+
+def init_socketio(app):
+    socketio.init_app(app)  # 綁定到 Flask app
 
 # JWT
 jwt = JWTManager()

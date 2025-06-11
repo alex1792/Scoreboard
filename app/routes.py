@@ -8,7 +8,16 @@ from .blueprints import (
 from .extensions import socketio
 from .models import Match, db, User
 
-# ================== 通用工具函數 ==================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===================================== general function ========================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
 def get_match_data(match):
     return {
         "id": match.id,
@@ -17,59 +26,40 @@ def get_match_data(match):
         "score1": match.score1,
         "score2": match.score2,
         "status": match.status,
-        "umpire": match.umpire.username if match.umpire else "N/A"
+        "umpire": match.umpire.username if match.umpire else "N/A",
+        "umpire_id": match.umpire.id if match.umpire else None
     }
 
-# ================== 首頁路由 ==================
-@home_blueprint.route('/api/home')
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ======================================= home blueprint ========================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+@home_blueprint.route('/')
 def home():
     return jsonify({"status": "success", "message": "Welcome to Scoreboard API"})
 
-# ================== 比分板路由 ==================
-@scoreboard_blueprint.route('/api/scoreboard')
-def get_scoreboard():
-    match = Match.query.order_by(Match.id.desc()).first()
-    if not match:
-        return jsonify({"status": "error", "message": "No match found"}), 404
-    return jsonify({"status": "success", "data": get_match_data(match)})
-
-@scoreboard_blueprint.route('/api/scoreboard/update', methods=['POST'])
-@jwt_required()
-def update_score():
-    current_user = get_jwt_identity()
-    if current_user['role'] not in ['umpire', 'admin']:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
-
-    data = request.get_json()
-    action_type = data.get('action_type')
-    
-    match = Match.query.order_by(Match.id.desc()).first()
-    if not match:
-        return jsonify({"status": "error", "message": "No active match"}), 404
-
-    if action_type == 'update_score':
-        player = data.get('player')
-        score = int(data.get('score'))
-        if player == 'Player1':
-            match.score1 += score
-        else:
-            match.score2 += score
-    elif action_type == 'change_status':
-        match.status = data.get('new_status')
-
-    db.session.commit()
-
-    # Socket.IO 廣播
-    socketio.emit('match_update', get_match_data(match), namespace='/scoreboard')
-    
-    return jsonify({"status": "success", "data": get_match_data(match)})
-
-# ================== 管理員路由 ==================
-@admin_blueprint.route('/api/admin/users/<username>', methods=['PUT'])
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ======================================= admin_blueprint =======================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+@admin_blueprint.route('/users/<username>', methods=['PUT'])
 @jwt_required()
 def update_user_role(username):
-    current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user or current_user.role != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
     data = request.get_json()
@@ -87,20 +77,69 @@ def update_user_role(username):
 
     return jsonify({"status": "success", "data": user.serialize()})
 
-# ================== 比賽管理路由 ==================
-@match_blueprint.route('/api/matches')
-def get_all_matches():
-    matches = Match.query.all()
+# check all users
+@admin_blueprint.route('/users', methods=['GET'])
+@jwt_required()
+def get_all_users():
+    # 檢查當前用戶是否是 admin
+    print('\n\nget_all_users called\n\n')
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user or current_user.role != 'admin':
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
+
+    users = User.query.all()
+    users_data = [
+        {
+            "id": user.id,
+            "username": user.username,
+            "is_judge": user.is_judge,
+            "role": user.role
+        }
+        for user in users
+    ]
     return jsonify({
         "status": "success",
-        "data": [get_match_data(match) for match in matches]
+        "data": users_data
     })
 
-@create_match_blueprint.route('/api/matches', methods=['POST'])
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ======================================= match blueprint =======================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# ===============================================================================================
+# query all matches fron database, and return as a list. Frontend will use this to display all
+# matches
+@match_blueprint.route('/')
+def get_all_matches():
+    matches = Match.query.all()
+    data_list = [get_match_data(match) for match in matches]
+    return jsonify({
+        "status": "success",
+        "data": data_list
+    })
+
+# WebSocket events for scoreboard updates
+@socketio.on('connect', namespace='/scoreboard')
+def handle_connect():
+    print("[WebSocket] Client connected to /scoreboard namespace")
+
+@socketio.on('disconnect', namespace='/scoreboard')
+def handle_disconnect():
+    print("[WebSocket] Client disconnected from /scoreboard namespace")
+
+# create a new match
+@match_blueprint.route('/', methods=['POST'])
 @jwt_required()
 def create_match():
-    current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user or current_user.role != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
     data = request.get_json()
@@ -124,11 +163,12 @@ def create_match():
     }), 201
 
 # ================== 裁判分配路由 ==================
-@assign_umpire_blueprint.route('/api/matches/<int:match_id>/umpire', methods=['PUT'])
+@match_blueprint.route('/<int:match_id>/umpire', methods=['PUT'])
 @jwt_required()
 def assign_umpire(match_id):
-    current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user or current_user.role != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
     data = request.get_json()
@@ -142,3 +182,55 @@ def assign_umpire(match_id):
     db.session.commit()
 
     socketio.emit('match_update', get_match_data(match), namespace='/scoreboard')
+
+# ================== return umpire's match id ==================
+@match_blueprint.route('/umpire/<int:umpire_id>', methods=['GET'])
+def get_match_by_umpire(umpire_id):
+    # 假設一位裁判同時只負責一場比賽，且 status 為 ongoing
+    match = Match.query.filter_by(umpire_id=umpire_id, status='ongoing').first()
+    if not match:
+        return jsonify({"status": "error", "message": "No match found for this umpire"}), 404
+    return jsonify({"status": "success", "data": {"id": match.id}})
+
+
+@match_blueprint.route('/<int:match_id>', methods=['GET'])
+def get_match_scoreboard(match_id):
+    match = Match.query.get(match_id)
+    if not match:
+        return jsonify({"status": "error", "message": "No match found"}), 404
+    return jsonify({"status": "success", "data": get_match_data(match)})
+
+@match_blueprint.route('/<int:match_id>/score', methods=['POST'])
+@jwt_required()
+def update_score(match_id):
+    print(f'\n\nUpdating score for Match ID: {match_id}\n')
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user or current_user.role not in ['umpire', 'admin']:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
+
+    data = request.get_json()
+    action_type = data.get('action_type')
+
+    print(data)
+    
+    match = Match.query.get(match_id)
+    if not match:
+        return jsonify({"status": "error", "message": "No active match"}), 404
+
+    if action_type == 'update_score':
+        player = data.get('player')
+        score = int(data.get('score'))
+        if player == 'Player1':
+            match.score1 += score
+        else:
+            match.score2 += score
+    elif action_type == 'change_status':
+        match.status = data.get('new_status')
+
+    db.session.commit()
+
+    # Socket.IO 廣播
+    socketio.emit('match_update', get_match_data(match), namespace='/scoreboard')
+    
+    return jsonify({"status": "success", "data": get_match_data(match)})

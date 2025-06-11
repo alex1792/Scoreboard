@@ -10,11 +10,8 @@ const BaseLayout = ({ currentUser }) => {
         <ul>
           <li><Link to="/scoreboard">Score Board</Link></li>
           <li><Link to="/matches">Matches</Link></li>
-          {currentUser?.isAuthenticated ? (
+          {currentUser && currentUser.username ? (
             <>
-              {currentUser.username === 'alex' && (
-                <li><Link to="/admin/set-umpire">Manage Umpires</Link></li>
-              )}
               <li><span>Welcome, {currentUser.username}</span></li>
               <li><Link to="/logout">Logout</Link></li>
             </>

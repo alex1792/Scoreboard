@@ -43,12 +43,12 @@ def register():
         db.session.add(new_player)
         db.session.commit()
 
-        # 註冊後直接登入（可選）
-        access_token = create_access_token(identity={
-            "id": new_user.id,
-            "username": new_user.username,
-            "role": new_user.role
-        })
+        # 生成 JWT Token（有效期 7 天）
+        print('產生 token 時 identity: ', new_user.id, type(new_user.id))
+        access_token = create_access_token(
+        identity=str(new_user.id),
+            expires_delta=datetime.timedelta(days=7)
+        )
 
         return jsonify({
             "status": "success",
@@ -72,22 +72,12 @@ def register():
 
 @bp.route('/login', methods=['POST'])
 def login():
-    print("\n---收到 /api/auth/login 請求---")  # 強制換行方便識別
-    print("請求方法:", request.method)
-    print("請求 headers:\n", request.headers)
-    print("原始請求 body (request.data):", request.data)
-    print("解析後的 JSON (request.get_json()):", request.get_json())
-    
+    # get username and password from frontend
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
 
-    print('\n\n\n\n')
-    print(data)
-    print(username)
-    print(password)
-    print('\n\n\n\n')
-
+    # serch user in database by username
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password_hash(user.password, password):
@@ -96,26 +86,19 @@ def login():
             "message": "Invalid username or password."
         }), 401
 
-    # 生成 JWT Token（有效期 7 天）
+    # generate JWT Token（valid in 7 days）
     access_token = create_access_token(
-        identity={
-            "id": user.id,
-            "username": user.username,
-            "role": user.role
-        },
+        identity=str(user.id),
         expires_delta=datetime.timedelta(days=7)
     )
+    
 
     return jsonify({
         "status": "success",
         "message": "Login successful.",
         "data": {
             "access_token": access_token,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "role": user.role
-            }
+            "user": user.serialize()
         }
     }), 200
 
@@ -131,8 +114,11 @@ def logout():
 @bp.route('/me', methods=['GET'])
 @jwt_required()
 def get_current_user():
-    current_user = get_jwt_identity()
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
     return jsonify({
         "status": "success",
-        "data": current_user
+        "data": user.serialize()
     }), 200

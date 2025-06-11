@@ -1,23 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { useParams } from 'react-router-dom';
+import { AuthContext } from './AuthContext'; 
 import io from 'socket.io-client';
 import './scoreboard.css'; // 假設 CSS 放在同目錄下
-import BaseLayout from './BaseLayout';
+// import BaseLayout from './BaseLayout';
 
-const Scoreboard = ({
-  player1Name,
-  player2Name,
-  score1: initialScore1,
-  score2: initialScore2,
-  matchStatus: initialStatus,
-  matchId,
-  currentUser,
-  umpireId,
-}) => {
-  const [score1, setScore1] = useState(initialScore1);
-  const [score2, setScore2] = useState(initialScore2);
-  const [matchStatus, setMatchStatus] = useState(initialStatus);
+const Scoreboard = ({currentUser}) => {
+
+  // parent conponent沒有pass scoreboard的資料 所以這裡要再fetch一次
+  const { matchId } = useParams();
+  const [player1Name, setPlayer1Name] = useState('');
+  const [player2Name, setPlayer2Name] = useState('');
+  const [score1, setScore1] = useState(0);
+  const [score2, setScore2] = useState(0);
+  const [matchStatus, setMatchStatus] = useState('');
+  const [umpireId, setUmpireId] = useState('');
+  // const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
+    // get match data from backend
+    // console.log('matchId: ', matchId);
+    // console.log('Type of matchId: ', typeof(matchId));
+    fetch(`http://localhost:5001/api/matches/${matchId}`)
+    .then(res => {
+      if (!res.ok) {
+        // 印出錯誤訊息與回傳內容
+        res.text().then(text => {
+          console.error('Fetch failed, status:', res.status, 'body:', text);
+        });
+        throw new Error('Network response was not ok');
+      }
+      return res.json();
+    })
+    .then(result => {
+      if (result.status === 'success') {
+        setPlayer1Name(result.data.player1);
+        setPlayer2Name(result.data.player2);
+        setScore1(result.data.score1);
+        setScore2(result.data.score2);
+        setMatchStatus(result.data.status);
+        setUmpireId(result.data.umpire_id);
+
+        // 新增這行檢查
+        console.log('載入比賽資料：', {
+          currentUser,
+          umpireId: result.data.umpire_id,
+          canUpdate: currentUser && Number(currentUser.id) === Number(result.data.umpire_id)
+        });
+      }
+    })
+    .catch(err => {
+      console.error('Fetch error:', err);
+      // console.error('可能是 matchId 錯誤或後端 API 問題');
+    });
+    
+    // console.log('Fetched umpire ID: ', result.data.umpire_id);
+    
     const socket = io('http://127.0.0.1:5001/scoreboard', {
       transports: ['websocket'],
       reconnection: true,
@@ -25,12 +63,12 @@ const Scoreboard = ({
     });
 
     socket.on('connect', () => {
-      console.log('WebSocket 已連接！Socket ID:', socket.id);
+      // console.log('WebSocket 已連接！Socket ID:', socket.id);
     });
 
     socket.on('match_update', (data) => {
       console.log('收到分數更新:', data);
-      if (data.match_id === matchId) {
+      if (data.id === matchId) {
         setScore1(data.score1);
         setScore2(data.score2);
         setMatchStatus(data.match_status);
@@ -47,33 +85,83 @@ const Scoreboard = ({
     };
   }, [matchId]);
 
+
   const handleScoreChange = async (player, delta) => {
-    await fetch('/update_score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        action_type: 'update_score',
-        player,
-        score: delta,
-        match_id: matchId,
-      }),
-    });
+    const token = localStorage.getItem('access_token');
+    console.log('開始更新分數：', { player, delta });
+    console.log('使用的 token：', token);
+    
+    if (!token) {
+      alert('尚未登入或 token 遺失，請重新登入');
+      return;
+    }
+
+    try {
+      // 印出完整請求資訊
+      const requestInfo = {
+        url: `http://localhost:5001/api/matches/${Number(matchId)}/score`,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: {
+          action_type: 'update_score',
+          player,
+          score: delta
+        }
+      };
+      console.log('請求資訊：', requestInfo);
+
+      const res = await fetch(requestInfo.url, {
+        method: 'POST',
+        headers: requestInfo.headers,
+        body: JSON.stringify(requestInfo.body)
+      });
+
+      const data = await res.json();
+      console.log('回應狀態：', res.status);
+      console.log('回應內容：', data);
+
+      if (!res.ok) {
+        alert(`更新失敗: ${data.message || res.status}`);
+      }
+    } catch (err) {
+      console.error('完整錯誤：', err);
+      alert('網路錯誤，請稍後再試');
+    }
   };
 
   const handleStatusToggle = async () => {
-    await fetch('/update_score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        action_type: 'change_status',
-        match_id: matchId,
-        new_status: matchStatus === 'ongoing' ? 'finished' : 'ongoing',
-      }),
-    });
+    const token = localStorage.getItem('access_token');
+    try {
+      const res = await fetch(`http://localhost:5001/api/matches/${matchId}/score`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action_type: 'change_status',
+          new_status: matchStatus === 'ongoing' ? 'finished' : 'ongoing'
+        }),
+      });
+      
+      const data = await res.json();
+      console.log('狀態更新回應：', data);
+      
+      if (!res.ok) {
+        alert(`狀態更新失敗: ${data.message || res.status}`);
+      }
+    } catch (err) {
+      console.error('狀態更新錯誤：', err);
+      alert('網路錯誤，請稍後再試');
+    }
   };
 
+// console.log('currentUser:', currentUser, 'umpireId:', umpireId);
+
   return (
-    <BaseLayout>
+    <>
       <div className="scoreboard-container">
         {/* Match Info */}
         <div className="match-info">
@@ -96,7 +184,7 @@ const Scoreboard = ({
         </div>
 
         {/* Umpire Controls */}
-        {currentUser?.is_authenticated && currentUser.id === umpireId && (
+        {currentUser && Number(currentUser.id) === Number(umpireId) && (
           <>
             <div className="button-container">
               <div className="button-group">
@@ -126,7 +214,7 @@ const Scoreboard = ({
           </>
         )}
       </div>
-    </BaseLayout>
+    </>
   );
 };
 

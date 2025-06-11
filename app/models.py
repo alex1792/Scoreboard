@@ -11,6 +11,14 @@ class User(UserMixin, db.Model):
 
     def has_role(self, role_name):
         return self.role == role_name
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "role": self.role
+            # 你可以根據需要加其他欄位
+        }
 
 class Player(db.Model):
     __tablename__ = 'players'
