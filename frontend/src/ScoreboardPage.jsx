@@ -2,11 +2,10 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from './AuthContext'; 
 import io from 'socket.io-client';
-import './scoreboard.css'; // 假設 CSS 放在同目錄下
+import './scoreboard.css';
 // import BaseLayout from './BaseLayout';
 
 const Scoreboard = ({currentUser}) => {
-
   // parent conponent沒有pass scoreboard的資料 所以這裡要再fetch一次
   const { matchId } = useParams();
   const [player1Name, setPlayer1Name] = useState('');
@@ -15,66 +14,44 @@ const Scoreboard = ({currentUser}) => {
   const [score2, setScore2] = useState(0);
   const [matchStatus, setMatchStatus] = useState('');
   const [umpireId, setUmpireId] = useState('');
-  // const { currentUser } = useContext(AuthContext);
 
+  // 1. Fetch match data from backend API
   useEffect(() => {
-    // get match data from backend
-    // console.log('matchId: ', matchId);
-    // console.log('Type of matchId: ', typeof(matchId));
     fetch(`http://localhost:5001/api/matches/${matchId}`)
-    .then(res => {
-      if (!res.ok) {
-        // 印出錯誤訊息與回傳內容
-        res.text().then(text => {
-          console.error('Fetch failed, status:', res.status, 'body:', text);
-        });
-        throw new Error('Network response was not ok');
-      }
-      return res.json();
-    })
-    .then(result => {
-      if (result.status === 'success') {
-        setPlayer1Name(result.data.player1);
-        setPlayer2Name(result.data.player2);
-        setScore1(result.data.score1);
-        setScore2(result.data.score2);
-        setMatchStatus(result.data.status);
-        setUmpireId(result.data.umpire_id);
+      .then(res => res.json())
+      .then(result => {
+        if (result.status === 'success') {
+          setPlayer1Name(result.data.player1);
+          setPlayer2Name(result.data.player2);
+          setScore1(result.data.score1);
+          setScore2(result.data.score2);
+          setMatchStatus(result.data.status);
+          setUmpireId(result.data.umpire_id);
+        }
+      });
+  }, [matchId]);
 
-        // 新增這行檢查
-        console.log('載入比賽資料：', {
-          currentUser,
-          umpireId: result.data.umpire_id,
-          canUpdate: currentUser && Number(currentUser.id) === Number(result.data.umpire_id)
-        });
-      }
-    })
-    .catch(err => {
-      console.error('Fetch error:', err);
-      // console.error('可能是 matchId 錯誤或後端 API 問題');
-    });
-    
-    // console.log('Fetched umpire ID: ', result.data.umpire_id);
-    
+  // 2. socket.io listner for score updates
+  useEffect(() => {
+    // create a new socket connection
     const socket = io('http://127.0.0.1:5001/scoreboard', {
       transports: ['websocket'],
       reconnection: true,
       reconnectionDelay: 3000,
     });
 
-    socket.on('connect', () => {
-      // console.log('WebSocket 已連接！Socket ID:', socket.id);
-    });
-
+    // listen for match updates
     socket.on('match_update', (data) => {
-      console.log('收到分數更新:', data);
-      if (data.id === matchId) {
+      console.log('Receive score update:', data);
+      // when checking data.id and matchId, make sure to convert them to numbers
+      if (Number(data.id) === Number(matchId)) {
         setScore1(data.score1);
         setScore2(data.score2);
         setMatchStatus(data.match_status);
       }
     });
 
+    // handle connection error
     socket.on('connect_error', (err) => {
       console.error('連接錯誤:', err.message);
       setTimeout(() => socket.connect(), 5000);
@@ -88,16 +65,16 @@ const Scoreboard = ({currentUser}) => {
 
   const handleScoreChange = async (player, delta) => {
     const token = localStorage.getItem('access_token');
-    console.log('開始更新分數：', { player, delta });
-    console.log('使用的 token：', token);
     
+    // check if user is logged in or not, if not, alert user to login 
     if (!token) {
-      alert('尚未登入或 token 遺失，請重新登入');
+      alert('not logged in or token is lost, please login again');
       return;
     }
 
+    // At this point, user is logged in, so we can proceed to update score
     try {
-      // 印出完整請求資訊
+      // request info
       const requestInfo = {
         url: `http://localhost:5001/api/matches/${Number(matchId)}/score`,
         headers: { 
@@ -110,7 +87,6 @@ const Scoreboard = ({currentUser}) => {
           score: delta
         }
       };
-      console.log('請求資訊：', requestInfo);
 
       const res = await fetch(requestInfo.url, {
         method: 'POST',
@@ -119,15 +95,13 @@ const Scoreboard = ({currentUser}) => {
       });
 
       const data = await res.json();
-      console.log('回應狀態：', res.status);
-      console.log('回應內容：', data);
 
       if (!res.ok) {
-        alert(`更新失敗: ${data.message || res.status}`);
+        alert(`update failed: ${data.message || res.status}`);
       }
     } catch (err) {
-      console.error('完整錯誤：', err);
-      alert('網路錯誤，請稍後再試');
+      console.error('error：', err);
+      alert('connection error, please try again later');
     }
   };
 
