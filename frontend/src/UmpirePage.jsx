@@ -3,9 +3,9 @@ import BaseLayout from './BaseLayout'; // 假設你有 base layout 共用結構
 
 const Umpire = () => {
   return (
-    <BaseLayout>
+    // <BaseLayout>
       <h1>Umpire</h1>
-    </BaseLayout>
+    // </BaseLayout>
   );
 };
 

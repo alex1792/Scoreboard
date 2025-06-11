@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { data } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import io from 'socket.io-client';
 import './matches.css';

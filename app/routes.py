@@ -23,6 +23,8 @@ def get_match_data(match):
         "id": match.id,
         "player1": match.player1.name if match.player1 else "N/A",
         "player2": match.player2.name if match.player2 else "N/A",
+        "player1_id": match.player1.id if match.player1 else None,
+        "player2_id": match.player2.id if match.player2 else None,
         "score1": match.score1,
         "score2": match.score2,
         "status": match.status,
@@ -81,8 +83,6 @@ def update_user_role(username):
 @admin_blueprint.route('/users', methods=['GET'])
 @jwt_required()
 def get_all_users():
-    # 檢查當前用戶是否是 admin
-    print('\n\nget_all_users called\n\n')
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     if not current_user or current_user.role != 'admin':
@@ -134,17 +134,18 @@ def handle_disconnect():
     print("[WebSocket] Client disconnected from /scoreboard namespace")
 
 # create a new match
-@match_blueprint.route('/', methods=['POST'])
+@match_blueprint.route('/create_match', methods=['POST'])
 @jwt_required()
 def create_match():
+    print('\n\nCreate Match Function Called\n')
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     if not current_user or current_user.role != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
     data = request.get_json()
-    player1 = User.query.filter_by(username=data['player1']).first()
-    player2 = User.query.filter_by(username=data['player2']).first()
+    player1 = User.query.filter_by(username=data['player1_username']).first()
+    player2 = User.query.filter_by(username=data['player2_username']).first()
 
     if not all([player1, player2]):
         return jsonify({"status": "error", "message": "Players not found"}), 404

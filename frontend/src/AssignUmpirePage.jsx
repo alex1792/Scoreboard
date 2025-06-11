@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './matches.css'; // 假設 CSS 放這裡
+import './matches.css'; 
 import io from 'socket.io-client';
 
 const MatchCard = ({ match, onAssignUmpire }) => {
@@ -16,12 +16,12 @@ const MatchCard = ({ match, onAssignUmpire }) => {
       <div className="match-id">#{match.id}</div>
       <div className="players">
         <div className="player">
-          <div className="player-name">{match.player1.name}</div>
+          <div className="player-name">{match.player1}</div>
           <small>ID: {match.player1_id}</small>
         </div>
         <div className="vs">vs</div>
         <div className="player">
-          <div className="player-name">{match.player2.name}</div>
+          <div className="player-name">{match.player2}</div>
           <small>ID: {match.player2_id}</small>
         </div>
       </div>
@@ -37,7 +37,7 @@ const MatchCard = ({ match, onAssignUmpire }) => {
 
       <div className="umpire-section">
         <span className="umpire-label">
-          Umpire: <span className="umpire-name">{match.umpire ? match.umpire.username : 'To Be Assigned'}</span>
+          Umpire: <span className="umpire-name">{match.umpire ? match.umpire : 'To Be Assigned'}</span>
         </span>
         <button className="set-umpire-btn" onClick={() => onAssignUmpire(match.id)}>Assign Umpire</button>
       </div>
@@ -45,9 +45,23 @@ const MatchCard = ({ match, onAssignUmpire }) => {
   );
 };
 
-const MatchesPage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/scoreboard' }) => {
+const AssignUmpirePage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/scoreboard' }) => {
   const [matches, setMatches] = useState(initialMatches);
 
+  // fetch matches data from backend
+  useEffect(() => {
+      fetch('http://localhost:5001/api/matches')
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          console.log('Fetched matches:', data.data);
+          setMatches(data.data);
+        }
+      })
+      .catch(err => console.error('獲取賽事失敗:', err));
+    }, []);
+  
+  // Websocket listener for match updates
   useEffect(() => {
     const socket = io(socketUrl, {
       transports: ['websocket'],
@@ -68,7 +82,7 @@ const MatchesPage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/s
                 score1: data.score1,
                 score2: data.score2,
                 status: data.match_status,
-                umpire: { username: data.umpire_name }
+                umpire: { username: data.umpire }
               }
             : match
         )
@@ -89,20 +103,40 @@ const MatchesPage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/s
     if (!umpireId || umpireId.trim() === '') return;
 
     try {
-      const response = await fetch(`/assign_umpire/${matchId}`, {
+      // get token from loca storage
+      const token = localStorage.getItem('access_token');
+      
+      // prepare the request info
+      const requestInfo = {
+        url: `http://localhost:5001/api/matches/${matchId}/umpire`,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+         },
+        body: JSON.stringify({ umpire_id: umpireId })
+      }
+      
+      // make the POST request to backend
+      const response = await fetch(requestInfo.url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ umpire_id: umpireId })
+        headers: requestInfo.headers,
+        body: requestInfo.body
       });
+
+      // extract the response data recieved from backend
+      // const data = await response.json();
+      // console.log('Assign Umpire Request:', requestInfo);
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Assign Umpire Response:', data);
+        console.log('Assign Umpire Success:', data.umpire);
         setMatches(prevMatches =>
           prevMatches.map(match =>
             match.id === matchId
               ? {
                   ...match,
-                  umpire: { username: data.umpire_name }
+                  umpire: data.data.umpire
                 }
               : match
           )
@@ -116,7 +150,7 @@ const MatchesPage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/s
   };
 
   return (
-    <BaseLayout>
+    <>
       <div className="container">
         <h1 className="page-title">All Matches</h1>
         <div className="matches-grid">
@@ -125,8 +159,8 @@ const MatchesPage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/s
           ))}
         </div>
       </div>
-    </BaseLayout>
+    </>
   );
 };
 
-export default MatchesPage;
+export default AssignUmpirePage;
