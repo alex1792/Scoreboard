@@ -8,7 +8,7 @@ function LoginPage({ setCurrentUser, currentUser}) {
 
   const handleLogin = (user) => {
     setCurrentUser(user); // 更新 currentUser
-    console.log("login successfully, user info:", user);
+    // console.log("login successfully, user info:", user);
     navigate('/');
   };
 

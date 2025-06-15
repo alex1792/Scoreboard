@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { AuthContext } from './AuthContext'; 
 import io from 'socket.io-client';
 import './scoreboard.css';
-// import BaseLayout from './BaseLayout';
 
 const Scoreboard = ({currentUser}) => {
   // parent conponent沒有pass scoreboard的資料 所以這裡要再fetch一次
@@ -42,12 +40,12 @@ const Scoreboard = ({currentUser}) => {
 
     // listen for match updates
     socket.on('match_update', (data) => {
-      console.log('Receive score update:', data);
+      // console.log('Receive score update:', data);
       // when checking data.id and matchId, make sure to convert them to numbers
       if (Number(data.id) === Number(matchId)) {
         setScore1(data.score1);
         setScore2(data.score2);
-        setMatchStatus(data.match_status);
+        setMatchStatus(data.status);
       }
     });
 
@@ -105,8 +103,16 @@ const Scoreboard = ({currentUser}) => {
     }
   };
 
+  const getNextStatus = (current) => {
+    if(current === "Scheduled") return "Ongoing";
+    if(current === "Ongoing") return "Finished";
+    if(current === "Finished") return "Scheduled";
+    return "Ongoing";
+  };
+
   const handleStatusToggle = async () => {
     const token = localStorage.getItem('access_token');
+    const nextStatus = getNextStatus(matchStatus);
     try {
       const res = await fetch(`http://localhost:5001/api/matches/${matchId}/score`, {
         method: 'POST',
@@ -116,15 +122,17 @@ const Scoreboard = ({currentUser}) => {
         },
         body: JSON.stringify({
           action_type: 'change_status',
-          new_status: matchStatus === 'ongoing' ? 'finished' : 'ongoing'
+          new_status: nextStatus
         }),
       });
       
       const data = await res.json();
-      console.log('狀態更新回應：', data);
+      // console.log('狀態更新回應：', data);
       
       if (!res.ok) {
         alert(`狀態更新失敗: ${data.message || res.status}`);
+      } else {
+        setMatchStatus(nextStatus);
       }
     } catch (err) {
       console.error('狀態更新錯誤：', err);
@@ -182,7 +190,9 @@ const Scoreboard = ({currentUser}) => {
 
             <div className="match-status-container">
               <button className="btn btn-status" onClick={handleStatusToggle}>
-                {matchStatus === 'ongoing' ? 'End Match' : 'Start Match'}
+                {matchStatus === 'Scheduled' && 'Start Match'}
+                {matchStatus === 'Ongoing' && 'End Match'}
+                {matchStatus === 'Finished' && 'Restart Match'}
               </button>
             </div>
           </>

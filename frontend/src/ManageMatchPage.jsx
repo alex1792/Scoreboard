@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import BaseLayout from './BaseLayout';
+import { useState } from 'react';
 
 const ManageMatch = () => {
   const [matchId, setMatchId] = useState('');
@@ -28,8 +27,12 @@ const ManageMatch = () => {
   const handleClearAll = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/clear_all_match', {
-        method: 'POST'
+      const response = await fetch('http://localhost:5001/api/matches/clear_all_match', {
+        method: 'POST', 
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {

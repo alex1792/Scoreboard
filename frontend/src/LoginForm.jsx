@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function LoginForm({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -17,7 +17,7 @@ function LoginForm({ onLogin }) {
       const data = await response.json();
       if (data.status === 'success') {
         // 登入成功，處理 token 和 user 資訊
-        console.log("登入成功:", data);
+        // console.log("登入成功:", data);
         localStorage.setItem('access_token', data.data.access_token); // 存 token
         if (onLogin) onLogin(data.data.user); // 通知父元件登入成功
       } else {

@@ -18,8 +18,7 @@
 ## Tech Stack
 
 - **Backend:** Python Flask, SQLAlchemy, SQLite
-- **Frontend:** HTML, CSS, JavaScript
-- **Template Engine:** Jinja2
+- **Frontend:** React.js
 - **Version Control:** Git
 
 ## Highlights
@@ -78,17 +77,19 @@ ideas for current version adjustment：
 
 ```
 
-## all pages links:
-home: http://127.0.0.1:5001/  
-scoreboard: http://127.0.0.1:5001/scoreboard  
-update_score(login required): http://127.0.0.1:5001/update_score  
-admin(only 'alex' can access): http://127.0.0.1:5001/admin  
-users: http://127.0.0.1:5001/users 
-assign_umpire: http://127.0.0.1:5001/assign_umpire
-
 ## activate and deactivate virtual environment
+### Backend (Flask)
+```
 . .venv/bin/activate  
 deactivate
+```
+---
+### frontend (React)
+```
+. .venv/bin/activate
+cd frontend
+npm start
+```
 
 ## Developing Diary
 ### 2025/04/02
@@ -224,4 +225,21 @@ deactivate
 
 
 - This warning message will not affect your socket.io service, as well as the functionality provided in the page.
+---
+
+### 2025/06/12
+- Create a page to let users to uploade game schedule (.xlsx file)
+- Use the schedule file to create games 
+- Adjust delete game page
+---
+
+### 2025/06/13
+- Analyze the schedule file and create matches
+- Database table structure modified
+- Fix register function
+---
+
+### 2025/06/14
+- Modulize the JavaScript function, write socket functions into socketServerice.js
+- Fix update score function and socre-update-listener
 ---

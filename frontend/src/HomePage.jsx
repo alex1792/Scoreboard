@@ -1,27 +1,15 @@
-// import React from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useContext } from 'react';
-// import { AuthContext } from './AuthContext';
+import { useFetchUmpireMatchId } from './api/socketService';
 
 const Home = ({ currentUser }) => {
-  // const { currentUser } = useContext(AuthContext);
-  // console.log("currentUser in Home:", currentUser);
   const [myMatchId, setMyMatchId] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (currentUser?.role === 'umpire') {
-      fetch(`http://localhost:5001/api/matches/umpire/${currentUser.id}`)
-        .then(res => res.json())
-        .then(result => {
-          if (result.status === 'success' && result.data?.id) {
-            setMyMatchId(result.data.id);
-          }
-        })
-    }
-  }, [currentUser]);
+  // get umpire's match and save it, so that the link
+  // will be valid to be displayed
+  useFetchUmpireMatchId(currentUser, setMyMatchId);
 
   return (
     <>
@@ -34,7 +22,7 @@ const Home = ({ currentUser }) => {
         <section className="card">
           <h2>General Features</h2>
           <ul className="link-list">
-            {(currentUser?.id === 1 || currentUser?.role === 'umpire') && (
+            {currentUser?.role === 'umpire' && myMatchId && (
               <li>
                 {/* <button onClick={handleViewScoreboard}>View Score Board</button> */}
                 <Link to={`/matches/${myMatchId}`}>View Scoreboard</Link>
@@ -52,7 +40,8 @@ const Home = ({ currentUser }) => {
               <li><Link to="/admin/users">Check All Users</Link></li>
               <li><Link to="/admin/manage-matches">Manage Matches</Link></li>
               <li><Link to="/admin/create-match">Create New Match</Link></li>
-              <li><Link to="/admin/assign-umpire">Assign Umpire</Link></li>
+              <li><Link to="/admin/update-user-role">Update User Role</Link></li>
+              <li><Link to="/admin/upload-schedule">Uplaod Match Schedule</Link></li>
             </ul>
           </section>
         )}

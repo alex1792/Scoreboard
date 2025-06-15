@@ -28,12 +28,15 @@ class Player(db.Model):
 class Match(db.Model):
     __tablename__ = 'matches'
     id = db.Column(db.Integer, primary_key=True)
-    player1_id = db.Column(db.Integer, db.ForeignKey('players.id'))
-    player2_id = db.Column(db.Integer, db.ForeignKey('players.id'))
+    player1_name = db.Column(db.String(64), nullable=False)
+    player2_name = db.Column(db.String(64), nullable=False)
     score1 = db.Column(db.Integer, default=0)
     score2 = db.Column(db.Integer, default=0)
     status = db.Column(db.String(32))
     umpire_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    player1 = db.relationship('Player', foreign_keys=[player1_id])
-    player2 = db.relationship('Player', foreign_keys=[player2_id])
     umpire = db.relationship('User', foreign_keys=[umpire_id])
+    # player1_id = db.Column(db.Integer, db.ForeignKey('players.id'))
+    # player2_id = db.Column(db.Integer, db.ForeignKey('players.id'))
+    # player1 = db.relationship('Player', foreign_keys=[player1_id])
+    # player2 = db.relationship('Player', foreign_keys=[player2_id])
+    

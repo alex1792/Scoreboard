@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useRef } from 'react';
 import './matches.css'; 
-import io from 'socket.io-client';
+import { useFetchMatchInfo, useMatchInfoListener, assignUmpire } from './api/socketService';
+
 
 const MatchCard = ({ match, onAssignUmpire }) => {
   const statusColorMap = {
@@ -17,12 +18,12 @@ const MatchCard = ({ match, onAssignUmpire }) => {
       <div className="players">
         <div className="player">
           <div className="player-name">{match.player1}</div>
-          <small>ID: {match.player1_id}</small>
+          {/* <small>ID: {match.player1_id}</small> */}
         </div>
         <div className="vs">vs</div>
         <div className="player">
           <div className="player-name">{match.player2}</div>
-          <small>ID: {match.player2_id}</small>
+          {/* <small>ID: {match.player2_id}</small> */}
         </div>
       </div>
 
@@ -37,7 +38,7 @@ const MatchCard = ({ match, onAssignUmpire }) => {
 
       <div className="umpire-section">
         <span className="umpire-label">
-          Umpire: <span className="umpire-name">{match.umpire ? match.umpire : 'To Be Assigned'}</span>
+          Umpire: <span className="umpire-name">{typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}</span>
         </span>
         <button className="set-umpire-btn" onClick={() => onAssignUmpire(match.id)}>Assign Umpire</button>
       </div>
@@ -45,109 +46,16 @@ const MatchCard = ({ match, onAssignUmpire }) => {
   );
 };
 
-const AssignUmpirePage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5001/scoreboard' }) => {
-  const [matches, setMatches] = useState(initialMatches);
-
-  // fetch matches data from backend
-  useEffect(() => {
-      fetch('http://localhost:5001/api/matches')
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') {
-          console.log('Fetched matches:', data.data);
-          setMatches(data.data);
-        }
-      })
-      .catch(err => console.error('獲取賽事失敗:', err));
-    }, []);
+const AssignUmpirePage = () => {
+  const [matches, setMatches] = useState([]);
+  const [animatingMatchId, setAnimatingMatchId] = useState(null);
+  const socketRef = useRef(null);
   
-  // Websocket listener for match updates
-  useEffect(() => {
-    const socket = io(socketUrl, {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionDelay: 3000
-    });
-
-    socket.on('connect', () => {
-      console.log('WebSocket connected:', socket.id);
-    });
-
-    socket.on('match_update', (data) => {
-      setMatches(prevMatches =>
-        prevMatches.map(match =>
-          match.match_id === data.match_id
-            ? {
-                ...match,
-                score1: data.score1,
-                score2: data.score2,
-                status: data.match_status,
-                umpire: { username: data.umpire }
-              }
-            : match
-        )
-      );
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('Connection error:', err.message);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [socketUrl]);
-
-  const handleAssignUmpire = async (matchId) => {
-    const umpireId = prompt('Please insert Umpire User ID:');
-    if (!umpireId || umpireId.trim() === '') return;
-
-    try {
-      // get token from loca storage
-      const token = localStorage.getItem('access_token');
-      
-      // prepare the request info
-      const requestInfo = {
-        url: `http://localhost:5001/api/matches/${matchId}/umpire`,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-         },
-        body: JSON.stringify({ umpire_id: umpireId })
-      }
-      
-      // make the POST request to backend
-      const response = await fetch(requestInfo.url, {
-        method: 'POST',
-        headers: requestInfo.headers,
-        body: requestInfo.body
-      });
-
-      // extract the response data recieved from backend
-      // const data = await response.json();
-      // console.log('Assign Umpire Request:', requestInfo);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Assign Umpire Response:', data);
-        console.log('Assign Umpire Success:', data.umpire);
-        setMatches(prevMatches =>
-          prevMatches.map(match =>
-            match.id === matchId
-              ? {
-                  ...match,
-                  umpire: data.data.umpire
-                }
-              : match
-          )
-        );
-      } else {
-        alert('Assign failed');
-      }
-    } catch (err) {
-      console.error('Fetch error:', err);
-    }
-  };
+  // fetch match info from backend
+  useFetchMatchInfo(setMatches);
+  
+  // match info listener
+  useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });
 
   return (
     <>
@@ -155,7 +63,7 @@ const AssignUmpirePage = ({ initialMatches = [], socketUrl = 'http://127.0.0.1:5
         <h1 className="page-title">All Matches</h1>
         <div className="matches-grid">
           {matches.map(match => (
-            <MatchCard key={match.id} match={match} onAssignUmpire={handleAssignUmpire} />
+            <MatchCard key={match.id} match={match} onAssignUmpire={assignUmpire} />
           ))}
         </div>
       </div>

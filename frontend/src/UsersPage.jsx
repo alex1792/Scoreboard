@@ -1,10 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import BaseLayout from './BaseLayout';
+import { useState, useEffect, useRef } from 'react';
+import io from 'socket.io-client';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
 
+  // listen for user role updates from backend server
+  const socketRef = useRef(null);
   useEffect(() => {
+    socketRef.current = io('http://localhost:5001/user_role_update', {
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionDelay: 3000
+    });
+
+    socketRef.current.on('connect', () => {
+      // console.log('Socket connected!');
+    });
+
+    socketRef.current.on('user_role_updated', (data) => {
+      // console.log('User role updated:', data);
+      fetchUsers();
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    }
+  }, []);
+
+  // fetch all user data from backend server
+  const fetchUsers = () => {
     const token = localStorage.getItem('access_token');
     fetch('http://localhost:5001/api/admin/users', {
       headers: {
@@ -20,6 +44,11 @@ const Users = () => {
         }
       })
       .catch(err => console.error("獲取用戶失敗:", err));
+  };
+
+
+  useEffect(() => {
+    fetchUsers();
   }, []);
 
   return (
