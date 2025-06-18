@@ -243,3 +243,11 @@ npm start
 - Modulize the JavaScript function, write socket functions into socketServerice.js
 - Fix update score function and socre-update-listener
 ---
+
+### 2025/06/16
+- Modify the database table structure, add 'category' into match
+- Adding the 'category' attribute into check all matches page
+---
+
+### 2025/06/17
+---

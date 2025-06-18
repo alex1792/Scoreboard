@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import './matches.css'; 
-import { useFetchMatchInfo, useMatchInfoListener, assignUmpire } from './api/socketService';
+import { useMatchInfoListener } from './api/socketService';
+import { useFetchMatchInfo } from './api/api';
+import { assignUmpire } from './api/api';
 
 
 const MatchCard = ({ match, onAssignUmpire }) => {
@@ -14,7 +16,11 @@ const MatchCard = ({ match, onAssignUmpire }) => {
 
   return (
     <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id}>
-      <div className="match-id">#{match.id}</div>
+      <div className="match-header">
+        <div className="match-id">#{match.id}</div>
+        <div className="match-category">{match.category}</div>
+      </div>
+      
       <div className="players">
         <div className="player">
           <div className="player-name">{match.player1}</div>

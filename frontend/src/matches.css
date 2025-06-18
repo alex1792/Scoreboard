@@ -101,3 +101,26 @@
     color: #1976d2;
 }
 
+/* .match-category {
+  font-size: 0.95em;
+  color: #666;
+  margin-bottom: 4px;
+} */
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.match-id {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.match-category {
+  font-size: 0.95em;
+  color: #666;
+}
+

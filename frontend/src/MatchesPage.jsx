@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useMatch } from 'react-router-dom';
-import { useFetchMatchInfo, useMatchInfoListener } from './api/socketService';
+import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useMatchInfoListener } from './api/socketService';
+import { useFetchMatchInfo } from './api/api';
 import './matches.css';
 
 const MatchesPage = () => {
@@ -46,8 +47,11 @@ const MatchesPage = () => {
                   className={`match-card status-${match.status.toLowerCase()}${animatingMatchId === match.id ? ' animating' : ''}`}
                   data-match-id={match.id}
                 >
-                  <div className="match-id">#{match.id}</div>
-
+                  <div className="match-header">
+                    <div className="match-id">#{match.id}</div>
+                    <div className="match-category">{match.category}</div>
+                  </div>
+                  
                   <div className="players">
                     <div className="player">
                       <div className="player-name">{match.player1}</div>
@@ -87,7 +91,7 @@ const MatchesPage = () => {
               </Link>
             ))
           ) : (
-            <div className="no-matches">目前沒有賽事</div>
+            <div className="no-matches">No matches</div>
           )}
         </div>
       </div>

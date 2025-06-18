@@ -21,6 +21,7 @@ from .models import Match, db, User
 def get_match_data(match):
     return {
         "id": match.id,
+        "category": match.category,
         "player1": match.player1_name if match.player1_name else "N/A",
         "player2": match.player2_name if match.player2_name else "N/A",
         # "player1_id": match.player1.id if match.player1 else None,
@@ -32,10 +33,11 @@ def get_match_data(match):
         "umpire_id": match.umpire.id if match.umpire else None
     }
 
-def create_match_record(player1_name, player2_name, status='Scheduled'):
+def create_match_record(player1_name, player2_name, category, status='Scheduled'):
     new_match = Match(
         player1_name=player1_name,
         player2_name=player2_name,
+        category=category,
         status=status
     )
     db.session.add(new_match)
@@ -77,18 +79,19 @@ def home():
 # ===============================================================================================
 @admin_blueprint.route('/users', methods=['PUT'])
 @jwt_required()
-def update_user_role(username):
+def update_user_role():
     # check if user is authorized
     authorization = check_authorization()
     if authorization:
         return authorization
 
     data = request.get_json()
-    user = User.query.filter_by(username=username).first()
+    print(f'\n\ndata: ${data}\n')
+    user = User.query.filter_by(username=data.get('username')).first()
     if not user:
         return jsonify({"status": "error", "message": "User not found"}), 404
 
-    user.role = data.get('role', user.role)
+    user.role = data.get('role')
     db.session.commit()
 
     print(f"User {user.username} role updated to {user.role}")
@@ -186,14 +189,15 @@ def upload_match_schedule():
             f = pd.read_csv(file, encoding='utf-8')
         else:
             f = pd.read_excel(file, engine='openpyxl')
-
+        
         player1s = f['player1'].tolist()
         player2s = f['player2'].tolist()
+        categories = f['category'].tolist()
 
         created_matches = []
-        for player1, player2 in zip(player1s, player2s):
-            print(player1, player2)
-            match = create_match_record(player1, player2)
+        for player1, player2, category in zip(player1s, player2s, categories):
+            print(player1, player2, category)
+            match = create_match_record(player1, player2, category)
             created_matches.append(get_match_data(match))
 
         return jsonify({"status": "success", "message": "Matches created successfully", "matches": created_matches}), 200

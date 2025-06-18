@@ -28,6 +28,7 @@ class Player(db.Model):
 class Match(db.Model):
     __tablename__ = 'matches'
     id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(32), nullable=False)
     player1_name = db.Column(db.String(64), nullable=False)
     player2_name = db.Column(db.String(64), nullable=False)
     score1 = db.Column(db.Integer, default=0)

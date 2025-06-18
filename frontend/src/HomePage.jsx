@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useContext } from 'react';
-import { useFetchUmpireMatchId } from './api/socketService';
+import { useFetchUmpireMatchId } from './api/api';
 
 const Home = ({ currentUser }) => {
   const [myMatchId, setMyMatchId] = useState(null);

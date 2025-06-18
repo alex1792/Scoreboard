@@ -1,34 +1,21 @@
-import { useState, useEffect } from 'react';
-import io from 'socket.io-client';
+import { useState } from 'react';
+import {updateUserRole} from './api/api';
+// import io from 'socket.io-client';
 
-const socket = io('/admin'); // 與後端 /admin namespace 建立連線
+// const socket = io('/admin'); // 與後端 /admin namespace 建立連線
 
 const ChangeUserStaus = () => {
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('user');
 
+  // const token = localStorage.getItem('access_token');
+
+  // updateUserRole(username, role, token);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // request information for updating user role
-      const requestInfo = {
-        url: 'http://localhost:5001/api/admin/upate_user_role',
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({ 
-          username,
-          role 
-        }),
-      };
-
-      const response = await fetch(requestInfo.url, requestInfo);
-      if (!response.ok) throw new Error('Update failed');
-
-      const result = await response.json();
-      // console.log('Update successful:', result);
+      updateUserRole(username, role);
     } catch (err) {
       console.error(err);
     }

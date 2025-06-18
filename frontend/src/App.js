@@ -15,12 +15,12 @@ import UploadSchedule from './UploadSchedulePage';
 import { AuthProvider } from './AuthContext';
 
 // currentUser can be modified to reflect the actual user state
-const currentUser = {
-  isAuthenticated: false,
-  username: '',
-  id: 0,
-  role: ''
-};
+// const currentUser = {
+//   isAuthenticated: false,
+//   username: '',
+//   id: 0,
+//   role: ''
+// };
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
