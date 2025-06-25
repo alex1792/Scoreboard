@@ -52,10 +52,10 @@ def create_app():
         scoreboard_blueprint,
         admin_blueprint,
         users_blueprint,
-        match_blueprint,          # <-- 加入這行
-        manage_match_blueprint,
-        create_match_blueprint,
-        assign_umpire_blueprint   # <-- 加入這行
+        match_blueprint         
+        # manage_match_blueprint,
+        # create_match_blueprint,
+        # assign_umpire_blueprint  
     )
     from .auth import bp as auth_bp
 

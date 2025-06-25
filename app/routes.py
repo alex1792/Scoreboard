@@ -207,6 +207,61 @@ def upload_match_schedule():
 
     # return jsonify({"status": "success", "message": "File uploaded successfully"}), 200
 
+@admin_blueprint.route('/scheduler', methods=['POST'])
+@jwt_required()
+def generate_match_schedule():
+    # check authorization
+    auth = check_authorization()
+    if auth:
+        return auth
+    
+    # scheduling algo
+    try:
+        # read .xlsx or .csv file
+        file = request.files.get('file')
+        if not file:
+            return jsonify({"status": "error", "message": "No file provided"}), 400
+        if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
+            return jsonify({"status": "error", "message": "Invalid file format, only .csv and .xslx are allowed"}), 400
+
+        import pandas as pd
+        if file.filename.endswith('.csv'):
+            f = pd.read_csv(file, encoding='utf-8')
+        else:
+            f = pd.read_excel(file, engine='openpyxl')
+
+        # get all player's name
+        player1s = f['player1'].tolist()
+        player2s = f['player2'].tolist()
+        categories = f['category'].tolist()
+
+        # analyze each player's name and their total games
+        players = {}
+        matches = []
+        for player1, player2, category in zip(player1s, player2s, categories):
+            matches.append([player1, player2, category])
+            # men's single, women's single
+            if category == "men's single" or category == "women's single":
+                players[player1] = players.get(player1, 0) + 1
+                players[player2] = players.get(player2, 0) + 1
+            # men's doubles, women's double, mixed doubles
+            else:
+                p1s = [p.strip() for p in player1.strip().split('/')]
+                for p in p1s:
+                    players[p] = players.get(p, 0) + 1
+                p2s = [p.strip() for p in player2.strip().split('/')]
+                for p in p2s:
+                    players[p] = players.get(p, 0) + 1
+        
+        # compute weight of each match
+        for m in matches:
+            m.append(players[m[0]] + players[m[1]])
+        print(matches)
+
+    except Exception as e:
+        print(f"Error creating match schedule: {e}")
+        return jsonify({"status": "error", "message": "Error creating match schedule"})
+
 
 # ===============================================================================================
 # ===============================================================================================
@@ -368,3 +423,24 @@ def clear_all_matches():
         db.session.rollback()
         print(f"Error clearing matches: {e}")
         return jsonify({"status": "error", "message": "Failed to clear matches"}), 500
+# ----------------------------------------------------------------------    
+
+# ----------------------------------------------------------------------
+@match_blueprint.route('/<int:match_id>', methods=['DELETE'])
+@jwt_required()
+def delete_match(match_id):
+    # check authorization
+    authorization = check_authorization()
+    if authorization:
+        return authorization
+
+    # delete match by match_id
+    try:
+        Match.query.filter_by(id=match_id).delete()
+        db.session.commit()
+        return jsonify({"status": "success", "message": f"delete #{match_id} match successfully"})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting #{match_id} match: {e}")
+        return jsonify({"status": "error", "message": f"Failed to delete #{match_id} match"})
+# ----------------------------------------------------------------------  

@@ -1,80 +1,89 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import './matches.css'; 
+import { useMatchInfoListener } from './api/socketService';
+import { useFetchMatchInfo } from './api/api';
+import { deleteMatch } from './api/api';
 
-const ManageMatch = () => {
-  const [matchId, setMatchId] = useState('');
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/update_match', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ match_id: matchId })
-      });
-
-      if (response.ok) {
-        alert('Match updated successfully!');
-        setMatchId('');
-      } else {
-        alert('Failed to update match.');
-      }
-    } catch (err) {
-      console.error('Update Error:', err);
-      alert('Error updating match.');
-    }
+const MatchCard = ({ match, onDelete }) => {
+  const statusColorMap = {
+    ended: '#4CAF50',
+    ongoing: '#FFC107',
+    pending: '#9E9E9E'
   };
 
-  const handleClearAll = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:5001/api/matches/clear_all_match', {
-        method: 'POST', 
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+  const statusColor = statusColorMap[match.status?.toLowerCase()] || '#ccc';
 
-      if (response.ok) {
-        alert('All matches cleared!');
-      } else {
-        alert('Failed to clear matches.');
-      }
-    } catch (err) {
-      console.error('Clear Error:', err);
-      alert('Error clearing matches.');
+  return (
+    <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id}>
+      <div className="match-header">
+        <div className="match-id">#{match.id}</div>
+        <div className="match-category">{match.category}</div>
+      </div>
+      
+      <div className="players">
+        <div className="player">
+          <div className="player-name">{match.player1}</div>
+          {/* <small>ID: {match.player1_id}</small> */}
+        </div>
+        <div className="vs">vs</div>
+        <div className="player">
+          <div className="player-name">{match.player2}</div>
+          {/* <small>ID: {match.player2_id}</small> */}
+        </div>
+      </div>
+
+      <div className="score">{match.score1} : {match.score2}</div>
+
+      <div className="status">
+        <span className={`status-badge status-${match.status?.toLowerCase()}`}
+              style={{ backgroundColor: statusColor + '20', color: statusColor }}>
+          {match.status?.toUpperCase()}
+        </span>
+      </div>
+
+      <div className="umpire-section">
+        <span className="umpire-label">
+          Umpire: <span className="umpire-name">{typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}</span>
+        </span>
+        <button className="delete-match-btn" onClick={() => onDelete(match.id)}>Delete Match</button>
+      </div>
+    </div>
+  );
+};
+
+const ManageMatchPage = () => {
+  const [matches, setMatches] = useState([]);
+  const [animatingMatchId, setAnimatingMatchId] = useState(null);
+  const socketRef = useRef(null);
+  
+  // fetch match info from backend
+  useFetchMatchInfo(setMatches);
+  
+  // match info listener
+  useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });
+  
+  // Handle match deletion with local state update
+  const handleDeleteMatch = async (matchId) => {
+    const success = await deleteMatch(matchId);
+    if (success) {
+      // Update local state immediately without waiting for socket event
+      setMatches(prev => prev.filter(match => match.id !== matchId));
     }
   };
 
   return (
-    // <BaseLayout>
     <>
-        <div className="manage-match-container">
-        <h1>Update Match</h1>
-
-        <form onSubmit={handleUpdate}>
-            <label htmlFor="match_id">Match ID</label>
-            <input
-            id="match_id"
-            name="match_id"
-            value={matchId}
-            onChange={(e) => setMatchId(e.target.value)}
-            required
-            />
-            <input type="submit" value="Update Role" />
-        </form>
-
-        <form onSubmit={handleClearAll}>
-            <input
-            type="submit"
-            value="Clear All Matches"
-            style={{ backgroundColor: 'red', color: 'white', marginTop: '1em' }}
-            />
-        </form>
+      <div className="container">
+        <h1 className="page-title">Manage Matches</h1>
+        <div className="matches-grid">
+          {matches.map(match => (
+            <MatchCard key={match.id} match={match} onDelete={handleDeleteMatch} />
+          ))}
         </div>
+      </div>
     </>
-    // {/* </BaseLayout> */}
   );
 };
 
-export default ManageMatch;
+export default ManageMatchPage;

@@ -3,9 +3,10 @@ import './matches.css';
 import { useMatchInfoListener } from './api/socketService';
 import { useFetchMatchInfo } from './api/api';
 import { assignUmpire } from './api/api';
+import { deleteMatch } from './api/api';
 
 
-const MatchCard = ({ match, onAssignUmpire }) => {
+const MatchCard = ({ match, onAssignUmpire, onDeleteMatch }) => {
   const statusColorMap = {
     ended: '#4CAF50',
     ongoing: '#FFC107',
@@ -15,7 +16,15 @@ const MatchCard = ({ match, onAssignUmpire }) => {
   const statusColor = statusColorMap[match.status?.toLowerCase()] || '#ccc';
 
   return (
-    <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id}>
+    <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id} style={{ position: 'relative' }}>
+      <button
+        className="close-btn"
+        aria-label="Close"
+        onClick={() => onDeleteMatch(match.id)}
+        type="button"
+      >
+        &times;
+      </button>
       <div className="match-header">
         <div className="match-id">#{match.id}</div>
         <div className="match-category">{match.category}</div>
@@ -36,15 +45,19 @@ const MatchCard = ({ match, onAssignUmpire }) => {
       <div className="score">{match.score1} : {match.score2}</div>
 
       <div className="status">
-        <span className={`status-badge status-${match.status?.toLowerCase()}`}
-              style={{ backgroundColor: statusColor + '20', color: statusColor }}>
+        <span
+          className={`status-badge status-${match.status?.toLowerCase()}`}
+          style={{ backgroundColor: statusColor + '20', color: statusColor }}
+        >
           {match.status?.toUpperCase()}
         </span>
       </div>
 
       <div className="umpire-section">
         <span className="umpire-label">
-          Umpire: <span className="umpire-name">{typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}</span>
+          Umpire: <span className="umpire-name">
+            {typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}
+          </span>
         </span>
         <button className="set-umpire-btn" onClick={() => onAssignUmpire(match.id)}>Assign Umpire</button>
       </div>
@@ -63,13 +76,22 @@ const AssignUmpirePage = () => {
   // match info listener
   useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });
 
+  // Handle match deletion with local state update
+  const handleDeleteMatch = async (matchId) => {
+    const success = await deleteMatch(matchId);
+    if (success) {
+      // Update local state immediately without waiting for socket event
+      setMatches(prev => prev.filter(match => match.id !== matchId));
+    }
+  };
+
   return (
     <>
       <div className="container">
         <h1 className="page-title">All Matches</h1>
         <div className="matches-grid">
           {matches.map(match => (
-            <MatchCard key={match.id} match={match} onAssignUmpire={assignUmpire} />
+            <MatchCard key={match.id} match={match} onAssignUmpire={assignUmpire} onDeleteMatch={handleDeleteMatch} />
           ))}
         </div>
       </div>

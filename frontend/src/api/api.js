@@ -18,7 +18,7 @@ export function useFetchMatchInfo(setMatches) {
             })
             .catch(err => console.error('Failed to fetch match-info update:', err));
     }, [setMatches]);
-}
+};
 
 // ================================================================================
 // ================================================================================
@@ -39,7 +39,7 @@ export function useFetchUmpireMatchId(currentUser, setMyMatchId) {
         })
     }
   }, [currentUser]);
-}
+};
 
 // ================================================================================
 // ================================================================================
@@ -50,7 +50,7 @@ export function useFetchUmpireMatchId(currentUser, setMyMatchId) {
 export async function assignUmpire(matchId) {
     const umpireId = prompt('Please insert Umpire User ID:');
     if (!umpireId || umpireId.trim() === '') return;
-    
+
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
@@ -70,6 +70,43 @@ export async function assignUmpire(matchId) {
         }
     } catch (err) {
         console.error('Fetch error:', err);
+    }
+};
+
+
+// ================================================================================
+// ================================================================================
+// ========================= Delete Match  ========================================
+// ================================================================================
+// ================================================================================
+
+export async function deleteMatch(matchId) {
+    // if (!confirm('Are you sure you want to delete this match?')) return;
+    
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(
+            `http://localhost:5001/api/matches/${matchId}`,
+            {
+                method: 'DELETE',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if(!response.ok) {
+            console.log('Failed to delete match...');
+            return false;
+        }
+        
+        // Return true to indicate successful deletion
+        // This can be used to update the UI immediately if needed
+        return true;
+    } catch (err) {
+        console.error('Fetch error:', err);
+        return false;
     }
 };
 

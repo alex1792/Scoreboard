@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>比賽卡片範例</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="matches.css">
+</head>
+<body>
+  <div class="match-card status-active" data-match-id="123">
+    <button class="close-btn" aria-label="Close">&times;</button>
+    <div class="match-header">
+        <div class="match-id">#1</div>
+        <div class="match-category">Badminton</div>
+    </div>
+    <div class="players">
+      <div class="player">
+        <div class="player-name">Player One</div>
+      </div>
+      <div class="vs">vs</div>
+      <div class="player">
+        <div class="player-name">Player Two</div>
+      </div>
+    </div>
+    <div class="score">21 : 18</div>
+    <div class="status">
+      <span class="status-badge status-active">ACTIVE</span>
+    </div>
+    <div class="umpire-section">
+      <span class="umpire-label">
+        Umpire: <span class="umpire-name">umpire_username</span>
+      </span>
+      <button class="set-umpire-btn">Assign Umpire</button>
+    </div>
+  </div>
+</body>
+</html>

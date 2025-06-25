@@ -36,6 +36,15 @@ export function useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchI
             setTimeout(() => setAnimatingMatchId(false), 200);
         });
 
+        socketRef.current.on('match_delete', (data) => {
+            console.log('Match Deleted:', data);
+            
+            // Remove the deleted match from the state
+            setMatches(prev => 
+                prev.filter(m => m.id !== data.id)
+            );
+        });
+
         socketRef.current.on('connect_error', (err) => {
         // console.error('連接錯誤:', err.message);
         });

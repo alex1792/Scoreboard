@@ -1,4 +1,4 @@
-/* matches.css */
+/* matchescss */
 .matches-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -26,6 +26,9 @@
     padding: 1.5rem;
     border-left: 4px solid;
     transition: transform 0.2s ease;
+    max-width: 400px;   
+    padding: 0.8rem;    
+    font-size: 0.92em;  
 }
 
 .match-card:hover {
@@ -101,6 +104,19 @@
     color: #1976d2;
 }
 
+.delete-match-btn {
+    background: #ff3434;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.delete-match-btn:hover {
+    background: #1565c0;
+}
+
 /* .match-category {
   font-size: 0.95em;
   color: #666;
@@ -124,3 +140,69 @@
   color: #666;
 }
 
+
+
+
+/* test for new template */
+/* .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background: #ff3434;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.2s;
+}
+.close-btn:hover {
+  background: #c30000;
+} */
+.match-card {
+  position: relative; /* 讓 close-btn 能定位在卡片右上角 */
+}
+
+.match-card {
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  background: #ff5656;
+  color: #424141;
+  border: none;
+  border-radius: 50%;
+  font-size: 12px; /* 建議用 px，確保字型大小 */
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s;
+  padding: 0;
+  line-height: 1; /* 關鍵，確保 X 不會上下偏移 */
+}
+
+.close-btn:hover {
+  background: #c30000;
+}
+
+.match-category {
+  margin-right: 36px; /* 預留空間給 close-btn，避免重疊 */
+  white-space: nowrap; /* 防止換行造成排版問題 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

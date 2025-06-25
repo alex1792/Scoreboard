@@ -250,4 +250,7 @@ npm start
 ---
 
 ### 2025/06/17
+- Integrate 'Assign Umpire Page' with 'Manage Math Page'
+- IDEAS: Update 'Create Match Page', use the Match Card template
+- IDEAS: New backend features -- schelulder, make sure every player can have one match break before next match
 ---
