@@ -35,14 +35,37 @@ const Home = ({ currentUser }) => {
         {currentUser?.role === 'admin' && (
           <section className="card admin-section">
             <h2>Admin Features</h2>
-            <ul className="link-list">
-              <li><Link to="/admin/set-umpire">Manage Umpires</Link></li>
-              <li><Link to="/admin/users">Check All Users</Link></li>
-              <li><Link to="/admin/manage-matches">Manage Matches</Link></li>
-              <li><Link to="/admin/create-match">Create New Match</Link></li>
-              <li><Link to="/admin/update-user-role">Update User Role</Link></li>
-              <li><Link to="/admin/upload-schedule">Uplaod Match Schedule</Link></li>
-            </ul>
+            <div className="admin-icons">
+              <div className="admin-icon-item">
+                <Link to="/admin/set-umpire">
+                  <img src="/file-setting-icon.png" alt="File Settings" className="admin-icon" />
+                  <span>Match Management</span>
+                </Link>
+              </div>
+              <div className="admin-icon-item">
+                <Link to="/admin/manage-matches">
+                  <img src="/manage-icon.png" alt="Manage" className="admin-icon" />
+                  <span>User Management</span>
+                </Link>
+              </div>
+              <div className="admin-icon-item">
+                <Link to="/admin/upload-schedule">
+                  <img src="/upload-arrow-icon.png" alt="Upload" className="admin-icon" />
+                  <span>Upload Schedule</span>
+                </Link>
+              </div>
+            </div>
+            <div className="admin-management">
+              <h3>Match Management</h3>
+              <ul className="link-list">
+                <li><Link to="/admin/set-umpire">Manage Umpires</Link></li>
+                <li><Link to="/admin/users">Check All Users</Link></li>
+                <li><Link to="/admin/manage-matches">Manage Matches</Link></li>
+                <li><Link to="/admin/create-match">Create New Match</Link></li>
+                <li><Link to="/admin/update-user-role">Update User Role</Link></li>
+                <li><Link to="/admin/upload-schedule">Uplaod Match Schedule</Link></li>
+              </ul>
+            </div>
           </section>
         )}
       </main>

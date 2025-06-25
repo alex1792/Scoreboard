@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './matches.css'; 
 import { useMatchInfoListener } from './api/socketService';
 import { useFetchMatchInfo } from './api/api';
@@ -88,7 +89,12 @@ const AssignUmpirePage = () => {
   return (
     <>
       <div className="container">
-        <h1 className="page-title">All Matches</h1>
+        <div className="page-header">
+          <h1 className="page-title">All Matches</h1>
+          <Link to="/admin/create-match" className="create-match-link">
+            <button className="create-match-btn">Create New Match</button>
+          </Link>
+        </div>
         <div className="matches-grid">
           {matches.map(match => (
             <MatchCard key={match.id} match={match} onAssignUmpire={assignUmpire} onDeleteMatch={handleDeleteMatch} />

@@ -254,3 +254,9 @@ npm start
 - IDEAS: Update 'Create Match Page', use the Match Card template
 - IDEAS: New backend features -- schelulder, make sure every player can have one match break before next match
 ---
+
+### 2025/06/25
+- Update homepage, add icons and integrate functions together
+- IDEAS: for the User Management, need to integrate check all users and update user role
+- IDEAS: filter function in check all matches, filter by status, search by player
+---

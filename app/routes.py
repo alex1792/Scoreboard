@@ -316,8 +316,9 @@ def create_match():
     #     return jsonify({"status": "error", "message": "Players not found"}), 404
 
     new_match = Match(
-        player1_name=data['playser1_username'],
+        player1_name=data['player1_username'],
         player2_name=data['player2_username'],
+        category=data['category'],
         status='Scheduled'
     )
     db.session.add(new_match)
