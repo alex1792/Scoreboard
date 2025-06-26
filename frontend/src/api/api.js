@@ -112,6 +112,35 @@ export async function deleteMatch(matchId) {
 
 // ================================================================================
 // ================================================================================
+// ========================= Create Match  ========================================
+// ================================================================================
+// ================================================================================
+
+export async function createMatch(matchData) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://localhost:5001/api/matches/create_match', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(matchData)
+        });
+
+        if(!response.ok) {
+            throw new Error('Create match failed');
+        }
+
+        return await response.json();
+    } catch (err) {
+        console.error('Fetch error:', err);
+        throw err;
+    }
+}
+
+// ================================================================================
+// ================================================================================
 // ================== Handle Submit in Updating User Role  ========================
 // ================================================================================
 // ================================================================================
@@ -137,30 +166,78 @@ export async function updateUserRole(username, role) {
 };
 
 
+// ================================================================================
+// ================================================================================
+// ========================= uplaod file  =========================================
+// ================================================================================
+// ================================================================================
 
-// const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     try {
-//       // request information for updating user role
-//       const requestInfo = {
-//         url: 'http://localhost:5001/api/admin/upate_user_role',
-//         method: 'PUT',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-//         },
-//         body: JSON.stringify({ 
-//           username,
-//           role 
-//         }),
-//       };
+export async function uploadFile(url, formData) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
 
-//       const response = await fetch(requestInfo.url, requestInfo);
-//       if (!response.ok) throw new Error('Update failed');
+        if(response.ok) {
+            alert('Schedule uploaded successfully!');
+        } else {
+            alert('Failed to upload schedule. Please try again.');
+        }
+    } catch (err) {
+        console.error('Error uploading schedule:', err);
+        alert('An error occurred while uploading the schedule.');
+    }
+};
 
-//       const result = await response.json();
-//       // console.log('Update successful:', result);
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
+// ================================================================================
+// ================================================================================
+// ========================= download file  =======================================
+// ================================================================================
+// ================================================================================
+
+export async function generateRoundRobin(formData) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://localhost:5001/api/admin/upload_round_robin', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            } else {
+                // 返回 blob 數據，讓調用者決定如何處理
+                return await response.blob();
+            }
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+        }
+    } catch (err) {
+        console.error('Error generating round robin schedule:', err);
+        throw err;
+    }
+}
+
+export function downloadBlob(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}

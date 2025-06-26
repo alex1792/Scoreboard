@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, send_file, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .blueprints import (
     home_blueprint, scoreboard_blueprint, admin_blueprint,
@@ -7,6 +7,8 @@ from .blueprints import (
 )
 from .extensions import socketio
 from .models import Match, db, User
+from .scheduler import generate_schedule
+import os
 
 # ===============================================================================================
 # ===============================================================================================
@@ -207,7 +209,7 @@ def upload_match_schedule():
 
     # return jsonify({"status": "success", "message": "File uploaded successfully"}), 200
 
-@admin_blueprint.route('/scheduler', methods=['POST'])
+@admin_blueprint.route('/upload_round_robin', methods=['POST'])
 @jwt_required()
 def generate_match_schedule():
     # check authorization
@@ -215,6 +217,7 @@ def generate_match_schedule():
     if auth:
         return auth
     
+    print("Generating round robin schedule...")
     # scheduling algo
     try:
         # read .xlsx or .csv file
@@ -230,33 +233,13 @@ def generate_match_schedule():
         else:
             f = pd.read_excel(file, engine='openpyxl')
 
-        # get all player's name
-        player1s = f['player1'].tolist()
-        player2s = f['player2'].tolist()
-        categories = f['category'].tolist()
-
-        # analyze each player's name and their total games
-        players = {}
-        matches = []
-        for player1, player2, category in zip(player1s, player2s, categories):
-            matches.append([player1, player2, category])
-            # men's single, women's single
-            if category == "men's single" or category == "women's single":
-                players[player1] = players.get(player1, 0) + 1
-                players[player2] = players.get(player2, 0) + 1
-            # men's doubles, women's double, mixed doubles
-            else:
-                p1s = [p.strip() for p in player1.strip().split('/')]
-                for p in p1s:
-                    players[p] = players.get(p, 0) + 1
-                p2s = [p.strip() for p in player2.strip().split('/')]
-                for p in p2s:
-                    players[p] = players.get(p, 0) + 1
+        instance_path = current_app.instance_path
+        output_path = os.path.join(instance_path, 'round_robin_schedule.xlsx')
         
-        # compute weight of each match
-        for m in matches:
-            m.append(players[m[0]] + players[m[1]])
-        print(matches)
+        total_court = 6
+        generate_schedule(f, total_court, output_path)
+
+        return send_file(output_path, as_attachment=True, download_name='round_robin_schedule.xlsx')
 
     except Exception as e:
         print(f"Error creating match schedule: {e}")

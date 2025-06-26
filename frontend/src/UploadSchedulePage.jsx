@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { uploadFile } from './api/api';
 
 const UploadSchedule = () => {
     const [file, setFile] = useState(null);
@@ -17,33 +19,38 @@ const UploadSchedule = () => {
         formData.append('file', file);
 
         // console.log('Uplaoding file:', file);
-
-        try {
-            const response = await fetch('http://localhost:5001/api/admin/upload_match_schedule', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: formData,
-            });
-
-            // console.log('token: ', localStorage.getItem('access_token'));
-
-            if(response.ok) {
-                alert('Schedule uploaded successfully!');
-            } else {
-                alert('Failed to upload schedule. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error uploading schedule:', error);
-            alert('An error occurred while uploading the schedule.');
-        }
+        uploadFile('http://localhost:5001/api/admin/upload_match_schedule', formData);
     };
 
     return (
-        <div>
-            <input type="file" onChange={handleChange} accept=".csv, .xlsx" />
-            <button type="button" onClick={handleUpload}>Upload</button>
+        <div style={{ padding: '2rem' }}>
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: '2rem'
+            }}>
+                <h2>Upload Match Schedule</h2>
+                <Link to="/admin/scheduler" style={{ 
+                    display: 'inline-block', 
+                    padding: '10px 20px', 
+                    backgroundColor: '#4CAF50', 
+                    color: 'white', 
+                    textDecoration: 'none', 
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    border: 'none',
+                    fontSize: '14px'
+                }}>
+                    Generate Round Robin Schedule
+                </Link>
+            </div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+                <input type="file" onChange={handleChange} accept=".csv, .xlsx" />
+                <button type="button" onClick={handleUpload}>Upload</button>
+            </div>
         </div>
     );
 };

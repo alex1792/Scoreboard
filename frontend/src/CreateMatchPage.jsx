@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createMatch} from './api/api';
 import './matches.css';
 
 const CreateMatch = () => {
@@ -18,34 +19,16 @@ const CreateMatch = () => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem('access_token');
-      const requestInfo = {
-        url: `http://localhost:5001/api/matches/create_match`,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-         },
-        body: JSON.stringify({ 
-          player1_username: player1Username,
-          player2_username: player2Username,
-          category: category
-        })
-      };
-
-      const response = await fetch(requestInfo.url, {
-        method: 'POST',
-        headers: requestInfo.headers,
-        body: requestInfo.body
+      await createMatch({
+        player1_username: player1Username,
+        player2_username: player2Username,
+        category: category
       });
 
-      if (response.ok) {
-        alert('Match created successfully!');
-        setPlayer1Username('');
-        setPlayer2Username('');
-        setCategory('');
-      } else {
-        alert('Failed to create match.');
-      }
+      alert('Match created successfully!');
+      setPlayer1Username('');
+      setPlayer2Username('');
+      setCategory('');
     } catch (err) {
       console.error('Error:', err);
       alert('Error occurred while creating match.');

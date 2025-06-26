@@ -12,6 +12,7 @@ import CreateMatch from './CreateMatchPage';
 import AssignUmpirePage from './AssignUmpirePage';
 import ChangeUserStaus from './ChangesUserRolePage'; 
 import UploadSchedule from './UploadSchedulePage';
+import SchedulerPage from './SchedulerPage';
 import { AuthProvider } from './AuthContext';
 
 // currentUser can be modified to reflect the actual user state
@@ -59,6 +60,7 @@ function App() {
             <Route path="admin/create-match" element={<CreateMatch />} />
             <Route path="admin/update-user-role" element={<ChangeUserStaus />} />
             <Route path="/admin/upload-schedule" element={<UploadSchedule />} />
+            <Route path="/admin/scheduler" element={<SchedulerPage />} />
             {/* <Route path="admin/change-upire-status" element={<AssignUmpirePage />} /> */}
 
             {/* Home */}

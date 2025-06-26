@@ -21,40 +21,48 @@ const Home = ({ currentUser }) => {
       <main className="content-container">
         <section className="card">
           <h2>General Features</h2>
-          <ul className="link-list">
+          <div className="admin-icons">
             {currentUser?.role === 'umpire' && myMatchId && (
-              <li>
-                {/* <button onClick={handleViewScoreboard}>View Score Board</button> */}
-                <Link to={`/matches/${myMatchId}`}>View Scoreboard</Link>
-              </li>
+              <div className="admin-icon-item">
+                <Link to={`/matches/${myMatchId}`}>
+                  <img src="/documents-search-icon.png" alt="View Scoreboard" className="admin-icon" />
+                  <span>View Scoreboard</span>
+                </Link>
+              </div>
             )}
-            <li><Link to="/matches">Check All Matches</Link></li>
-          </ul>
+            <div className="admin-icon-item">
+              <Link to="/matches">
+                <img src="/documents-search-icon.png" alt="Check All Matches" className="admin-icon" />
+                <span>Check All Matches</span>
+              </Link>
+            </div>
+            {currentUser?.role === 'admin' && (
+              <>
+                <div className="admin-icon-item">
+                  <Link to="/admin/set-umpire">
+                    <img src="/file-setting-icon.png" alt="Match Management" className="admin-icon" />
+                    <span>Match Management</span>
+                  </Link>
+                </div>
+                <div className="admin-icon-item">
+                  <Link to="/admin/manage-matches">
+                    <img src="/manage-icon.png" alt="User Management" className="admin-icon" />
+                    <span>User Management</span>
+                  </Link>
+                </div>
+                <div className="admin-icon-item">
+                  <Link to="/admin/upload-schedule">
+                    <img src="/upload-arrow-icon.png" alt="Upload Schedule" className="admin-icon" />
+                    <span>Upload Schedule</span>
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
         </section>
 
         {currentUser?.role === 'admin' && (
           <section className="card admin-section">
-            <h2>Admin Features</h2>
-            <div className="admin-icons">
-              <div className="admin-icon-item">
-                <Link to="/admin/set-umpire">
-                  <img src="/file-setting-icon.png" alt="File Settings" className="admin-icon" />
-                  <span>Match Management</span>
-                </Link>
-              </div>
-              <div className="admin-icon-item">
-                <Link to="/admin/manage-matches">
-                  <img src="/manage-icon.png" alt="Manage" className="admin-icon" />
-                  <span>User Management</span>
-                </Link>
-              </div>
-              <div className="admin-icon-item">
-                <Link to="/admin/upload-schedule">
-                  <img src="/upload-arrow-icon.png" alt="Upload" className="admin-icon" />
-                  <span>Upload Schedule</span>
-                </Link>
-              </div>
-            </div>
             <div className="admin-management">
               <h3>Match Management</h3>
               <ul className="link-list">
