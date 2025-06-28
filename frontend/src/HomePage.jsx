@@ -45,7 +45,7 @@ const Home = ({ currentUser }) => {
                   </Link>
                 </div>
                 <div className="admin-icon-item">
-                  <Link to="/admin/manage-matches">
+                  <Link to="/admin/users">
                     <img src="/manage-icon.png" alt="User Management" className="admin-icon" />
                     <span>User Management</span>
                   </Link>

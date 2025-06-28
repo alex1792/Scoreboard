@@ -260,3 +260,14 @@ npm start
 - IDEAS: for the User Management, need to integrate check all users and update user role
 - IDEAS: filter function in check all matches, filter by status, search by player
 ---
+
+### 2025/06/26
+- Integrate 'update schedule' and 'scheduler'
+- After uploading the round robin, it will automatically download the match schedule
+- IDEAS: integrate update user role and check all users in one page
+- UPDATE: login page
+---
+
+### 2025/06/27
+- Integrate check all users and update user role in one page
+---

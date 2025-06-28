@@ -144,25 +144,29 @@ export async function createMatch(matchData) {
 // ================== Handle Submit in Updating User Role  ========================
 // ================================================================================
 // ================================================================================
-export async function updateUserRole(username, role) {
-    // e.preventDefault();
-    const response = await fetch('http://localhost:5001/api/admin/users', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({
-            username: username,
-            role: role
-        })
+export const updateUserRole = async (userId, newRole) => {
+  try {
+    const response = await fetch(`http://localhost:5001/api/admin/users`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        new_role: newRole
+      })
     });
 
-    if(!response.ok) {
-        throw new Error('Update failed');
+    if (!response.ok) {
+      throw new Error('Failed to update user role');
     }
 
     return await response.json();
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    throw error;
+  }
 };
 
 
@@ -229,7 +233,7 @@ export async function generateRoundRobin(formData) {
         console.error('Error generating round robin schedule:', err);
         throw err;
     }
-}
+};
 
 export function downloadBlob(blob, filename) {
     const url = window.URL.createObjectURL(blob);
@@ -240,4 +244,32 @@ export function downloadBlob(blob, filename) {
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+};
+
+// ================================================================================
+// ================================================================================
+// ========================= fetch user info  =====================================
+// ================================================================================
+// ================================================================================
+
+export async function fetchUsers() {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://localhost:5001/api/admin/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            return data.data; // return user data
+        } else {
+            throw new Error(data.message || 'Failed to fetch users');
+        }
+    } catch (err) {
+        console.error("Failed to fetch users:", err);
+        throw err; // rethrow error
+    }
 }

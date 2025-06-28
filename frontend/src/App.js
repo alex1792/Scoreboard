@@ -45,7 +45,7 @@ function App() {
   
 
   return (
-    <AuthProvider>
+    <AuthProvider currentUser={currentUser} setCurrentUser={setCurrentUser}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<BaseLayout currentUser={currentUser} />}>

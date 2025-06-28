@@ -269,7 +269,6 @@ def annotate_consecutive_players(batches):
         new_batches.append(new_batch)
     return new_batches
 
-
 # backtracking method
 def can_batch(batch, prev_batch_players):
     players_in_batch = set()

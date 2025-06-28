@@ -1,21 +1,31 @@
 import { useNavigate } from 'react-router-dom';
 import LoginForm from './LoginForm';
-
-
+import './LoginPage.css';
 
 function LoginPage({ setCurrentUser, currentUser}) {
   const navigate = useNavigate();
 
   const handleLogin = (user) => {
-    setCurrentUser(user); // 更新 currentUser
-    // console.log("login successfully, user info:", user);
+    setCurrentUser(user);
     navigate('/');
   };
 
   return (
-    <div>
+    <div className="login-page">
       {currentUser ? (
-        <div>歡迎回來，{currentUser.username}！</div>
+        <div className="welcome-back">
+          <div className="welcome-card">
+            <div className="welcome-icon">🎉</div>
+            <h2>Welcome Back, {currentUser.username}！</h2>
+            <p>You're logging in as {currentUser.role}</p>
+            <button 
+              onClick={() => navigate('/')}
+              className="go-home-button"
+            >
+              Home
+            </button>
+          </div>
+        </div>
       ) : (
         <LoginForm onLogin={handleLogin} />
       )}

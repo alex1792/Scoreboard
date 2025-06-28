@@ -7,7 +7,7 @@ const BaseLayout = ({ currentUser }) => {
       <nav>
         <h1><Link to="/">Score Board</Link></h1>
         <ul>
-          <li><Link to="/scoreboard">Score Board</Link></li>
+          <li><Link to="/">Score Board</Link></li>
           <li><Link to="/matches">Matches</Link></li>
           {currentUser && currentUser.username ? (
             <>

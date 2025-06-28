@@ -1,0 +1,302 @@
+/* UsersPage.css - 用戶卡片樣式 */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #535353;
+    margin: 0;
+  }
+  
+  .user-stats {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .stat-item {
+    background: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+  
+  .user-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border-left: 4px solid #4CAF50;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  .user-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4CAF50, #2196F3);
+  }
+  
+  .user-attributes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .user-id {
+    color: #666;
+    font-size: 1rem;
+    font-weight: 600;
+    min-width: 60px;
+  }
+  
+  .user-username {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+    flex: 1;
+    text-align: center;
+  }
+  
+  .role-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 80px;
+    text-align: center;
+  }
+  
+  .user-info {
+    margin-bottom: 1rem;
+  }
+  
+  .user-name {
+    margin-bottom: 0.8rem;
+  }
+  
+  .name-label {
+    color: #666;
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+  }
+  
+  .name-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+  }
+  
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .detail-label {
+    color: #666;
+    font-size: 0.85rem;
+  }
+  
+  .detail-value {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .user-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+  
+  .user-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  .status-text {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+  
+  .loading-spinner {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .loading-container p {
+    color: #666;
+    font-size: 1rem;
+  }
+  
+  /* 響應式設計 */
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+    
+    .page-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    
+    .user-stats {
+      flex-wrap: wrap;
+    }
+    
+    .users-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .user-card {
+      padding: 1rem;
+    }
+    
+    .user-attributes {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+    
+    .user-id, .user-username, .user-role {
+      min-width: auto;
+    }
+  }
+  
+  /* 深色模式支持 */
+  /* @media (prefers-color-scheme: dark) {
+    .user-card {
+      background: #2d3748;
+      color: #e2e8f0;
+    }
+    
+    .page-title {
+      color: #e2e8f0;
+    }
+    
+    .user-username {
+      color: #e2e8f0;
+    }
+    
+    .user-footer {
+      border-top-color: #4a5568;
+    }
+  } */
+
+  .role-select {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 100px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .role-select:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .role-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+  }
+
+  .role-select.updating {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .updating-indicator {
+    margin-left: 0.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  .user-role {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }

@@ -1,13 +1,17 @@
 import { useState } from 'react';
+import './LoginForm.css';
 
 function LoginForm({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
+    
     try {
       const response = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
@@ -16,43 +20,78 @@ function LoginForm({ onLogin }) {
       });
       const data = await response.json();
       if (data.status === 'success') {
-        // 登入成功，處理 token 和 user 資訊
-        // console.log("登入成功:", data);
-        localStorage.setItem('access_token', data.data.access_token); // 存 token
-        if (onLogin) onLogin(data.data.user); // 通知父元件登入成功
+        localStorage.setItem('access_token', data.data.access_token);
+        if (onLogin) onLogin(data.data.user);
       } else {
-        setError(data.message || '登入失敗');
+        setError(data.message || 'Login failed');
       }
     } catch (err) {
-      setError('網路錯誤，請稍後再試');
-      console.error("登入錯誤:", err);
+      setError('Network error, please try again later');
+      console.error("Login error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1>Log In</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="username">Username</label>
-        <input
-          name="username"
-          id="username"
-          required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <label htmlFor="password">Password</label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <input type="submit" value="Log In" />
-      </form>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
+          <div className="logo">
+            🏸
+          </div>
+          <h1>Welcome Back</h1>
+          <p>Please login to your account</p>
+        </div>
+        
+        {error && <div className="error-message">⚠️ {error}</div>}
+        
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="input-group">
+            <span className="input-icon">👤</span>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="form-input"
+              placeholder=" "
+            />
+            <label htmlFor="username" className="form-label">Username</label>
+          </div>
+          
+          <div className="input-group">
+            <span className="input-icon">🔒</span>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+              placeholder=" "
+            />
+            <label htmlFor="password" className="form-label">Password</label>
+          </div>
+          
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="loading-spinner">⏳</span>
+            ) : (
+              'Login'
+            )}
+          </button>
+        </form>
+        
+        <div className="login-footer">
+          <p>Don't have an account？ <a href="/register">Register</a></p>
+        </div>
+      </div>
     </div>
   );
 }

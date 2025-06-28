@@ -36,12 +36,12 @@ def get_match_data(match):
     }
 
 def create_match_record(player1_name, player2_name, category, status='Scheduled'):
-    new_match = Match(
-        player1_name=player1_name,
-        player2_name=player2_name,
-        category=category,
-        status=status
-    )
+    new_match = Match(**{
+        'player1_name': player1_name,
+        'player2_name': player2_name,
+        'category': category,
+        'status': status
+    })
     db.session.add(new_match)
     db.session.commit()
     return new_match
@@ -89,11 +89,18 @@ def update_user_role():
 
     data = request.get_json()
     print(f'\n\ndata: ${data}\n')
-    user = User.query.filter_by(username=data.get('username')).first()
+
+    user_id = data.get('user_id')
+    new_role = data.get('new_role')
+
+    if not user_id or not new_role:
+        return jsonify({"status": "error", "message": "Missing user_id or new_role"}), 400
+
+    user = User.query.get(user_id)
     if not user:
         return jsonify({"status": "error", "message": "User not found"}), 404
 
-    user.role = data.get('role')
+    user.role = new_role
     db.session.commit()
 
     print(f"User {user.username} role updated to {user.role}")
@@ -151,14 +158,14 @@ def update_user_roles():
     
     # broadcast to all connected clients
     socketio.emit('user_role_updated', {
-        "username": user.username,
-        "role": user.role
+        "username": user.username if user else None,
+        "role": user.role if user else None
     }, namespace='/user_role_update')
 
     # return success response
     return jsonify({
         "status": "success",
-        "message": f"User {user.username} role updated to {role}"
+        "message": f"User {user.username if user else None} role updated to {role}"
     }), 200
 
 # ------------- WebSocket events for user role updates ----------------
@@ -180,7 +187,7 @@ def upload_match_schedule():
         return authorization
     
     file = request.files.get('file')
-    if not file:
+    if not file or not file.filename:
         return jsonify({"status": "error", "message": "No file provided"}), 400
     if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
         return jsonify({"status": "error", "message": "Invalid file format, only .csv and .xslx are allowed"}), 400
@@ -188,9 +195,9 @@ def upload_match_schedule():
     try:
         import pandas as pd
         if file.filename.endswith('.csv'):
-            f = pd.read_csv(file, encoding='utf-8')
+            f = pd.read_csv(file.stream, encoding='utf-8')
         else:
-            f = pd.read_excel(file, engine='openpyxl')
+            f = pd.read_excel(file.stream, engine='openpyxl')
         
         player1s = f['player1'].tolist()
         player2s = f['player2'].tolist()
@@ -222,21 +229,29 @@ def generate_match_schedule():
     try:
         # read .xlsx or .csv file
         file = request.files.get('file')
-        if not file:
+
+        # get total court from frontend (Default: 6)
+        total_court = request.form.get('total_court', 6)
+        try:
+            total_court = int(total_court)
+        except (ValueError, TypeError):
+            total_court = 6
+
+        if not file or not file.filename:
             return jsonify({"status": "error", "message": "No file provided"}), 400
         if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
             return jsonify({"status": "error", "message": "Invalid file format, only .csv and .xslx are allowed"}), 400
 
         import pandas as pd
         if file.filename.endswith('.csv'):
-            f = pd.read_csv(file, encoding='utf-8')
+            f = pd.read_csv(file.stream, encoding='utf-8')
         else:
-            f = pd.read_excel(file, engine='openpyxl')
+            f = pd.read_excel(file.stream, engine='openpyxl')
 
         instance_path = current_app.instance_path
         output_path = os.path.join(instance_path, 'round_robin_schedule.xlsx')
         
-        total_court = 6
+        # total_court = 6
         generate_schedule(f, total_court, output_path)
 
         return send_file(output_path, as_attachment=True, download_name='round_robin_schedule.xlsx')
@@ -273,11 +288,11 @@ def get_all_matches():
 
 # ------------- WebSocket events for scoreboard updates ----------------
 @socketio.on('connect', namespace='/scoreboard')
-def handle_connect():
+def handle_scoreboard_connect():
     print("[WebSocket] Client connected to /scoreboard namespace")
 
 @socketio.on('disconnect', namespace='/scoreboard')
-def handle_disconnect():
+def handle_scoreboard_disconnect():
     print("[WebSocket] Client disconnected from /scoreboard namespace")
 # ----------------------------------------------------------------------
 
@@ -298,12 +313,12 @@ def create_match():
     # if not all([player1, player2]):
     #     return jsonify({"status": "error", "message": "Players not found"}), 404
 
-    new_match = Match(
-        player1_name=data['player1_username'],
-        player2_name=data['player2_username'],
-        category=data['category'],
-        status='Scheduled'
-    )
+    new_match = Match(**{
+        'player1_name':data['player1_username'],
+        'player2_name': data['player2_username'],
+        'category': data['category'],
+        'status': 'Scheduled'
+    })
     db.session.add(new_match)
     db.session.commit()
 
@@ -326,10 +341,12 @@ def assign_umpire(match_id):
     match = Match.query.get(match_id)
     umpire = User.query.get(data['umpire_id'])
 
-    if not all([match, umpire]):
-        return jsonify({"status": "error", "message": "Not found"}), 404
-
-    match.umpire_id = umpire.id
+    if not match:
+        return jsonify({"status": "error", "message": "Match not found"}), 404
+    if not umpire:
+        return jsonify({"status": "error", "message": "Umpire not found"}), 404
+    
+    match.umpire_id = umpire.id if umpire else None
     db.session.commit()
 
     socketio.emit('match_update', get_match_data(match), namespace='/scoreboard')
