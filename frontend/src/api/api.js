@@ -248,6 +248,36 @@ export function downloadBlob(blob, filename) {
 
 // ================================================================================
 // ================================================================================
+// ========================= Upload and download file  ============================
+// ================================================================================
+// ================================================================================
+export async function uploadAndDownload(url, formData, filename = 'download.xlsx') {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if(response.ok) {
+            // download file
+            const blob = await response.blob();
+            downloadBlob(blob, filename);
+            alert('File generated and downloaded successfully!');
+        } else {
+            alert('Failed to generate file. Please try again.');
+        }
+    } catch (err) {
+        console.error('Error uploading and downloading file:', err);
+        alert('An error occurred while generating the file.')
+    }
+}
+
+// ================================================================================
+// ================================================================================
 // ========================= fetch user info  =====================================
 // ================================================================================
 // ================================================================================

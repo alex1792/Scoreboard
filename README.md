@@ -271,3 +271,8 @@ npm start
 ### 2025/06/27
 - Integrate check all users and update user role in one page
 ---
+
+### 2025/07/01
+- Implemented the match-generator page
+- IDEA: create sign up for tournament features, so that the data can be parsed and processed correctly in backend
+---

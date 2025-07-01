@@ -8,6 +8,7 @@ from .blueprints import (
 from .extensions import socketio
 from .models import Match, db, User
 from .scheduler import generate_schedule
+from .match_generator import generate_match
 import os
 
 # ===============================================================================================
@@ -255,6 +256,61 @@ def generate_match_schedule():
         generate_schedule(f, total_court, output_path)
 
         return send_file(output_path, as_attachment=True, download_name='round_robin_schedule.xlsx')
+
+    except Exception as e:
+        print(f"Error creating match schedule: {e}")
+        return jsonify({"status": "error", "message": "Error creating match schedule"})
+
+@admin_blueprint.route('/upload_participants', methods=['POST'])
+@jwt_required()
+def upload_participants():
+    # check authorization
+    auth = check_authorization()
+    if auth:
+        return auth
+
+    print("Generating all possible matches...")
+    
+    # generate match algo
+    try:
+        # read .xlsx or .csv file
+        file = request.files.get('file')
+
+        categories = request.form.get('categories', 'MS,WS,MD,WD,XD')
+        flight = request.form.get('flight', 'A,B,C')
+        rules_type = request.form.get('rules', 'r,e')
+
+        categories = categories.split(',')
+        flight = flight.split(',')
+
+        rules = {}
+        for cat in categories:
+            for fl in flight:
+                key = f"{cat}-{fl}"
+                if rules_type == 'r':
+                    rules[key] = ['r', 4]  # round-robin with 4 players per group
+                else:
+                    rules[key] = ['e']  # elimination
+
+        if not file or not file.filename:
+            return jsonify({"status": "error", "message": "No file provided"}), 400
+        if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
+            return jsonify({"status": "error", "message": "Invalid file format, only .csv and .xslx are allowed"}), 400
+
+        import pandas as pd
+        if file.filename.endswith('.csv'):
+            f = pd.read_csv(file.stream, encoding='utf-8')
+        else:
+            f = pd.read_excel(file.stream, engine='openpyxl')
+
+        instance_path = current_app.instance_path
+        os.makedirs(instance_path, exist_ok=True)
+        output_path = os.path.join(instance_path, 'all_matches.xlsx')
+        
+        # total_court = 6
+        generate_match(f, categories, flight, rules, output_path)
+
+        return send_file(output_path, as_attachment=True, download_name='all_matches.xlsx')
 
     except Exception as e:
         print(f"Error creating match schedule: {e}")

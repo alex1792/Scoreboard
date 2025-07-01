@@ -31,6 +31,20 @@ const UploadSchedule = () => {
                 marginBottom: '2rem'
             }}>
                 <h2>Upload Match Schedule</h2>
+                <Link to="/admin/match-generator" style={{ 
+                    display: 'inline-block', 
+                    padding: '10px 20px', 
+                    backgroundColor: '#4CAF50', 
+                    color: 'white', 
+                    textDecoration: 'none', 
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    border: 'none',
+                    fontSize: '14px'
+                }}>
+                    Generate All Matches
+                </Link>
                 <Link to="/admin/scheduler" style={{ 
                     display: 'inline-block', 
                     padding: '10px 20px', 
@@ -43,7 +57,7 @@ const UploadSchedule = () => {
                     border: 'none',
                     fontSize: '14px'
                 }}>
-                    Generate Round Robin Schedule
+                    Generate Schedule
                 </Link>
             </div>
             

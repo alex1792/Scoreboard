@@ -1,6 +1,6 @@
-/* LoginForm.css - 簡約風格 */
+/* RegisterForm.css - 簡約風格，與登入頁面保持一致 */
 
-.login-container {
+.register-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -10,7 +10,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.login-card {
+.register-card {
   background: white;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -22,14 +22,14 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.login-card::before {
+.register-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #3498db, #2980b9);
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
   border-radius: 16px 16px 0 0;
 }
 
@@ -44,7 +44,7 @@
   }
 }
 
-.login-header {
+.register-header {
   text-align: center;
   margin-bottom: 30px;
 }
@@ -64,14 +64,14 @@
   }
 }
 
-.login-header h1 {
+.register-header h1 {
   color: #2c3e50;
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
-.login-header p {
+.register-header p {
   color: #7f8c8d;
   font-size: 14px;
   margin: 0;
@@ -95,7 +95,7 @@
   75% { transform: translateX(3px); }
 }
 
-.login-form {
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -129,9 +129,9 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: #27ae60;
   background: white;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
 }
 
 .form-input:focus + .form-label,
@@ -139,14 +139,14 @@
   top: 0;
   left: 12px;
   font-size: 12px;
-  color: #3498db;
+  color: #27ae60;
   background: white;
   padding: 0 4px;
   font-weight: 500;
 }
 
 .form-input:focus ~ .input-icon {
-  color: #3498db;
+  color: #27ae60;
 }
 
 .form-label {
@@ -161,8 +161,8 @@
   background: transparent;
 }
 
-.login-button {
-  background: #3498db;
+.register-button {
+  background: #27ae60;
   color: white;
   border: none;
   padding: 14px;
@@ -174,17 +174,17 @@
   margin-top: 10px;
 }
 
-.login-button:hover:not(:disabled) {
-  background: #2980b9;
+.register-button:hover:not(:disabled) {
+  background: #229954;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 
-.login-button:active:not(:disabled) {
+.register-button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.login-button:disabled {
+.register-button:disabled {
   background: #9ca3af;
   cursor: not-allowed;
   transform: none;
@@ -200,39 +200,39 @@
   to { transform: rotate(360deg); }
 }
 
-.login-footer {
+.register-footer {
   text-align: center;
   margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid #f3f4f6;
 }
 
-.login-footer p {
+.register-footer p {
   color: #6b7280;
   font-size: 14px;
   margin: 0;
 }
 
-.login-footer a {
-  color: #3498db;
+.register-footer a {
+  color: #27ae60;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
-.login-footer a:hover {
-  color: #2980b9;
+.register-footer a:hover {
+  color: #229954;
   text-decoration: underline;
 }
 
 /* 響應式設計 */
 @media (max-width: 480px) {
-  .login-card {
+  .register-card {
     padding: 30px 20px;
     margin: 10px;
   }
   
-  .login-header h1 {
+  .register-header h1 {
     font-size: 20px;
   }
   
@@ -257,20 +257,20 @@
 
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
-  .login-container {
+  .register-container {
     background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
   }
   
-  .login-card {
+  .register-card {
     background: #2d3748;
     border-color: rgba(255, 255, 255, 0.1);
   }
   
-  .login-header h1 {
+  .register-header h1 {
     color: #f7fafc;
   }
   
-  .login-header p {
+  .register-header p {
     color: #a0aec0;
   }
   

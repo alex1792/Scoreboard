@@ -14,10 +14,10 @@ def read_file(fname='24FALL_USC_OPEN_TEST.xlsx'):
 # match = [team1_names, team2_names, category, flight, weight]
 def get_match_info(f):
     # get all player's name
-    player1s = f['team1'].tolist()
-    player2s = f['team2'].tolist()
-    categories = f['category'].tolist()
-    flights = f['flight']
+    player1s = f['Team1'].tolist()
+    player2s = f['Team2'].tolist()
+    categories = f['Category'].tolist()
+    flights = f['Flight'].tolist()
             
     # analyze each player's name and their total games
     players = {}

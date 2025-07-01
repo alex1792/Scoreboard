@@ -61,7 +61,7 @@ const Home = ({ currentUser }) => {
           </div>
         </section>
 
-        {currentUser?.role === 'admin' && (
+        {/* {currentUser?.role === 'admin' && (
           <section className="card admin-section">
             <div className="admin-management">
               <h3>Match Management</h3>
@@ -75,7 +75,7 @@ const Home = ({ currentUser }) => {
               </ul>
             </div>
           </section>
-        )}
+        )} */}
       </main>
     </>
   );
