@@ -6,10 +6,11 @@ from .blueprints import (
     create_match_blueprint, assign_umpire_blueprint
 )
 from .extensions import socketio
-from .models import Match, db, User
+from .models import Match, db, User, Tournament, Event, Group, Format
 from .scheduler import generate_schedule
 from .match_generator import generate_match
 import os
+from datetime import datetime
 
 # ===============================================================================================
 # ===============================================================================================
@@ -55,6 +56,16 @@ def check_authorization(role='admin'):
     if not current_user or (current_user.role != 'admin' and current_user.role != role):
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     return None
+
+def print_tournament_info(tournament_name):
+    tournament = Tournament.query.filter_by(name=tournament_name).first()
+    if not tournament:
+        return None
+    
+    print(f"Tournament: {tournament.name}")
+    print(f"Date: {tournament.date}")
+    print(f"Location: {tournament.location}")
+    print(f"Events: {len(tournament.events)} events")
 
 # ===============================================================================================
 # ===============================================================================================
@@ -316,6 +327,128 @@ def upload_participants():
         print(f"Error creating match schedule: {e}")
         return jsonify({"status": "error", "message": "Error creating match schedule"})
 
+@admin_blueprint.route('/create_tournament', methods=['POST'])
+@jwt_required()
+def create_tournament():
+    # check authorization
+    auth = check_authorization()
+    if auth:
+        return auth
+
+    try:
+        # get tournament data from frontend
+        data = request.get_json()
+        if not data:
+            return jsonify({"status": "error", "message": "No tournament data provided"}), 400
+
+        # fetching data from frontend, the data is in the form of a dictionary
+        # data = {'tournament': {'name': 'tournament_name', 'date': '2025-01-01', 'location': 'Gym'}, 'events': []}
+
+        # tournament_info is a dictionary
+        tournament_info = data.get('tournament')
+        events_info = data.get('events')
+
+        if not tournament_info or not events_info:
+            return jsonify({"status": "error", "message": "Missing tournament or events data"}), 400
+        
+        print(f"Received tournament_info: {tournament_info}")
+        print(f"Received events_info: {events_info}")
+        
+        # Convert date strings to datetime objects
+        if 'date' in tournament_info and tournament_info['date']:
+            try:
+                tournament_info['date'] = datetime.fromisoformat(tournament_info['date'])
+            except ValueError:
+                return jsonify({"status": "error", "message": "Invalid date format. Please use YYYY-MM-DD format"}), 400
+        
+        if 'registration_deadline' in tournament_info and tournament_info['registration_deadline']:
+            try:
+                tournament_info['registration_deadline'] = datetime.fromisoformat(tournament_info['registration_deadline'])
+            except ValueError:
+                return jsonify({"status": "error", "message": "Invalid registration deadline format. Please use YYYY-MM-DD format"}), 400
+        
+        # create tournament
+        tournament = Tournament(**tournament_info)  # map all the key and value to the tournament class
+        db.session.add(tournament)
+        db.session.commit()
+
+        print(f"Tournament created: {tournament.name}")
+
+        # create events
+        # events_info is a list of dictionaries
+        for event_info in events_info:
+            print(f"Event info: {event_info}")
+            if "Men's Single" in event_info['name']:
+                event_info['category'] = 'MS'
+            elif "Women's Single" in event_info['name']:
+                event_info['category'] = 'WS'
+            elif "Men's Doubles" in event_info['name']:
+                event_info['category'] = 'MD'
+            elif "Women's Doubles" in event_info['name']:
+                event_info['category'] = 'WD'
+            elif "Mixed Doubles" in event_info['name']:
+                event_info['category'] = 'XD'
+
+            # add tournament_id for event_info
+            event_info['tournament_id'] = tournament.id
+            print(f"Event info with tournament_id: {event_info}")
+
+            new_event_info = {
+                'name': event_info['name'],
+                'category': event_info['category'],
+                'tournament_id': tournament.id
+            }
+            event = Event(**new_event_info)
+            print(f"Event object created: {event}")
+            # tournament.events.append(event)  # add event to tournament
+            db.session.add(event)
+            db.session.commit()
+
+            print(f"Event created: {event.name}")
+
+            # create groups of each event
+            for group_info in event_info['groups']:
+                format_type = group_info['format']
+                format_exist = Format.query.filter_by(type=format_type).first()
+                if not format_exist:
+                    return jsonify({"status": "error", "message": f"Format '{format_type}' not found"}), 400
+                
+                group_data = {
+                    'name': group_info['name'],
+                    'event_id': event.id,
+                    'format_id': format_exist.id,
+                }
+
+                group = Group(**group_data)  
+                db.session.add(group)
+                db.session.commit()
+
+                print(f"Group created: {group.name}")
+
+                # # check if format exist in the database
+                # format_exist = Format.query.filter_by(type=group_info['format']).first()
+                # if format_exist:
+                #     group.format = format_exist
+                # else:
+                #     format_data = {'type': group_info['format'], 'group_id': group.id}
+                #     format_obj = Format(**format_data)
+                #     db.session.add(format_obj)
+                #     # db.session.commit()
+                #     # group.format = format_obj
+                
+                # db.session.commit()
+        print('--------------------------------')
+        print('Create tournament successfully!!!!!!!')
+        print('--------------------------------\n')
+                
+        
+        print_tournament_info(tournament_info['name'])
+        
+        return jsonify({"status": "success", "message": "Tournament created successfully"}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Error creating tournament"}), 200
+        
 
 # ===============================================================================================
 # ===============================================================================================

@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from .extensions import db
+from datetime import datetime
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -41,3 +42,53 @@ class Match(db.Model):
     # player1 = db.relationship('Player', foreign_keys=[player1_id])
     # player2 = db.relationship('Player', foreign_keys=[player2_id])
     
+
+class Tournament(db.Model):
+    __tablename__ = 'tournaments'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    date = db.Column(db.DateTime, nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    # max_participants = db.Column(db.Integer)
+    registration_deadline = db.Column(db.DateTime)
+    status = db.Column(db.String(20), default='draft')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 關係定義
+    events = db.relationship('Event', backref='tournament', lazy=True, cascade='all, delete-orphan')
+
+class Event(db.Model):
+    __tablename__ = 'events'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), nullable=False)
+    category = db.Column(db.String(10), nullable=False)  # MS, WS, MD, WD, XD
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
+    max_participants = db.Column(db.Integer)
+    status = db.Column(db.String(20), default='open')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 關係定義
+    groups = db.relationship('Group', backref='event', lazy=True, cascade='all, delete-orphan')
+
+class Group(db.Model):
+    __tablename__ = 'groups'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
+    format_id = db.Column(db.Integer, db.ForeignKey('formats.id'), nullable=False)
+    max_participants = db.Column(db.Integer)
+    status = db.Column(db.String(20), default='open')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Format(db.Model):
+    __tablename__ = 'formats'
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(20), nullable=False, unique=True)
+    rules = db.Column(db.Text)
+    group_size = db.Column(db.Integer)  # 用於 round robin
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 關係定義 - 一對多關係
+    groups = db.relationship('Group', backref='format', lazy=True)

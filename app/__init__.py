@@ -45,6 +45,24 @@ def create_app():
             )
             db.session.add(admin)
             db.session.commit()
+
+        # 確保基本 Format 存在
+        from .models import Format
+        if not Format.query.filter_by(type='round_robin').first():
+            round_robin_format = Format(
+                type='round_robin',
+                rules='Round Robin format',
+            )
+            db.session.add(round_robin_format)
+        
+        if not Format.query.filter_by(type='elimination').first():
+            elimination_format = Format(
+                type='elimination',
+                rules='Elimination format',
+            )
+            db.session.add(elimination_format)
+        
+        db.session.commit()
     
     # 註冊所有 Blueprints
     from .routes import (

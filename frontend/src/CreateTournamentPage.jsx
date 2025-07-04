@@ -1,0 +1,312 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchInfoToBackend } from './api/api';
+import './CreateTournamentPage.css';
+
+const TournamentCreatePage = () => {
+    const navigate = useNavigate();
+    const [tournamentData, setTournamentData] = useState({
+        name: '',
+        date: '',
+        location: ''
+    });
+    const [selectedEvents, setSelectedEvents] = useState([]);
+    const [groups, setGroups] = useState({});
+    const [newGroupNames, setNewGroupNames] = useState({});
+    const [groupFormats, setGroupFormats] = useState({});
+
+    const allEvents = ["Men's Single", "Women's Single", "Men's Doubles", "Women's Doubles", "Mixed Doubles"];
+    const formatOptions = [
+        { value: 'elimination', label: 'Elimination' },
+        { value: 'round_robin', label: 'Round Robin' },
+    ];
+
+    // 處理基本資料變更
+    const handleTournamentChange = (e) => {
+        const { name, value } = e.target;
+        setTournamentData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // 處理 Event 勾選 - 修正版本
+    const handleEventChange = (eventName) => {
+        setSelectedEvents(prev => {
+            const isCurrentlySelected = prev.includes(eventName);
+            
+            if (isCurrentlySelected) {
+                // 移除 event 時，也要移除相關的 groups
+                setGroups(currentGroups => {
+                    const newGroups = { ...currentGroups };
+                    delete newGroups[eventName];
+                    return newGroups;
+                });
+                
+                // 移除相關的 formats
+                setGroupFormats(currentFormats => {
+                    const newFormats = { ...currentFormats };
+                    Object.keys(newFormats).forEach(key => {
+                        if (key.startsWith(`${eventName}-`)) {
+                            delete newFormats[key];
+                        }
+                    });
+                    return newFormats;
+                });
+                
+                // 移除相關的 newGroupName
+                setNewGroupNames(currentNames => {
+                    const newGroupNames = { ...currentNames };
+                    delete newGroupNames[eventName];
+                    return newGroupNames;
+                });
+                
+                return prev.filter(e => e !== eventName);
+            } else {
+                return [...prev, eventName];
+            }
+        });
+    };
+
+    // 處理 group name 輸入變更
+    const handleGroupNameChange = (eventName, value) => {
+        setNewGroupNames(prev => ({
+            ...prev,
+            [eventName]: value
+        }));
+    };
+
+    // 新增 Group
+    const handleAddGroup = (eventName) => {
+        const groupName = newGroupNames[eventName]?.trim();
+        if (!groupName) {
+            alert('Please enter a group name');
+            return;
+        }
+        
+        const groupId = `${eventName}-${Date.now()}`;
+        const newGroup = {
+            id: groupId,
+            name: groupName,
+            event: eventName
+        };
+        
+        setGroups(prev => ({
+            ...prev,
+            [eventName]: [...(prev[eventName] || []), newGroup]
+        }));
+        
+        // 清空該 event 的 group name
+        setNewGroupNames(prev => ({
+            ...prev,
+            [eventName]: ''
+        }));
+    };
+
+    // 移除 Group
+    const handleRemoveGroup = (eventName, groupId) => {
+        setGroups(prev => ({
+            ...prev,
+            [eventName]: prev[eventName].filter(g => g.id !== groupId)
+        }));
+        
+        // 移除相關的 format
+        setGroupFormats(prev => {
+            const newFormats = { ...prev };
+            delete newFormats[groupId];
+            return newFormats;
+        });
+    };
+
+    // 處理 Format 選擇
+    const handleFormatChange = (groupId, format) => {
+        setGroupFormats(prev => ({
+            ...prev,
+            [groupId]: format
+        }));
+    };
+
+    // 提交表單
+    const handleSubmit = async () => {
+        // 驗證基本資料
+        if (!tournamentData.name || !tournamentData.date || !tournamentData.location) {
+            alert('Please fill in all tournament information');
+            return;
+        }
+        
+        if (selectedEvents.length === 0) {
+            alert('Please select at least one event');
+            return;
+        }
+        
+        // 驗證每個 event 都有 groups
+        for (const event of selectedEvents) {
+            if (!groups[event] || groups[event].length === 0) {
+                alert(`Please add at least one group for ${event}`);
+                return;
+            }
+        }
+        
+        // 驗證每個 group 都有 format
+        for (const event of selectedEvents) {
+            for (const group of groups[event]) {
+                if (!groupFormats[group.id]) {
+                    alert(`Please select format for group ${group.name} in ${event}`);
+                    return;
+                }
+            }
+        }
+        
+        // 準備提交資料
+        const submitData = {
+            tournament: tournamentData,
+            events: selectedEvents.map(eventName => ({
+                name: eventName,
+                groups: groups[eventName].map(group => ({
+                    name: group.name,
+                    format: groupFormats[group.id]
+                }))
+            }))
+        };
+        
+        console.log('Submitting:', submitData);
+        
+        try {
+            // 這裡調用 API 來創建 tournament
+            // const response = await createTournament(submitData);
+            const response = await fetchInfoToBackend('http://localhost:5001/api/admin/create_tournament', submitData);
+            console.log('Response:', response);
+            alert('Tournament created successfully!');
+            navigate('/admin/tournaments');
+        } catch (error) {
+            alert('Failed to create tournament: ' + error.message);
+        }
+    };
+
+    return (
+        <div className="tournament-create-page">
+            <div className="container">
+                <h1>Create New Tournament</h1>
+                
+                {/* Tournament 基本資料 */}
+                <div className="section">
+                    <h2>Tournament Information</h2>
+                    <div className="form-group">
+                        <label>Tournament Name:</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={tournamentData.name}
+                            onChange={handleTournamentChange}
+                            placeholder="Enter tournament name"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Date:</label>
+                        <input
+                            type="date"
+                            name="date"
+                            value={tournamentData.date}
+                            onChange={handleTournamentChange}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Location:</label>
+                        <input
+                            type="text"
+                            name="location"
+                            value={tournamentData.location}
+                            onChange={handleTournamentChange}
+                            placeholder="Enter location"
+                        />
+                    </div>
+                </div>
+
+                {/* Event 選擇 */}
+                <div className="section">
+                    <h2>Select Events</h2>
+                    <div className="events-grid">
+                        {allEvents.map(event => (
+                            <label key={event} className="event-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedEvents.includes(event)}
+                                    onChange={() => handleEventChange(event)}
+                                />
+                                <span>{event}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Groups 配置 */}
+                {selectedEvents.length > 0 && (
+                    <div className="section">
+                        <h2>Configure Groups</h2>
+                        {selectedEvents.map(eventName => (
+                            <div key={eventName} className="event-groups">
+                                <h3>{eventName}</h3>
+                                
+                                {/* 新增 Group */}
+                                <div className="add-group">
+                                    <input
+                                        type="text"
+                                        value={newGroupNames[eventName] || ''}
+                                        onChange={(e) => handleGroupNameChange(eventName, e.target.value)}
+                                        placeholder="Enter group name"
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddGroup(eventName)}
+                                    />
+                                    <button 
+                                        onClick={() => handleAddGroup(eventName)}
+                                        className="btn-add"
+                                    >
+                                        Add Group
+                                    </button>
+                                </div>
+                                
+                                {/* 顯示 Groups */}
+                                <div className="groups-list">
+                                    {groups[eventName]?.map(group => (
+                                        <div key={group.id} className="group-item">
+                                            <span className="group-name">{group.name}</span>
+                                            <select
+                                                value={groupFormats[group.id] || ''}
+                                                onChange={(e) => handleFormatChange(group.id, e.target.value)}
+                                                className="format-select"
+                                            >
+                                                <option value="">Select Format</option>
+                                                {formatOptions.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button 
+                                                onClick={() => handleRemoveGroup(eventName, group.id)}
+                                                className="btn-remove"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* 提交按鈕 */}
+                <div className="actions">
+                    <button onClick={() => navigate('/admin/tournaments')} className="btn-cancel">
+                        Cancel
+                    </button>
+                    <button onClick={handleSubmit} className="btn-submit">
+                        Create Tournament
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default TournamentCreatePage; 

@@ -274,7 +274,7 @@ export async function uploadAndDownload(url, formData, filename = 'download.xlsx
         console.error('Error uploading and downloading file:', err);
         alert('An error occurred while generating the file.')
     }
-}
+};
 
 // ================================================================================
 // ================================================================================
@@ -302,4 +302,32 @@ export async function fetchUsers() {
         console.error("Failed to fetch users:", err);
         throw err; // rethrow error
     }
-}
+};
+
+// ================================================================================
+// ================================================================================
+// ========================= fetch info to backend  ===============================
+// ================================================================================
+// ================================================================================
+export async function fetchInfoToBackend(url, data) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if(response.ok) {
+            return await response.json();
+        } else {
+            throw new Error('Failed to fetch info to backend');
+        }
+    } catch(err) {
+        console.error('Error fetching info to backend:', err);
+        throw err;
+    }
+};

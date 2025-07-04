@@ -14,6 +14,7 @@ import ChangeUserStaus from './ChangesUserRolePage';
 import UploadSchedule from './UploadSchedulePage';
 import SchedulerPage from './SchedulerPage';
 import MatchGenerator from './MatchGeneratorPage';
+import CreateTournament from './CreateTournamentPage';
 import { AuthProvider } from './AuthContext';
 
 // currentUser can be modified to reflect the actual user state
@@ -63,6 +64,7 @@ function App() {
             <Route path="/admin/upload-schedule" element={<UploadSchedule />} />
             <Route path="/admin/scheduler" element={<SchedulerPage />} />
             <Route path="/admin/match-generator" element={<MatchGenerator />} />
+            <Route path="/admin/create-tournament" element={<CreateTournament />} />
             {/* <Route path="admin/change-upire-status" element={<AssignUmpirePage />} /> */}
 
             {/* Home */}

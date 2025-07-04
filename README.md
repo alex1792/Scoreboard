@@ -274,5 +274,11 @@ npm start
 
 ### 2025/07/01
 - Implemented the match-generator page
+- Update register page
 - IDEA: create sign up for tournament features, so that the data can be parsed and processed correctly in backend
+---
+
+### 2025/07/03
+- Implement the draft of the sign-up-tournament function
+- IDEAS: integrate the sign-up-tournament and the scheduler function 
 ---
