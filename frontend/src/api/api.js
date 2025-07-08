@@ -331,3 +331,19 @@ export async function fetchInfoToBackend(url, data) {
         throw err;
     }
 };
+
+export async function fetchInfoFromBackend(url) {
+    try {
+        // const token = localStorage.getItem('access_token');
+        const response = await fetch(url, { method: 'GET' });
+
+        if(response.ok) {
+            return await response.json();
+        } else {
+            throw new Error('Failed to fetch info to backend');
+        }
+    } catch (err) {
+        console.error('Error fetching info from backend:', err);
+        throw err;
+    }
+}

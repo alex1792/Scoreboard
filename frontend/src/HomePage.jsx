@@ -30,6 +30,13 @@ const Home = ({ currentUser }) => {
                 </Link>
               </div>
             )}
+            
+            <div className="admin-icon-item">
+                <Link to={`/tournaments`}>
+                  <img src="/winning-cup-icon.png" alt="View All Tournaments" className="admin-icon" />
+                  <span>View All Tournaments</span>
+                </Link>
+            </div>
             <div className="admin-icon-item">
               <Link to="/matches">
                 <img src="/documents-search-icon.png" alt="Check All Matches" className="admin-icon" />
@@ -38,6 +45,12 @@ const Home = ({ currentUser }) => {
             </div>
             {currentUser?.role === 'admin' && (
               <>
+                <div className="admin-icon-item">
+                  <Link to="/admin/create-tournament">
+                    <img src="/add-date-calendar-icon.png" alt="Create Tournament" className="admin-icon" />
+                    <span>Create Tournament</span>
+                  </Link>
+                </div>
                 <div className="admin-icon-item">
                   <Link to="/admin/set-umpire">
                     <img src="/file-setting-icon.png" alt="Match Management" className="admin-icon" />

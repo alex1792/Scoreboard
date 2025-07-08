@@ -15,6 +15,8 @@ import UploadSchedule from './UploadSchedulePage';
 import SchedulerPage from './SchedulerPage';
 import MatchGenerator from './MatchGeneratorPage';
 import CreateTournament from './CreateTournamentPage';
+import TournamentPage from './TournamentPage';
+import SignUpTournamentPage from './SignUpTournamentPage';
 import { AuthProvider } from './AuthContext';
 
 // currentUser can be modified to reflect the actual user state
@@ -54,6 +56,8 @@ function App() {
             {/* General Features */}
             <Route path="matches" element={<MatchesPage />} />
             <Route path="matches/:matchId" element={<ScoreboardPage currentUser={currentUser}/>} />
+            <Route path="tournaments" element={<TournamentPage />} />
+            <Route path="tournaments/:tournamentId/signup" element={<SignUpTournamentPage />} />
             
             {/* Admin Features */}
             <Route path="/admin/set-umpire" element={<AssignUmpirePage />} />

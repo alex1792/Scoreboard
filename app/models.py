@@ -41,6 +41,21 @@ class Match(db.Model):
     # player2_id = db.Column(db.Integer, db.ForeignKey('players.id'))
     # player1 = db.relationship('Player', foreign_keys=[player1_id])
     # player2 = db.relationship('Player', foreign_keys=[player2_id])
+
+# class Match(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'), nullable=False)
+#     event_type = db.Column(db.String(50), nullable=False)  # 'singles', 'doubles'
+#     group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    
+#     # 統一使用 ID，根據 event_type 判斷是 player_id 還是 doubles_team_id
+#     participant1_id = db.Column(db.Integer, nullable=False)
+#     participant2_id = db.Column(db.Integer, nullable=False)
+    
+#     participant1_score = db.Column(db.Integer, default=0)
+#     participant2_score = db.Column(db.Integer, default=0)
+#     status = db.Column(db.String(20), default='pending')
+#     umpire_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
 
 class Tournament(db.Model):
@@ -92,3 +107,6 @@ class Format(db.Model):
     
     # 關係定義 - 一對多關係
     groups = db.relationship('Group', backref='format', lazy=True)
+
+
+# 2025/07/07 新增版本

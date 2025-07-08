@@ -81,6 +81,68 @@ def print_tournament_info(tournament_name):
 def home():
     return jsonify({"status": "success", "message": "Welcome to Scoreboard API"})
 
+@home_blueprint.route('/tournaments', methods=['GET'])
+def get_tournaments():
+    try:
+        tournaments = Tournament.query.all()
+        if not tournaments:
+            return jsonify({"status": "error", "message": "No tournaments found"}), 404
+        # print(f"Tournaments: {tournaments}")
+        tournaments_data = []
+
+        for tournament in tournaments:
+            tournament_data = {
+                'id': tournament.id,
+                'name': tournament.name,
+                'date': tournament.date,
+                'location': tournament.location,
+                'registration_deadline': tournament.registration_deadline
+            }
+            print(f"Tournament data: {tournament_data}")
+            tournaments_data.append(tournament_data)
+        return jsonify({"status": "success", "message": "Tournaments fetched successfully", "data": tournaments_data}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to get tournaments"}), 500
+
+@home_blueprint.route('/tournaments/<int:tournament_id>', methods=['GET'])
+def get_tournament_details(tournament_id):
+    tournament = Tournament.query.get(tournament_id)
+    if not tournament:
+        print(f"Tournament not found")
+        return jsonify({"status": "error", "message": "Tournament not found"}), 404
+
+    print(f"Tournament: {tournament}")
+
+    events = []
+    for event in tournament.events:
+        groups = []
+        for group in event.groups:
+            group_data = {
+                'id': group.id,
+                'name': group.name
+            }
+            groups.append(group_data)
+        
+        event_data = {
+            'id': event.id,
+            'name': event.name,
+            'category': event.category,
+            'groups': groups
+        }
+        events.append(event_data)
+
+    tournament_data = {
+        'id': tournament.id,
+        'name': tournament.name,
+        'date': tournament.date,
+        'location': tournament.location,
+        'events': events
+    }
+    print(f"Tournament data: {tournament_data}")
+    return jsonify({"status": "success", "message": "Tournament details fetched successfully", "data": tournament_data}), 200
+
+
 # ===============================================================================================
 # ===============================================================================================
 # ===============================================================================================
