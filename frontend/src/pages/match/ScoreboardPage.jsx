@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
-import './scoreboard.css';
+import '../../styles/pages/match/scoreboard.css';
 
 const Scoreboard = ({currentUser}) => {
   // parent conponent沒有pass scoreboard的資料 所以這裡要再fetch一次

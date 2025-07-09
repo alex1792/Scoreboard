@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import './matches.css'; 
-import { useMatchInfoListener } from './api/socketService';
-import { useFetchMatchInfo } from './api/api';
-import { deleteMatch } from './api/api';
+import '../../styles/pages/match/matches.css'; 
+import { useMatchInfoListener } from '../../api/socketService';
+import { useFetchMatchInfo } from '../../api/api';
+import { assignUmpire } from '../../api/api';
+import { deleteMatch } from '../../api/api';
 
 
-const MatchCard = ({ match, onDelete }) => {
+const MatchCard = ({ match, onAssignUmpire, onDeleteMatch }) => {
   const statusColorMap = {
     ended: '#4CAF50',
     ongoing: '#FFC107',
@@ -16,7 +17,15 @@ const MatchCard = ({ match, onDelete }) => {
   const statusColor = statusColorMap[match.status?.toLowerCase()] || '#ccc';
 
   return (
-    <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id}>
+    <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id} style={{ position: 'relative' }}>
+      <button
+        className="close-btn"
+        aria-label="Close"
+        onClick={() => onDeleteMatch(match.id)}
+        type="button"
+      >
+        &times;
+      </button>
       <div className="match-header">
         <div className="match-id">#{match.id}</div>
         <div className="match-category">{match.category}</div>
@@ -37,23 +46,27 @@ const MatchCard = ({ match, onDelete }) => {
       <div className="score">{match.score1} : {match.score2}</div>
 
       <div className="status">
-        <span className={`status-badge status-${match.status?.toLowerCase()}`}
-              style={{ backgroundColor: statusColor + '20', color: statusColor }}>
+        <span
+          className={`status-badge status-${match.status?.toLowerCase()}`}
+          style={{ backgroundColor: statusColor + '20', color: statusColor }}
+        >
           {match.status?.toUpperCase()}
         </span>
       </div>
 
       <div className="umpire-section">
         <span className="umpire-label">
-          Umpire: <span className="umpire-name">{typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}</span>
+          Umpire: <span className="umpire-name">
+            {typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}
+          </span>
         </span>
-        <button className="delete-match-btn" onClick={() => onDelete(match.id)}>Delete Match</button>
+        <button className="set-umpire-btn" onClick={() => onAssignUmpire(match.id)}>Assign Umpire</button>
       </div>
     </div>
   );
 };
 
-const ManageMatchPage = () => {
+const AssignUmpirePage = () => {
   const [matches, setMatches] = useState([]);
   const [animatingMatchId, setAnimatingMatchId] = useState(null);
   const socketRef = useRef(null);
@@ -63,7 +76,7 @@ const ManageMatchPage = () => {
   
   // match info listener
   useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });
-  
+
   // Handle match deletion with local state update
   const handleDeleteMatch = async (matchId) => {
     const success = await deleteMatch(matchId);
@@ -77,14 +90,14 @@ const ManageMatchPage = () => {
     <>
       <div className="container">
         <div className="page-header">
-          <h1 className="page-title">Manage Matches</h1>
-          <Link to="/create-match" className="create-match-link">
+          <h1 className="page-title">All Matches</h1>
+          <Link to="/admin/create-match" className="create-match-link">
             <button className="create-match-btn">Create New Match</button>
           </Link>
         </div>
         <div className="matches-grid">
           {matches.map(match => (
-            <MatchCard key={match.id} match={match} onDelete={handleDeleteMatch} />
+            <MatchCard key={match.id} match={match} onAssignUmpire={assignUmpire} onDeleteMatch={handleDeleteMatch} />
           ))}
         </div>
       </div>
@@ -92,4 +105,4 @@ const ManageMatchPage = () => {
   );
 };
 
-export default ManageMatchPage;
+export default AssignUmpirePage;

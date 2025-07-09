@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchInfoFromBackend, fetchInfoToBackend } from './api/api';
-import './SignUpTournamentPage.css';
+import { fetchInfoFromBackend, fetchInfoToBackend } from '../../api/api';
+import '../../styles/pages/tournament/SignUpTournamentPage.css';
 
 const SignUpTournamentPage = () => {
     const navigate = useNavigate();
@@ -228,8 +228,12 @@ const SignUpTournamentPage = () => {
                             <span className="value">{tournament.name}</span>
                         </div>
                         <div className="info-item">
-                            <span className="label">Date:</span>
-                            <span className="value">{new Date(tournament.date).toLocaleDateString()}</span>
+                            <span className="label">Start Date:</span>
+                            <span className="value">{new Date(tournament.start_date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="info-item">
+                            <span className="label">End Date:</span>
+                            <span className="value">{new Date(tournament.end_date).toLocaleDateString()}</span>
                         </div>
                         <div className="info-item">
                             <span className="label">Location:</span>
@@ -307,7 +311,7 @@ const SignUpTournamentPage = () => {
                                                 />
                                                 <label htmlFor={`group-${group.id}`}>
                                                     <span className="group-name">{group.name}</span>
-                                                    <span className="group-format">({group.format})</span>
+                                                    <span className="group-format">({group.type})</span>
                                                 </label>
                                             </div>
                                         ))}

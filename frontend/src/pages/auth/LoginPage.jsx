@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import LoginForm from './LoginForm';
-import './LoginPage.css';
+import '../../styles/pages/auth/LoginPage.css';
 
 function LoginPage({ setCurrentUser, currentUser}) {
   const navigate = useNavigate();

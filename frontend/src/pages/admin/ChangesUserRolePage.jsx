@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {updateUserRole} from './api/api';
+import {updateUserRole} from '../../api/api';
 // import io from 'socket.io-client';
 
 // const socket = io('/admin'); // 與後端 /admin namespace 建立連線

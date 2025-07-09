@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { createMatch} from './api/api';
-import './matches.css';
+import { createMatch} from '../../api/api';
+import '../../styles/pages/match/matches.css';
 
 const CreateMatch = () => {
   const [player1Username, setPlayer1Username] = useState('');

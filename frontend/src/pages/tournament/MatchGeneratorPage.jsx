@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { uploadAndDownload } from './api/api';
-import './MatchGenerator.css';
+import { uploadAndDownload } from '../../api/api';
+import '../../styles/pages/tournament/MatchGenerator.css';
 
 const MatchGenerator = () => {
     const [file, setFile] = useState(null);

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchInfoToBackend } from './api/api';
-import './CreateTournamentPage.css';
+import { fetchInfoToBackend } from '../../api/api';
+import '../../styles/pages/admin/CreateTournamentPage.css';
 
 const TournamentCreatePage = () => {
     const navigate = useNavigate();
     const [tournamentData, setTournamentData] = useState({
         name: '',
-        date: '',
+        start_date: '',
+        end_date: '',
         location: ''
     });
     const [selectedEvents, setSelectedEvents] = useState([]);
@@ -129,8 +130,13 @@ const TournamentCreatePage = () => {
     // 提交表單
     const handleSubmit = async () => {
         // 驗證基本資料
-        if (!tournamentData.name || !tournamentData.date || !tournamentData.location) {
+        if (!tournamentData.name || !tournamentData.start_date || !tournamentData.end_date || !tournamentData.location) {
             alert('Please fill in all tournament information');
+            return;
+        }
+
+        if (tournamentData.start_date > tournamentData.end_date) {
+            alert('Starting date cannot be after ending date');
             return;
         }
         
@@ -176,7 +182,7 @@ const TournamentCreatePage = () => {
             const response = await fetchInfoToBackend('http://localhost:5001/api/admin/create_tournament', submitData);
             console.log('Response:', response);
             alert('Tournament created successfully!');
-            navigate('/admin/tournaments');
+            navigate('/tournaments');
         } catch (error) {
             alert('Failed to create tournament: ' + error.message);
         }
@@ -201,11 +207,20 @@ const TournamentCreatePage = () => {
                         />
                     </div>
                     <div className="form-group">
-                        <label>Date:</label>
+                        <label>Start Date:</label>
                         <input
                             type="date"
-                            name="date"
-                            value={tournamentData.date}
+                            name="start_date"
+                            value={tournamentData.start_date}
+                            onChange={handleTournamentChange}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Ending Date:</label>
+                        <input
+                            type="date"
+                            name="end_date"
+                            value={tournamentData.end_date}
                             onChange={handleTournamentChange}
                         />
                     </div>

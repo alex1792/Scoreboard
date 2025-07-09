@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { uploadFile } from './api/api';
+import { uploadFile } from '../../api/api';
 
 const UploadSchedule = () => {
     const [file, setFile] = useState(null);

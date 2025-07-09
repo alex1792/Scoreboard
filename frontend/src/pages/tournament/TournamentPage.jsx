@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchInfoFromBackend } from './api/api';
-import './TournamentPage.css';
+import { fetchInfoFromBackend } from '../../api/api';
+import '../../styles/pages/tournament/TournamentPage.css';
 
 const TournamentPage = () => {
   const [tournaments, setTournaments] = useState([]);
@@ -92,8 +92,16 @@ const TournamentPage = () => {
 
                   <div className="tournament-info">
                     <div className="info-item">
-                      <span className="info-label">Date:</span>
-                      <span className="info-value">{formatDate(tournament.date)}</span>
+                      <span className="info-label">Start Date:</span>
+                      <span className="info-value">{formatDate(tournament.start_date)}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">End Date:</span>
+                      <span className="info-value">{formatDate(tournament.end_date)}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Status:</span>
+                      <span className="info-value">{tournament.status || 'TBD'}</span>
                     </div>
                     
                     <div className="info-item">

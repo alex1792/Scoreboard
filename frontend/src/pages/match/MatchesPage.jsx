@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useMatchInfoListener } from './api/socketService';
-import { useFetchMatchInfo } from './api/api';
-import './matches.css';
+import { useMatchInfoListener } from '../../api/socketService';
+import { useFetchMatchInfo } from '../../api/api';
+import '../../styles/pages/match/matches.css';
 
 const MatchesPage = () => {
   const [matches, setMatches] = useState([]);

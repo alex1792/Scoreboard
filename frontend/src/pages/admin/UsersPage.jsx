@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import io from 'socket.io-client';
-import { fetchUsers, updateUserRole } from './api/api';
-import { AuthContext } from './AuthContext';
-import './UsersPage.css';
+import { fetchUsers, updateUserRole } from '../../api/api';
+import { AuthContext } from '../../context/AuthContext';
+import '../../styles/pages/admin/UsersPage.css';
 
 const UserCard = ({ user, onRoleUpdate, currentUserRole }) => {
   const [isUpdating, setIsUpdating] = useState(false);

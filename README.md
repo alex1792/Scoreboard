@@ -45,35 +45,74 @@ ideas for current version adjustment：
 ```
 - Scoreboard:
   - app:
-    - static:
-      - matches.css       # Stylesheet for matches.html
-      - scoreboard.css    # Stylesheet for scoreboard.html
-      - style.css         # Stylesheet for the application
-    - templates:
-      - auth:
-        - login.html      # Login page template
-        - register.html   # Registration page template
-      - scoreboard:
-        - admin.html      # Manage Users to be umpire or not
-        - create_match.html # Create a new match
-        - home.html       # Home page template
-        - manage_match.html # Delete match by match_id
-        - matches.html    # List all the matches in database
-        - scoreboard.html # Scoreboard page template
-        - umpire.html     # Umpire page template
-        - users.html      # Query all users in database, it can show the ID, username, is_judge
-      - base.html         # Base layout template for the application
     - __init__.py         # Initializes the app module
     - auth.py             # Handles authentication-related logic
     - blueprints.py       # Manages Flask blueprints
-    - models.py           # Database-related utilities and models
     - extensions.py       # Extensions used in the project (e.g., Flask extensions)
     - form.py             # Defines forms for user input
+    - match_generator.py  # match generator
+    - models.py           # Database-related utilities and models
     - routes.py           # Defines application routes
+    - scheduler.py        # match scheduler
+  - frontend/src/
+    ├── components/
+    │   └── layout/
+    │       └── BaseLayout.jsx
+    ├── pages/
+    │   ├── auth/
+    │   │   ├── LoginPage.jsx
+    │   │   ├── RegisterPage.jsx
+    │   │   ├── LoginForm.jsx
+    │   │   ├── RegisterForm.jsx
+    │   │   └── index.js
+    │   ├── admin/
+    │   │   ├── CreateTournamentPage.jsx
+    │   │   ├── ManageMatchPage.jsx
+    │   │   ├── UsersPage.jsx
+    │   │   ├── AssignUmpirePage.jsx
+    │   │   ├── UploadSchedulePage.jsx
+    │   │   ├── CreateMatchPage.jsx
+    │   │   ├── ChangesUserRolePage.jsx
+    │   │   ├── SchedulerPage.jsx
+    │   │   └── index.js
+    │   ├── tournament/
+    │   │   ├── TournamentPage.jsx
+    │   │   ├── SignUpTournamentPage.jsx
+    │   │   ├── MatchGeneratorPage.jsx
+    │   │   └── index.js
+    │   ├── match/
+    │   │   ├── MatchesPage.jsx
+    │   │   ├── ScoreboardPage.jsx
+    │   │   ├── UmpirePage.jsx
+    │   │   └── index.js
+    │   ├── HomePage.jsx
+    │   └── index.js
+    ├── services/
+    │   ├── api.js
+    │   └── socketService.js
+    ├── context/
+    │   └── AuthContext.jsx
+    ├── styles/
+    │   ├── pages/
+    │   │   ├── auth/
+    │   │   ├── admin/
+    │   │   ├── tournament/
+    │   │   └── match/
+    │   ├── global.css
+    │   ├── index.css
+    │   └── App.css
+    ├── utils/
+    │   └── MatchCard.html
+    ├── assets/
+    │   └── logo.svg
+    ├── App.js
+    ├── index.js
+    └── reportWebVitals.js
   - config.py             # Configuration file for the project
   - database.db           # SQLite database file
   - requirements.txt      # List of dependencies for the project
-  - run.py                # Main entry point to run the application
+  - run.py 
+  
 
 ```
 
@@ -281,4 +320,10 @@ npm start
 ### 2025/07/03
 - Implement the draft of the sign-up-tournament function
 - IDEAS: integrate the sign-up-tournament and the scheduler function 
+---
+
+### 2025/07/08
+- Implemented the sign-up system, create tournament page
+- File path reconstruct
+- Redesigned the Database Model 
 ---

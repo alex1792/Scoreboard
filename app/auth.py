@@ -6,7 +6,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from .extensions import db
-from .models import User, Player
+from .models import User
 import datetime  # 用於設定 JWT 過期時間
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')  # 加上 /api 前綴
@@ -31,17 +31,16 @@ def register():
         }), 409
 
     try:
-        new_user = User(
-            username=username,
-            password=generate_password_hash(password),
-            role='user'
-        )
+        new_user = User()
+        new_user.username = username
+        new_user.password = generate_password_hash(password)
+        new_user.role = 'user'
         db.session.add(new_user)
         db.session.flush()
 
-        new_player = Player(id=new_user.id, name=username)
-        db.session.add(new_player)
-        db.session.commit()
+        # new_player = Player(id=new_user.id, name=username)
+        # db.session.add(new_player)
+        # db.session.commit()
 
         # 生成 JWT Token（有效期 7 天）
         print('產生 token 時 identity: ', new_user.id, type(new_user.id))
