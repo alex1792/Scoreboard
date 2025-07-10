@@ -284,3 +284,45 @@
         padding: 1rem;
     }
 }
+
+.view-registrations-btn {
+  background: #17a2b8;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.view-registrations-btn:hover {
+  background: #138496;
+  color: white;
+  text-decoration: none;
+}
+
+/* 修改 tournament-actions 以適應三個按鈕 */
+.tournament-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tournament-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .view-details-btn,
+  .signup-btn,
+  .view-registrations-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

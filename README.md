@@ -1,6 +1,10 @@
 # Scoreboard
 ---
 
+## Feature Demo
+Some features and functions I developed so far. Check the link below to see how it works.
+[Tournament Software](https://www.youtube.com/playlist?list=PLqC7Br1667IWQhBWm3f_S0-OXqkR5kZiD)
+
 ## Project Overview
 
 - Provides real-time scoring, viewing, and management of games
@@ -326,4 +330,9 @@ npm start
 - Implemented the sign-up system, create tournament page
 - File path reconstruct
 - Redesigned the Database Model 
+---
+
+### 2025/07/09
+- Implemented the CheckRegistrationPage, to check the registration of each tournament
+- Sign-Up page update, user have to login before signing up a tournament
 ---

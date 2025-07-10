@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { fetchInfoFromBackend } from '../../api/api';
 import '../../styles/pages/tournament/TournamentPage.css';
 
@@ -7,6 +8,7 @@ const TournamentPage = () => {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { currentUser } = useContext(AuthContext);
 
   // Fetch tournaments from backend
   useEffect(() => {
@@ -50,6 +52,11 @@ const TournamentPage = () => {
     } catch (error) {
       return 'Invalid Date';
     }
+  };
+
+  // 檢查用戶是否有管理權限
+  const hasAdminAccess = () => {
+    return currentUser && (currentUser.role === 'admin' || currentUser.role === 'host' || currentUser.role === 'organizer');
   };
 
   if (error) {
@@ -130,6 +137,16 @@ const TournamentPage = () => {
                     >
                       Sign Up
                     </Link>
+                    
+                    {/* 只有管理員才能看到查看報名信息的按鈕 */}
+                    {hasAdminAccess() && (
+                      <Link 
+                        to={`/tournaments/${tournament.id}/check-registration`}
+                        className="view-registrations-btn"
+                      >
+                        View Registrations
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

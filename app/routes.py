@@ -6,7 +6,7 @@ from .blueprints import (
     create_match_blueprint, assign_umpire_blueprint
 )
 from .extensions import socketio
-from .models import Match, db, User, Tournament, Event, Group, Format
+from .models import Match, db, User, Tournament, Event, Group, Format, Registration
 from .scheduler import generate_schedule
 from .match_generator import generate_match
 import os
@@ -104,6 +104,19 @@ def print_tournament_info(tournament_name):
     print(f"Status: {tournament.status}")
     print(f"Events: {len(tournament.events)} events")
 
+def get_user_by_name(first_name, last_name):
+    user = User.query.filter_by(first_name=first_name, last_name=last_name).first()
+    if not user:
+        print(f"User {first_name} {last_name} not found")
+        return None
+    return user
+
+def check_repeated_registration(tournament_id, user_id, event_id, group_id):
+    registration = Registration.query.filter_by(tournament_id=tournament_id, user_id=user_id, event_id=event_id, group_id=group_id).first()
+    if registration:
+        return True
+    return False
+
 # ===============================================================================================
 # ===============================================================================================
 # ===============================================================================================
@@ -179,6 +192,152 @@ def get_tournament_details(tournament_id):
     }
     return jsonify({"status": "success", "message": "Tournament details fetched successfully", "data": tournament_data}), 200
 
+@home_blueprint.route('/tournaments/<int:tournament_id>/registrations', methods=['POST'])
+@jwt_required()
+def sign_up_tournament(tournament_id):
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return jsonify({"status": "error", "message": "Please Login to sign up a tournament"}), 401
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Please Login to sign up a tournament"}), 500
+    
+    sign_up_data = request.get_json()
+
+    if not sign_up_data:
+        return jsonify({"status": "error", "message": "Player not found, please enter your name correctly"}), 400
+    
+    # print(f"sign_up_data: {sign_up_data}")
+    ###
+    # sign_up_data: {'tournament_id': '1', 'player_info': {'firstName': 'Yuhung', 'lastName': 'Kung'},
+    #  'registrations': [{'event_id': 1, 'group_id': 1, 'event_name': "Men's Single", 'is_doubles': False},
+    #  {'event_id': 3, 'group_id': 3, 'event_name': "Men's Doubles", 'is_doubles': True, 
+    # 'partner_info': {'firstName': 'Benson', 'lastName': 'Ni'}}]}
+    # ####
+
+    # get sign up information
+    # tournament_id = sign_up_data.get('tournament_id')
+    player_first_name = sign_up_data.get('player_info').get('firstName')
+    player_last_name = sign_up_data.get('player_info').get('lastName')
+    player = get_user_by_name(player_first_name, player_last_name)
+    
+    # check if player exist in the database, user must register first to sign up a tournament
+    if not player:
+        return jsonify({"status": "error", "message": "Please register first to sign up a tournament"}), 404
+    player_id = player.id
+
+    # each event, group is a a registration
+    # for example, if A player sign up MS-A, MD-A, then there will be 2 registrations
+    registrations = sign_up_data.get('registrations')
+
+    try:
+        for registration in registrations:
+            event_id = registration.get('event_id')
+            group_id = registration.get('group_id')
+            is_doubles = registration.get('is_doubles')
+            new_registration = None
+
+            if check_repeated_registration(tournament_id, player_id, event_id, group_id):
+                print(f"Player {player_first_name} {player_last_name} has already registered for event {event_id} in group {group_id}")
+                continue
+            
+            # doubles
+            if is_doubles:
+                partner_info = registration.get('partner_info')
+                partner_first_name = partner_info.get('firstName')
+                partner_last_name = partner_info.get('lastName')
+                partner = get_user_by_name(partner_first_name, partner_last_name)
+                if not partner:
+                    registration_data = {
+                        'tournament_id': tournament_id,
+                        'user_id': player_id,
+                        'event_id': event_id,
+                        'group_id': group_id,
+                        'status': 'pending',
+                        'partner_id': None,
+                        'partner_first_name': partner_first_name,
+                        'partner_last_name': partner_last_name
+                        # 'registration_date': datetime.utcnow()
+                    }
+                    new_registration = Registration(**registration_data)
+                    
+                else:
+                    registration_data = {
+                        'tournament_id': tournament_id,
+                        'user_id': player_id,
+                        'event_id': event_id,
+                        'group_id': group_id,
+                        'status': 'pending',
+                        'partner_id': partner.id,
+                        'partner_first_name': partner_first_name,
+                        'partner_last_name': partner_last_name
+                        # 'registration_date': datetime.utcnow()
+                    }
+                    new_registration = Registration(**registration_data)
+            # singles
+            else:
+                registration_data = {
+                        'tournament_id': tournament_id,
+                        'user_id': player_id,
+                        'event_id': event_id,
+                        'group_id': group_id,
+                        'status': 'pending',
+                        'partner_id': None,
+                        'partner_first_name': None,
+                        'partner_last_name': None
+                        # 'registration_date': datetime.utcnow()
+                }
+                new_registration = Registration.create_registration(**registration_data)
+            db.session.add(new_registration)
+            db.session.commit()
+            print(f"Player {player_first_name} {player_last_name} signed up for event {event_id} in group {group_id} successfully")
+
+        print(f"Player {player_first_name} {player_last_name} signed up for tournament {tournament_id} successfully")
+        return jsonify({"status": "success", "message": "Tournament sign up successful"}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed to sign up tournament'}), 500
+
+@home_blueprint.route('/tournament/<int:tournament_id>/registrations', methods=['GET'])
+@jwt_required()
+def get_registrations(tournament_id):
+    auth = check_authorization()
+    if auth:
+        return auth
+
+    registrations = Registration.query.filter_by(tournament_id=tournament_id)
+    if not registrations:
+        return jsonify({"status": "error", "message": "No registrations found"}), 404
+    
+    # get all users in the tournament
+    registrations_data = []
+    try:
+        for registration in registrations:
+            partner_name = None
+            if registration.partner_id:
+                partner_name = registration.partner.get_full_name() if registration.partner else None
+            elif registration.partner_first_name and registration.partner_last_name:
+                partner_name = f"{registration.partner_first_name} {registration.partner_last_name}"
+            
+            registration_data = {
+                'id': registration.id,
+                'tournament_id': registration.tournament_id,
+                'tournament_name': registration.tournament.name,
+                'user_id': registration.user_id,
+                'user_name': registration.user.get_full_name(),
+                'status': registration.status,
+                'partner_id': registration.partner_id,
+                'partner_name': partner_name,
+                'event_name': registration.event.name,
+                'group_name': registration.group.name,
+            }
+            registrations_data.append(registration_data)
+
+        return jsonify({"status": "success", "message": "Registrations fetched successfully", "data": registrations_data}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to get registrations"}), 500
 
 # ===============================================================================================
 # ===============================================================================================
@@ -429,9 +588,12 @@ def upload_participants():
 @admin_blueprint.route('/create_tournament', methods=['POST'])
 @jwt_required()
 def create_tournament():
-    auth = check_authorization()
-    if auth:
-        return auth
+    try:
+        auth = check_authorization()
+        if auth:
+            return auth
+    except Exception as e:
+            return jsonify({"status": "error", "message": "Please Login to create a tournament"}), 500
 
     try:
         data = request.get_json()
@@ -503,7 +665,7 @@ def create_tournament():
         db.session.rollback()
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Error creating tournament"}), 500
-        
+
 
 # ===============================================================================================
 # ===============================================================================================

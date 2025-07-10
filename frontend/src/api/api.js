@@ -324,7 +324,8 @@ export async function fetchInfoToBackend(url, data) {
         if(response.ok) {
             return await response.json();
         } else {
-            throw new Error('Failed to fetch info to backend');
+            console.log('Failed to fetch info to backend');
+            return response.json();
         }
     } catch(err) {
         console.error('Error fetching info to backend:', err);

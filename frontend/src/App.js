@@ -17,6 +17,7 @@ import MatchGenerator from './pages/tournament/MatchGeneratorPage';
 import CreateTournament from './pages/admin/CreateTournamentPage';
 import TournamentPage from './pages/tournament/TournamentPage';
 import SignUpTournamentPage from './pages/tournament/SignUpTournamentPage';
+import CheckRegistrationPage from './pages/tournament/CheckRegistrationPage';
 import { AuthProvider } from './context/AuthContext';
 
 // currentUser can be modified to reflect the actual user state
@@ -58,6 +59,7 @@ function App() {
             <Route path="matches/:matchId" element={<ScoreboardPage currentUser={currentUser}/>} />
             <Route path="tournaments" element={<TournamentPage />} />
             <Route path="tournaments/:tournamentId/signup" element={<SignUpTournamentPage />} />
+            <Route path="tournaments/:tournamentId/check-registration" element={<CheckRegistrationPage />} />
             
             {/* Admin Features */}
             <Route path="/admin/set-umpire" element={<AssignUmpirePage />} />

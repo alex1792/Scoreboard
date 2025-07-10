@@ -16,11 +16,15 @@ def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
 
-    if not username or not password:
+    # 驗證必要欄位
+    if not username or not password or not first_name or not last_name:
         return jsonify({
             "status": "error",
-            "message": "Username and password are required."
+            "message": "Username, password, first name, and last name are required."
         }), 400
 
     # 檢查用戶名是否已存在
@@ -30,22 +34,29 @@ def register():
             "message": "Username already exists."
         }), 409
 
+    # 檢查 email 是否已存在（如果提供了 email）
+    if email and User.query.filter_by(email=email).first():
+        return jsonify({
+            "status": "error",
+            "message": "Email already exists."
+        }), 409
+
     try:
         new_user = User()
         new_user.username = username
         new_user.password = generate_password_hash(password)
+        new_user.first_name = first_name
+        new_user.last_name = last_name
+        new_user.email = email if email else None
         new_user.role = 'user'
         db.session.add(new_user)
+        db.session.commit()
         db.session.flush()
-
-        # new_player = Player(id=new_user.id, name=username)
-        # db.session.add(new_player)
-        # db.session.commit()
 
         # 生成 JWT Token（有效期 7 天）
         print('產生 token 時 identity: ', new_user.id, type(new_user.id))
         access_token = create_access_token(
-        identity=str(new_user.id),
+            identity=str(new_user.id),
             expires_delta=datetime.timedelta(days=7)
         )
 
@@ -56,6 +67,9 @@ def register():
                 "user": {
                     "id": new_user.id,
                     "username": new_user.username,
+                    "first_name": new_user.first_name,
+                    "last_name": new_user.last_name,
+                    "email": new_user.email,
                     "role": new_user.role
                 },
                 "access_token": access_token
@@ -64,6 +78,7 @@ def register():
 
     except Exception as e:
         db.session.rollback()
+        print(f"Registration error: {e}")  # 添加錯誤日誌
         return jsonify({
             "status": "error",
             "message": "Registration failed."

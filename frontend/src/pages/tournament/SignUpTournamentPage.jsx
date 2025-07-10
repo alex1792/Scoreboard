@@ -126,6 +126,12 @@ const SignUpTournamentPage = () => {
             }
         }
 
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            alert('Please Login to sign up a tournament');
+            return;
+        }
+
         // Prepare submission data
         const submissionData = {
             tournament_id: tournamentId,
@@ -148,9 +154,18 @@ const SignUpTournamentPage = () => {
             })
         };
 
+        // const requestData = {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${token}`
+        //     },
+        //     body: JSON.stringify(submissionData)
+        // }
+
         try {
             console.log('Submitting:', submissionData);
-            const response = await fetchInfoToBackend('http://localhost:5001/api/home/tournament_signup', submissionData);
+            const response = await fetchInfoToBackend(`http://localhost:5001/api/home/tournaments/${tournament.id}/registrations`, submissionData);
             console.log('Response:', response);
             if (response.status === 'success') {
                 alert('Registration successful!');

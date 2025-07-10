@@ -3,24 +3,43 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/auth/RegisterForm.css';
 
 function RegisterForm() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    confirmPassword: '',
+    first_name: '',
+    last_name: '',
+    email: ''
+  });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
+    // 驗證必填欄位
+    if (!formData.username || !formData.password || !formData.first_name || !formData.last_name) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    
     // 驗證密碼
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     
-    if (password.length < 6) {
+    if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
       return;
     }
@@ -34,8 +53,11 @@ function RegisterForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
-          password,
+          username: formData.username,
+          password: formData.password,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email || null
         }),
       });
       
@@ -74,13 +96,58 @@ function RegisterForm() {
             <input
               type="text"
               id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
               required
               className="form-input"
               placeholder=" "
             />
-            <label htmlFor="username" className="form-label">Username</label>
+            <label htmlFor="username" className="form-label">Username *</label>
+          </div>
+          
+          <div className="input-group">
+            <span className="input-icon"></span>
+            <input
+              type="text"
+              id="first_name"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleInputChange}
+              required
+              className="form-input"
+              placeholder=" "
+            />
+            <label htmlFor="first_name" className="form-label">First Name *</label>
+          </div>
+          
+          <div className="input-group">
+            <span className="input-icon"></span>
+            <input
+              type="text"
+              id="last_name"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleInputChange}
+              required
+              className="form-input"
+              placeholder=" "
+            />
+            <label htmlFor="last_name" className="form-label">Last Name *</label>
+          </div>
+          
+          <div className="input-group">
+            <span className="input-icon"></span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="form-input"
+              placeholder=" "
+            />
+            <label htmlFor="email" className="form-label">Email (Optional)</label>
           </div>
           
           <div className="input-group">
@@ -88,13 +155,14 @@ function RegisterForm() {
             <input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
               required
               className="form-input"
               placeholder=" "
             />
-            <label htmlFor="password" className="form-label">Password</label>
+            <label htmlFor="password" className="form-label">Password *</label>
           </div>
           
           <div className="input-group">
@@ -102,13 +170,14 @@ function RegisterForm() {
             <input
               type="password"
               id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
               required
               className="form-input"
               placeholder=" "
             />
-            <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="form-label">Confirm Password *</label>
           </div>
           
           <button 
