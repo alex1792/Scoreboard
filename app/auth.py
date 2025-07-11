@@ -9,9 +9,9 @@ from .extensions import db
 from .models import User
 import datetime  # 用於設定 JWT 過期時間
 
-bp = Blueprint('auth', __name__, url_prefix='/api/auth')  # 加上 /api 前綴
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')  # 加上 /api 前綴
 
-@bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     username = data.get('username')
@@ -84,7 +84,7 @@ def register():
             "message": "Registration failed."
         }), 500
 
-@bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
     # get username and password from frontend
     data = request.get_json()
@@ -116,7 +116,7 @@ def login():
         }
     }), 200
 
-@bp.route('/logout', methods=['POST'])
+@auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
     # JWT 是無狀態的，前端只需刪除 token 即可
@@ -125,7 +125,7 @@ def logout():
         "message": "Successfully logged out."
     }), 200
 
-@bp.route('/me', methods=['GET'])
+@auth_bp.route('/me', methods=['GET'])
 @jwt_required()
 def get_current_user():
     current_user_id = get_jwt_identity()

@@ -207,7 +207,7 @@ export async function uploadFile(url, formData) {
 export async function generateRoundRobin(formData) {
     try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://localhost:5001/api/admin/upload_round_robin', {
+        const response = await fetch('http://localhost:5001/api/admin/upload_all_matches', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`

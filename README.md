@@ -336,3 +336,93 @@ npm start
 - Implemented the CheckRegistrationPage, to check the registration of each tournament
 - Sign-Up page update, user have to login before signing up a tournament
 ---
+
+### 2025/07/10
+- Implemented the filter function in view registration
+- Redesigned the blueprint structure. Now into three levels.
+- Services: deal with data manipulation and logic operations (algorithm)
+- Blueprints: are separated into individual, can be test repectively.
+- Each Blueprint has its own route.py, and it handles all the routing for the blueprint itself
+- Blueprint.py is used to register and manipulate all blueprints
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React)                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ Tournament  │  │   Match     │  │    Auth     │          │
+│  │   Page      │  │   Page      │  │    Page     │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ HTTP Request
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Blueprint Layer                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ tournament  │  │    match    │  │    auth     │          │
+│  │   .py       │  │    .py      │  │    .py      │          │
+│  │ (Routing)   │  │ (Routing)   │  │ (Routing)   │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ✅ only deel with routing                                  │
+│  ✅ receive HTTP request                                    │
+│  ✅ call Service layer                                      │
+│  ✅ return HTTP response                                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ call Service
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Service Layer                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ tournament  │  │    match    │  │    user     │          │
+│  │ _service.py │  │ _service.py │  │ _service.py │          │
+│  │ (Business)  │  │ (Business)  │  │ (Business)  │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ✅ handle service logic and algorithm                      │
+│  ✅ data transform and format                               │
+│  ✅ complex algorithm                                       │
+│  ✅ call Model layer                                        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ Database manipulation
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Model Layer                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ Tournament  │  │    Match    │  │    User     │          │
+│  │   Model     │  │   Model     │  │   Model     │          │
+│  │ (Database)  │  │ (Database)  │  │ (Database)  │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ✅ Database structure definition                           │
+│  ✅ Basic CRUD manipulation                                 │
+│  ✅ Relationship definition                                 │
+└─────────────────────────────────────────────────────────────┘
+```
+- Advantages of new Architecture
+1. Single Task Rule
+-- Blueprint: handle only routing
+-- Service: handle only logic and algorithm
+-- Model: handle only Database
+2. Reuseable
+-- Same service can be useed by different blueprint
+3. Easier to test
+4. Easier to maintain
+
+- This is the MVC(Model-View-Controller) architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    My Architecture                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │    Model    │  │    View     │  │ Controller  │          │
+│  │ (Database)  │  │ (Frontend)  │  │ (Blueprint) │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ┌─────────────┐                                            │
+│  │   Service   │  ← additional service layer                │
+│  │   Layer     │                                            │
+│  └─────────────┘                                            │
+└─────────────────────────────────────────────────────────────┘
+```
+---

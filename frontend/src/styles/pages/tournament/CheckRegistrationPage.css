@@ -63,6 +63,7 @@
   margin: 0;
 }
 
+/* 修改 registrations-container 的樣式 */
 .registrations-container {
   background: white;
   border-radius: 10px;
@@ -70,13 +71,111 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.registrations-container h3 {
-  margin: 0 0 20px 0;
-  color: #333;
+/* 新增標題和篩選器的容器 */
+.registrations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
   border-bottom: 2px solid #eee;
   padding-bottom: 10px;
 }
 
+.registrations-title {
+  margin: 0;
+  color: #333;
+  font-size: 1.2em;
+}
+
+/* 修改篩選器容器樣式 */
+.filters-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85em;
+  background: white;
+  min-width: 120px;
+  max-width: 150px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.filter-select:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.reset-filters-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.reset-filters-btn:hover {
+  background: #5a6268;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .registrations-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .reset-filters-btn {
+    width: 100%;
+    margin-top: 5px;
+  }
+}
+
+/* 保持其他現有樣式不變 */
 .no-registrations {
   text-align: center;
   padding: 40px;
@@ -180,18 +279,4 @@
 
 .retry-button:hover {
   background: #5a6fd8;
-}
-
-@media (max-width: 768px) {
-  .check-registration-container {
-    padding: 10px;
-  }
-  
-  .registrations-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .stats-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
 } 

@@ -179,7 +179,7 @@ const TournamentCreatePage = () => {
         
         try {
             // 這裡調用 API 來創建 tournament
-            const response = await fetchInfoToBackend('http://localhost:5001/api/admin/create_tournament', submitData);
+            const response = await fetchInfoToBackend('http://localhost:5001/api/tournaments/create_tournament', submitData);
             console.log('Response:', response);
             alert('Tournament created successfully!');
             navigate('/tournaments');

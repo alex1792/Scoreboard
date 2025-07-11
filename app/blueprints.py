@@ -1,13 +1,26 @@
 from flask import Blueprint
+from .home import home_bp
+from .auth import auth_bp
+from .tournament import tournament_bp
+from .registration import registration_bp
+from .match import match_bp
+from .admin import admin_bp
+from .user import user_bp
+from .file import file_bp
+from .scoreboard import scoreboard_bp
 
-home_blueprint = Blueprint('home_blueprint', __name__, template_folder='templates')
-scoreboard_blueprint = Blueprint('scoreboard_blueprint', __name__, template_folder='templates')
-umpire_blueprint = Blueprint('umpire_blueprint', __name__, template_folder='templates')
-admin_blueprint = Blueprint('admin_blueprint', __name__, template_folder='templates')
-users_blueprint = Blueprint('users_blueprint', __name__, template_folder='templates')
-match_blueprint = Blueprint('match_blueprint', __name__, template_folder='templates')
-manage_match_blueprint = Blueprint('manage_match_blueprint', __name__, template_folder='templates')
-create_match_blueprint = Blueprint('create_match_blueprint', __name__, template_folder='templates')
-clear_all_match_blueprint = Blueprint('clear_all_match_blueprint', __name__, template_folder='templates')
-change_match_status_blueprint = Blueprint('change_match_status_blueprint', __name__, template_folder='templates')
-assign_umpire_blueprint = Blueprint('assign_umpire', __name__, template_folder='templates')
+
+def register_blueprints(app):
+    blueprints = [
+        home_bp,
+        auth_bp,
+        tournament_bp,
+        registration_bp,
+        match_bp,
+        admin_bp,
+        user_bp,
+        file_bp,
+        scoreboard_bp,
+    ]
+    for blueprint in blueprints:
+        app.register_blueprint(blueprint    )

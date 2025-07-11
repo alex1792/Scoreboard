@@ -24,7 +24,7 @@ const SignUpTournamentPage = () => {
         const fetchTournament = async () => {
             try {
                 console.log('Fetching tournament details for ID:', tournamentId);
-                const data = await fetchInfoFromBackend(`http://localhost:5001/api/home/tournaments/${tournamentId}`);
+                const data = await fetchInfoFromBackend(`http://localhost:5001/api/tournaments/${tournamentId}`);
                 console.log('Tournament data:', data);
                 
                 if (data.status === 'success') {
@@ -165,7 +165,7 @@ const SignUpTournamentPage = () => {
 
         try {
             console.log('Submitting:', submissionData);
-            const response = await fetchInfoToBackend(`http://localhost:5001/api/home/tournaments/${tournament.id}/registrations`, submissionData);
+            const response = await fetchInfoToBackend(`http://localhost:5001/api/tournaments/${tournament.id}/registrations`, submissionData);
             console.log('Response:', response);
             if (response.status === 'success') {
                 alert('Registration successful!');

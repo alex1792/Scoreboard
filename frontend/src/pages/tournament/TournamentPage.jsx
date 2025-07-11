@@ -16,7 +16,7 @@ const TournamentPage = () => {
       try {
         console.log('=== Starting to fetch tournaments ===');
         
-        const data = await fetchInfoFromBackend('http://localhost:5001/api/home/tournaments');
+        const data = await fetchInfoFromBackend('http://localhost:5001/api/tournaments');
         
         console.log('=== Response received ===');
         console.log('Full response:', data);

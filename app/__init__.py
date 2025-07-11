@@ -67,26 +67,28 @@ def create_app():
         db.session.commit()
     
     # 註冊所有 Blueprints
-    from .routes import (
-        home_blueprint,
-        scoreboard_blueprint,
-        admin_blueprint,
-        users_blueprint,
-        match_blueprint         
-        # manage_match_blueprint,
-        # create_match_blueprint,
-        # assign_umpire_blueprint  
-    )
-    from .auth import bp as auth_bp
+    # from .routes import (
+    #     home_blueprint,
+    #     scoreboard_blueprint,
+    #     admin_blueprint,
+    #     users_blueprint,
+    #     match_blueprint         
+    #     # manage_match_blueprint,
+    #     # create_match_blueprint,
+    #     # assign_umpire_blueprint  
+    # )
+    # from .auth import bp as auth_bp
+    from .blueprints import register_blueprints
+    register_blueprints(app)
 
     # 註冊 Blueprints 並指定 url_prefix
-    app.register_blueprint(home_blueprint, url_prefix='/api/home')
-    app.register_blueprint(admin_blueprint, url_prefix='/api/admin')
-    app.register_blueprint(users_blueprint, url_prefix='/api/users')
-    app.register_blueprint(match_blueprint, url_prefix='/api/matches')
-    # app.register_blueprint(manage_match_blueprint, url_prefix='/api/manage-matches')
-    # app.register_blueprint(create_match_blueprint, url_prefix='/api/create-match')
-    # app.register_blueprint(assign_umpire_blueprint, url_prefix='/api/assign-umpire')
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')  # 假設 auth_bp 的路由前綴是 /auth
+    # app.register_blueprint(home_blueprint, url_prefix='/api/home')
+    # app.register_blueprint(admin_blueprint, url_prefix='/api/admin')
+    # app.register_blueprint(users_blueprint, url_prefix='/api/users')
+    # app.register_blueprint(match_blueprint, url_prefix='/api/matches')
+    # # app.register_blueprint(manage_match_blueprint, url_prefix='/api/manage-matches')
+    # # app.register_blueprint(create_match_blueprint, url_prefix='/api/create-match')
+    # # app.register_blueprint(assign_umpire_blueprint, url_prefix='/api/assign-umpire')
+    # app.register_blueprint(auth_bp, url_prefix='/api/auth')  # 假設 auth_bp 的路由前綴是 /auth
 
     return app
