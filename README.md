@@ -426,3 +426,11 @@ npm start
 └─────────────────────────────────────────────────────────────┘
 ```
 ---
+
+### 2025/07/11
+- IDEAS: let host to upload the .xlsx file of tournament. The system must provide a format, and 
+the host must upload the file using the provided format.
+- IDEAS: Genearate match by registration records
+- Done implementing the create match function at the view registration page.
+- Done checking the generated match at /matches
+---

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import '../../styles/pages/tournament/CheckRegistrationPage.css';
+import { fetchInfoToBackend } from '../../api/api';
 
 function CheckRegistrationPage() {
   const { tournamentId } = useParams();
@@ -16,6 +17,9 @@ function CheckRegistrationPage() {
   const [availableEvents, setAvailableEvents] = useState([]);
   const [availableGroups, setAvailableGroups] = useState([]);
   const [eventGroups, setEventGroups] = useState({}); // 存儲每個 event 對應的 groups
+  const [generating, setGenerating] = useState(false);
+
+  const navigate = useNavigate();
 
   // fetch all registrations and tournament details
   useEffect(() => {
@@ -134,6 +138,41 @@ function CheckRegistrationPage() {
     return eventName;
   };
 
+  const handleGenerateMatches = async () => {
+    if (!window.confirm('Are you sure you want to generate matches for this tournament? This action cannot be undone.')) {
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}/generate_matches`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      console.log(data);
+      
+      if (data.status === 'success') {
+        alert(`Successfully generated ${data.data?.length || 0} matches!`);
+        // 可以選擇重新載入頁面或導航到比賽頁面
+        // window.location.reload();
+        navigate(`/matches`);
+      } else {
+        alert(`Error: ${data.message || 'Failed to generate matches'}`);
+      }
+    } catch (error) {
+      console.error('Generate matches error:', error);
+      alert('Network error, please try again');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -165,6 +204,20 @@ function CheckRegistrationPage() {
             <p>Date: {new Date(tournament.start_date).toLocaleDateString()} - {new Date(tournament.end_date).toLocaleDateString()}</p>
           </div>
         )}
+        
+        {/* 新增產生賽程按鈕 */}
+        <div className="generate-matches-section">
+          <button 
+            onClick={handleGenerateMatches}
+            disabled={generating || registrations.length === 0}
+            className="generate-matches-btn"
+          >
+            {generating ? 'Generating...' : 'Generate Matches'}
+          </button>
+          {registrations.length === 0 && (
+            <p className="generate-matches-hint">No registrations found. Please wait for players to sign up.</p>
+          )}
+        </div>
       </div>
 
       <div className="stats-container">

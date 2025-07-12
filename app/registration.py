@@ -17,7 +17,7 @@ For example, if a user signed up for MS-A, MD-A, then there will be 2 registrati
 """
 @registration_bp.route('/tournaments/<int:tournament_id>/registrations', methods=['POST'])
 @jwt_required()
-def sign_up_tournament(tournament_id):
+def g_tournament(tournament_id):
     try:
         current_user_id = get_jwt_identity()
         current_user = User.query.get(current_user_id)

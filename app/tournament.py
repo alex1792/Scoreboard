@@ -92,3 +92,46 @@ def create_tournament():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Error creating tournament"}), 500
+
+"""
+This function is used to generate matches by registration records.
+"""
+@tournament_bp.route('/<int:tournament_id>/generate_matches', methods=['POST'])
+@jwt_required()
+def generate_matches_by_registration(tournament_id):
+    """generate matches by registration records from tournament_service"""
+    print('generate_matches_by_registration')
+    try:
+        auth = check_authorization()
+        if auth:
+            return auth
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Please Login to generate matches"}), 500
+    
+    try:
+        matches = TournamentService.generate_matches_by_registration(tournament_id)
+        matches_data = []
+        for match in matches:
+            match_data = {
+                'id': match.id,
+                'tournament_id': match.tournament_id,
+                'event_id': match.event_id,
+                'group_id': match.group_id,
+                'event_type': match.event_type,
+                'player1_id': match.player1_id,
+                'player2_id': match.player2_id,
+                'team1_player1_id': match.team1_player1_id,
+                'team1_player2_id': match.team1_player2_id,
+                'team2_player1_id': match.team2_player1_id,
+                'team2_player2_id': match.team2_player2_id,
+                'player1_score': match.player1_score,
+                'player2_score': match.player2_score,
+                'status': match.status,
+                'umpire_id': match.umpire_id
+            }
+            matches_data.append(match_data)
+        
+        return jsonify({"status": "success", "message": "Matches generated successfully", "data": matches_data}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to generate matches"}), 500
