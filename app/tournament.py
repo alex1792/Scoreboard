@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 from flask import request
 from datetime import datetime
 from .services.tournament_service import TournamentService
+from .services.match_service import MatchService
 """
 This file contains the functions for the tournament blueprint. 
 """
@@ -135,3 +136,22 @@ def generate_matches_by_registration(tournament_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to generate matches"}), 500
+
+"""
+This function is used to get all matches by tournament_id.
+It will return all the matches info to the frontend. Then the frontend
+will display all the matches in the /tournaments/<int:tournament_id>/matches page.
+"""
+@tournament_bp.route('/<int:tournament_id>/matches', methods=['GET'])
+def get_matches_by_tournament(tournament_id):
+    """get matches by tournament_id from match_service"""
+    try:
+        matches = MatchService.get_matches_by_tournament(tournament_id)
+        if not matches:
+            print("No matches found")
+            return jsonify({"status": "error", "message": "No matches found"}), 404
+        print(matches)
+        return jsonify({"status": "success", "message": "Matches fetched successfully", "data": matches}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to get matches"}), 500

@@ -90,3 +90,10 @@ class MatchService:
         if not match:
             return None
         return get_match_data(match)
+
+    @staticmethod
+    def get_matches_by_tournament(tournament_id):
+        matches = [get_match_data(match) for match in Match.query.filter_by(tournament_id=tournament_id)]
+        if not matches:
+            return None
+        return matches

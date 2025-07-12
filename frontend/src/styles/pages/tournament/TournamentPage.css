@@ -326,3 +326,46 @@
     text-align: center;
   }
 }
+
+/* 保持原本的樣式，只為新增的按鈕添加相同的樣式 */
+
+.view-matches-btn {
+  background: #17a2b8;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.view-matches-btn:hover {
+  background: #138496;
+  color: white;
+  text-decoration: none;
+}
+
+/* 如果需要生成比賽按鈕，使用相同的樣式 */
+.generate-matches-btn {
+  background: #17a2b8;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.generate-matches-btn:hover {
+  background: #138496;
+  color: white;
+  text-decoration: none;
+}

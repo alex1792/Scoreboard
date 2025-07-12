@@ -55,7 +55,7 @@ function App() {
         <Routes>
           <Route path="/" element={<BaseLayout currentUser={currentUser} />}>
             {/* General Features */}
-            <Route path="matches" element={<MatchesPage />} />
+            <Route path="tournaments/:tournamentId/matches" element={<MatchesPage />} />
             <Route path="matches/:matchId" element={<ScoreboardPage currentUser={currentUser}/>} />
             <Route path="tournaments" element={<TournamentPage />} />
             <Route path="tournaments/:tournamentId/signup" element={<SignUpTournamentPage />} />

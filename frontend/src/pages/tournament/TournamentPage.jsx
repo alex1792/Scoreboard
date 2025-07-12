@@ -138,6 +138,14 @@ const TournamentPage = () => {
                       Sign Up
                     </Link>
                     
+                    {/* 新增：查看比賽按鈕 */}
+                    <Link 
+                      to={`/tournaments/${tournament.id}/matches`}
+                      className="view-matches-btn"
+                    >
+                      View Matches
+                    </Link>
+                    
                     {/* 只有管理員才能看到查看報名信息的按鈕 */}
                     {hasAdminAccess() && (
                       <Link 

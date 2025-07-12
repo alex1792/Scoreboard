@@ -1,16 +1,18 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useMatchInfoListener } from '../../api/socketService';
-import { useFetchMatchInfo } from '../../api/api';
+import { useFetchMatchInfo, useFetchMatchInfoByTournament } from '../../api/api';
 import '../../styles/pages/match/matches.css';
 
 const MatchesPage = () => {
   const [matches, setMatches] = useState([]);
   const [animatingMatchId, setAnimatingMatchId] = useState(null);
   const socketRef = useRef(null);
+  const { tournamentId } = useParams();
 
   // fetch match info from backend
-  useFetchMatchInfo(setMatches);
+  // useFetchMatchInfo(setMatches);
+  useFetchMatchInfoByTournament(setMatches, tournamentId);
 
   // match info listener
   useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });

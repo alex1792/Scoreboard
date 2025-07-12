@@ -20,6 +20,19 @@ export function useFetchMatchInfo(setMatches) {
     }, [setMatches]);
 };
 
+export function useFetchMatchInfoByTournament(setMatches, tournamentId) {
+    useEffect(() => {
+        fetch(`http://localhost:5001/api/tournaments/${tournamentId}/matches`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                setMatches(data.data);
+            }
+        })
+        .catch(err => console.error('Failed to fetch match-info update:', err));
+    }, [setMatches]);
+};
+
 // ================================================================================
 // ================================================================================
 // =========================== Get Umpire's Match  ================================

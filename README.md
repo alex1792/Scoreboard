@@ -433,4 +433,5 @@ the host must upload the file using the provided format.
 - IDEAS: Genearate match by registration records
 - Done implementing the create match function at the view registration page.
 - Done checking the generated match at /matches
+- Done updating the check match by tournament
 ---
