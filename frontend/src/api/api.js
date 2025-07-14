@@ -361,3 +361,25 @@ export async function fetchInfoFromBackend(url) {
         throw err;
     }
 }
+
+// export async function upload
+
+export async function uploadRegistrationFile(formData, tournamentId) {
+  try {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`http://localhost:5001/api/registrations/${tournamentId}/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        // 不要加 'Content-Type': 'multipart/form-data'，fetch 會自動處理
+      },
+      body: formData
+    });
+
+    // 解析回傳的 JSON
+    return await response.json();
+  } catch (err) {
+    console.error('Error uploading registration file:', err);
+    throw err;
+  }
+}

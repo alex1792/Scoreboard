@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import '../../styles/pages/tournament/CheckRegistrationPage.css';
 import { fetchInfoToBackend } from '../../api/api';
 
@@ -62,6 +62,7 @@ function CheckRegistrationPage() {
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(`http://localhost:5001/api/registrations/tournament/${tournamentId}/registrations`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -182,16 +183,16 @@ function CheckRegistrationPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="error-container">
-        <div className="error-message">⚠️ {error}</div>
-        <button onClick={fetchRegistrations} className="retry-button">
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="error-container">
+  //       <div className="error-message">⚠️ {error}</div>
+  //       <button onClick={fetchRegistrations} className="retry-button">
+  //         Try Again
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="check-registration-container">
@@ -217,6 +218,17 @@ function CheckRegistrationPage() {
           {registrations.length === 0 && (
             <p className="generate-matches-hint">No registrations found. Please wait for players to sign up.</p>
           )}
+        </div>
+
+        <div className="upload-registration-section">
+        <Link
+          to={`/tournaments/${tournamentId}/upload-registration`}
+          className="upload-registration-btn"
+        >
+          <img src="/upload-arrow-icon.png" alt="Upload" className="upload-icon" />
+          Upload Registration File
+        </Link>
+          <p className="upload-registration-hint">Upload Excel file to bulk import registrations</p>
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import re
 from flask import jsonify, Blueprint
 from .models import db, Registration, User
 from .utils import check_authorization
@@ -17,7 +18,7 @@ For example, if a user signed up for MS-A, MD-A, then there will be 2 registrati
 """
 @registration_bp.route('/tournaments/<int:tournament_id>/registrations', methods=['POST'])
 @jwt_required()
-def g_tournament(tournament_id):
+def sign_up_tournament(tournament_id):
     try:
         current_user_id = get_jwt_identity()
         current_user = User.query.get(current_user_id)
@@ -57,14 +58,29 @@ which is MS-A and MD-A respectively.
 @registration_bp.route('/tournament/<int:tournament_id>/registrations', methods=['GET'])
 @jwt_required()
 def get_registrations(tournament_id):
+    print(f"Getting registrations for tournament {tournament_id}")
     try:
         auth = check_authorization()
         if auth:
             return auth
 
-        registrations_data = RegistrationService.get_registrations_by_tournament(tournament_id)
-        if not registrations_data:
+        registrations = RegistrationService.get_registrations_by_tournament(tournament_id)
+        print(f"Registrations: {registrations}")
+        if not registrations:
             return jsonify({"status": "error", "message": "No registrations found"}), 404
+        
+
+        registrations_data = []
+        for registration in registrations:
+            registration_data = {
+                'id': registration.get('id'),
+                'user_name': registration.get('user_name'),
+                'partner_name': registration.get('partner_name') if registration.get('partner_name') != 'nan nan' else None,
+                'event_name': registration.get('event_name'),
+                'group_name': registration.get('group_name'),
+                'status': registration.get('status'),
+            }
+            registrations_data.append(registration_data)
 
         return jsonify({
             "status": "success", 
@@ -74,3 +90,21 @@ def get_registrations(tournament_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get registrations"}), 500
+
+
+@registration_bp.route('/<int:tournament_id>/upload', methods=['POST'])
+@jwt_required()
+def upload_registration_file(tournament_id):
+    print(f"Uploading registration file for tournament {tournament_id}")
+    try:
+        file = request.files['file']
+        if not file:
+            return jsonify({"status": "error", "message": "No file uploaded"}), 400
+        
+        registration_result = RegistrationService.create_registration_from_excel(tournament_id, file)
+        print(f"Registration result: {registration_result}")
+        return jsonify({"status": "success", "message": registration_result}), 200
+            
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to upload registration file"}), 500

@@ -85,16 +85,21 @@ class Registration(db.Model):
     __tablename__ = 'registrations'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     status = db.Column(db.String(20), default='pending') # pending, confirmed, rejected
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    player_first_name = db.Column(db.String(100), nullable=False)
+    player_last_name = db.Column(db.String(100), nullable=False)
+    player_email = db.Column(db.String(100), nullable=False)
     
     # doubles
     partner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     partner_first_name = db.Column(db.String(100), nullable=True)  # if partner does not exist in the database, use this field to store the partner's name
     partner_last_name = db.Column(db.String(100), nullable=True)  # if partner does not exist in the database, use this field to store the partner's name
+    partner_email = db.Column(db.String(100), nullable=True)
 
     tournament = db.relationship('Tournament', backref='registrations')
     user = db.relationship('User', foreign_keys=[user_id], backref='registrations')

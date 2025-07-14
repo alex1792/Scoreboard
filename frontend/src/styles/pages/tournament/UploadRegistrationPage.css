@@ -1,0 +1,313 @@
+.upload-registration-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.upload-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.upload-header h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.upload-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.upload-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.upload-section h3 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 1.2rem;
+}
+
+.file-upload-area {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.file-input-container {
+  margin-bottom: 1rem;
+}
+
+.file-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px dashed #dee2e6;
+  border-radius: 4px;
+  background: white;
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e9ecef;
+  border: 2px dashed #bfc9d1;
+  border-radius: 6px;
+  padding: 1.2rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 0.5rem;
+}
+
+.file-label:hover {
+  background: #dde4ea;
+}
+
+.upload-icon {
+  margin-bottom: 0.5rem;
+}
+
+.upload-icon-img {
+  width: 48px;  /* 調整大小 */
+  height: 48px;
+  object-fit: contain;
+}
+
+.file-info {
+  margin-top: 0.5rem;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.upload-btn {
+  width: 100%;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.upload-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.message.success {
+  background: #e6f9ed;
+  color: #28a745;
+  border: 1px solid #b7e4c7;
+}
+
+.message.error {
+  background: #fbeaea;
+  color: #dc3545;
+  border: 1px solid #f5c6cb;
+}
+
+/* 保留說明欄位的樣式 */
+.instructions {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.instructions h3 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 1.2rem;
+}
+
+.instruction-content {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #007bff;
+}
+
+.instruction-content p {
+  margin: 0.25rem 0;
+  color: #495057;
+}
+
+.instruction-content ul {
+  margin: 0.5rem 0 1rem 1.2rem;
+  color: #495057;
+}
+
+.example-section {
+  margin-top: 1rem;
+}
+
+.example-section h4 {
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.example-table {
+  overflow-x: auto;
+}
+
+.example-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 0.98rem;
+}
+
+.example-table th,
+.example-table td {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+
+.example-table th {
+  background: #e9ecef;
+  color: #495057;
+  font-weight: 600;
+}
+
+.tournament-info {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column; /* 確保垂直排列 */
+}
+
+.tournament-header {
+  margin-bottom: 1rem;
+}
+
+.tournament-info h4 {
+  color: #495057;
+  margin-bottom: 0;
+  font-size: 1.1rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+/* 修改 events-list 和 event-item 的樣式 */
+
+.events-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.event-item {
+  background: white;
+  border-radius: 6px;
+  padding: 1rem;
+  border-left: 4px solid #007bff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  flex: 0 0 auto;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.event-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.event-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.event-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.event-detail span:first-child {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.event-detail span:last-child {
+  color: #495057;
+  font-weight: 600;
+}
+
+.groups-list {
+  color: #6c757d;
+  font-size: 0.9rem;
+  background: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .events-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .event-item {
+    padding: 0.8rem;
+  }
+  
+  .tournament-info {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .upload-registration-container {
+    padding: 1rem;
+  }
+  
+  .upload-section,
+  .instructions {
+    padding: 1rem;
+  }
+}
+
