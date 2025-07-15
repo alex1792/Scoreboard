@@ -128,6 +128,9 @@ class RegistrationService:
             groups = Group.query.filter(Group.event_id.in_(event_ids)).all()
             group_map = {group.name: group.id for group in groups}
 
+            # 用於追蹤每個 event-group 組合中已處理的搭檔
+            processed_pairs = {}  # {(event_id, group_id): set of player pairs}
+
             row_num = 2  # Excel 資料從第2列開始
             for _, row in excel_data.iterrows():
                 try:
@@ -153,11 +156,51 @@ class RegistrationService:
                     user = get_user_by_name(first_name, last_name)
                     partner = get_user_by_name(partner_first_name, partner_last_name) if partner_first_name and partner_last_name else None
 
+                    event_id = event_map[event_name]
+                    group_id = group_map[group_name]
+
+                    # 檢查是否為雙打
+                    is_doubles = bool(partner_first_name and partner_last_name)
+                    
+                    if is_doubles:
+                        # 創建標準化的搭檔組合（按字母順序排序，避免 player1,player2 和 player2,player1 重複）
+                        player1_name = f"{first_name} {last_name}"
+                        player2_name = f"{partner_first_name} {partner_last_name}"
+                        
+                        # 按字母順序排序，確保相同的搭檔組合只會被記錄一次
+                        if player1_name < player2_name:
+                            pair_key = f"{player1_name}|{player2_name}"
+                        else:
+                            pair_key = f"{player2_name}|{player1_name}"
+                        
+                        # 初始化這個 event-group 組合的已處理搭檔集合
+                        if (event_id, group_id) not in processed_pairs:
+                            processed_pairs[(event_id, group_id)] = set()
+                        
+                        # 檢查是否已經處理過這個搭檔組合
+                        if pair_key in processed_pairs[(event_id, group_id)]:
+                            errors.append(f"Row {row_num}: Duplicate doubles pair {player1_name} and {player2_name} in {event_name} {group_name}")
+                            continue
+                        
+                        # 記錄這個搭檔組合
+                        processed_pairs[(event_id, group_id)].add(pair_key)
+                    else:
+                        # 單打：檢查是否已經有這個選手的註冊
+                        player_key = f"{first_name} {last_name}"
+                        if (event_id, group_id) not in processed_pairs:
+                            processed_pairs[(event_id, group_id)] = set()
+                        
+                        if player_key in processed_pairs[(event_id, group_id)]:
+                            errors.append(f"Row {row_num}: Duplicate singles registration for {player_key} in {event_name} {group_name}")
+                            continue
+                        
+                        processed_pairs[(event_id, group_id)].add(player_key)
+
                     registration_data = {
                         'tournament_id': tournament_id,
                         'user_id': user.id if user else None,
-                        'event_id': event_map[event_name],
-                        'group_id': group_map[group_name],
+                        'event_id': event_id,
+                        'group_id': group_id,
                         'status': 'confirmed',
                         'player_first_name': first_name,
                         'player_last_name': last_name,
@@ -167,6 +210,7 @@ class RegistrationService:
                         'partner_last_name': partner_last_name or None
                     }
 
+                    # 檢查資料庫中是否已存在相同的註冊
                     existing_registration = Registration.query.filter_by(
                         tournament_id=tournament_id,
                         event_id=registration_data['event_id'],
@@ -175,7 +219,7 @@ class RegistrationService:
                         player_last_name=last_name
                     ).first()
                     if existing_registration:
-                        # errors.append(f"Row {int(index)+2}: Registration already exists for {first_name} {last_name}")
+                        errors.append(f"Row {row_num}: Registration already exists in database for {first_name} {last_name}")
                         continue
 
                     registration = Registration(**registration_data)

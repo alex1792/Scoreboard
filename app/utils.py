@@ -15,19 +15,43 @@ file structure.
 
 def get_match_data(match):
     if match.event_type in ['MS', 'WS']: 
-        user1 = User.query.get(match.player1_id)
-        user2 = User.query.get(match.player2_id)
-        player1 = user1.get_full_name() if user1 else "N/A"
-        player2 = user2.get_full_name() if user2 else "N/A"
+        # 優先使用存儲的姓名，如果沒有則嘗試從 User 表獲取
+        if match.player1_name:
+            player1 = match.player1_name
+        else:
+            user1 = User.query.get(match.player1_id)
+            player1 = user1.get_full_name() if user1 else "N/A"
+            
+        if match.player2_name:
+            player2 = match.player2_name
+        else:
+            user2 = User.query.get(match.player2_id)
+            player2 = user2.get_full_name() if user2 else "N/A"
     else: 
-        team1_user1 = User.query.get(match.team1_player1_id)
-        team1_user2 = User.query.get(match.team1_player2_id)
-        team2_user1 = User.query.get(match.team2_player1_id)
-        team2_user2 = User.query.get(match.team2_player2_id)
-        team1_p1 =team1_user1.get_full_name() if team1_user1 else "N/A"
-        team1_p2 = team1_user2.get_full_name() if team1_user2 else "N/A"
-        team2_p1 = team2_user1.get_full_name() if team2_user1 else "N/A"
-        team2_p2 = team2_user2.get_full_name() if team2_user2 else "N/A"
+        # 雙打：優先使用存儲的姓名
+        if match.team1_player1_name:
+            team1_p1 = match.team1_player1_name
+        else:
+            team1_user1 = User.query.get(match.team1_player1_id)
+            team1_p1 = team1_user1.get_full_name() if team1_user1 else "N/A"
+            
+        if match.team1_player2_name:
+            team1_p2 = match.team1_player2_name
+        else:
+            team1_user2 = User.query.get(match.team1_player2_id)
+            team1_p2 = team1_user2.get_full_name() if team1_user2 else "N/A"
+            
+        if match.team2_player1_name:
+            team2_p1 = match.team2_player1_name
+        else:
+            team2_user1 = User.query.get(match.team2_player1_id)
+            team2_p1 = team2_user1.get_full_name() if team2_user1 else "N/A"
+            
+        if match.team2_player2_name:
+            team2_p2 = match.team2_player2_name
+        else:
+            team2_user2 = User.query.get(match.team2_player2_id)
+            team2_p2 = team2_user2.get_full_name() if team2_user2 else "N/A"
         
         player1 = f"{team1_p1} / {team1_p2}"
         player2 = f"{team2_p1} / {team2_p2}"

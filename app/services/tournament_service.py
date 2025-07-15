@@ -135,45 +135,60 @@ class TournamentService:
         try:
             # 1. 獲取錦標賽的所有報名記錄
             registrations = Registration.query.filter_by(tournament_id=tournament_id).all()
-            # print(registrations)
+            print(f"Found {len(registrations)} registrations for tournament {tournament_id}")
             
             if not registrations:
                 raise ValueError("No registrations found for this tournament")
             
             # 2. 按 event 和 group 分組
             event_group_players = TournamentService._group_registrations_by_event_group(registrations)
+            print(f"Grouped into {len(event_group_players)} event-group combinations")
+            print(f"Event-group combinations: {list(event_group_players.keys())}")
             
             # 3. 為每個 event-group 組合生成對戰
             all_matches = []
             for (event_id, group_id), players_data in event_group_players.items():
+                print(f"Processing event_id={event_id}, group_id={group_id} with {len(players_data)} players")
+                print(f"Players data: {players_data}")
+                
                 event = Event.query.get(event_id)
                 group = Group.query.get(group_id)
                 if not group:
+                    print(f"Group {group_id} not found, skipping")
                     continue
 
                 format = Format.query.get(group.format_id)
                 if not format:
+                    print(f"Format for group {group_id} not found, skipping")
                     continue
                 
                 if not event or not group or not format:
+                    print(f"Missing event, group, or format, skipping")
                     continue
+                
+                print(f"Event: {event.name}, Group: {group.name}, Format: {format.type}")
                 
                 # 生成對戰組合
                 matches = TournamentService._generate_matches_for_group(
                     players_data, event, group, format
                 )
-                print(matches)
+                print(f"Generated {len(matches)} matches for this group")
                 
                 # 創建 Match 記錄
                 for match_data in matches:
                     match = TournamentService._create_match_record(match_data, tournament_id)
                     if match:
                         all_matches.append(match)
+                        print(f"Created match {match.id}")
+                    else:
+                        print(f"Failed to create match for data: {match_data}")
             
+            print(f"Total matches created: {len(all_matches)}")
             return all_matches
             
         except Exception as e:
             db.session.rollback()
+            print(f"Error in generate_matches_by_registration: {e}")
             raise e
 
     @staticmethod
@@ -194,16 +209,22 @@ class TournamentService:
             if key not in event_group_players:
                 event_group_players[key] = []
             
-            # 處理選手資料
+            # 處理選手資料 - 添加防禦性檢查
+            if registration.user:
+                user_name = registration.user.get_full_name()
+            else:
+                # 如果沒有 user 對象，使用存儲的姓名
+                user_name = f"{registration.player_first_name} {registration.player_last_name}"
+            
             player_data = {
                 'user_id': registration.user_id,
-                'user_name': registration.user.get_full_name(),
+                'user_name': user_name,
                 'partner_id': registration.partner_id,
                 'partner_name': None
             }
             
-            # 處理雙打搭檔
-            if registration.partner_id:
+            # 處理雙打搭檔 - 添加防禦性檢查
+            if registration.partner_id and registration.partner:
                 player_data['partner_name'] = registration.partner.get_full_name()
             elif registration.partner_first_name and registration.partner_last_name:
                 player_data['partner_name'] = f"{registration.partner_first_name} {registration.partner_last_name}"
@@ -226,15 +247,24 @@ class TournamentService:
         Returns:
             list: 對戰組合列表
         """
+        print(f"Generating matches for {len(players_data)} players")
+        print(f"Format type: {format.type}")
+        
         if len(players_data) < 2:
+            print(f"Not enough players ({len(players_data)}) to generate matches")
             return []
         
         # 根據比賽類型生成對戰
         if format.type == 'round_robin':
-            return TournamentService._generate_round_robin_matches(players_data, event, group)
+            matches = TournamentService._generate_round_robin_matches(players_data, event, group)
+            print(f"Generated {len(matches)} round-robin matches")
+            return matches
         elif format.type == 'elimination':
-            return TournamentService._generate_elimination_matches(players_data, event, group)
+            matches = TournamentService._generate_elimination_matches(players_data, event, group)
+            print(f"Generated {len(matches)} elimination matches")
+            return matches
         else:
+            print(f"Unknown format type: {format.type}")
             return []
 
     @staticmethod
@@ -386,14 +416,16 @@ class TournamentService:
                     'event_type': match_data['event_type'],
                     'player1_id': match_data['player1_data']['user_id'],
                     'player2_id': match_data['player2_data']['user_id'],
+                    'player1_name': match_data['player1_data']['user_name'],  # 添加姓名
+                    'player2_name': match_data['player2_data']['user_name'],  # 添加姓名
                     'player1_score': 0,
                     'player2_score': 0,
                     'status': 'Scheduled',
-                    # 為雙打欄位設置預設值（因為它們是 NOT NULL）
+                    # 為雙打欄位設置預設值
                     'team1_player1_id': match_data['player1_data']['user_id'],
-                    'team1_player2_id': match_data['player1_data']['user_id'],  # 單打時設為同一個人
+                    'team1_player2_id': match_data['player1_data']['user_id'],
                     'team2_player1_id': match_data['player2_data']['user_id'],
-                    'team2_player2_id': match_data['player2_data']['user_id']   # 單打時設為同一個人
+                    'team2_player2_id': match_data['player2_data']['user_id']
                 }
             else:  # 雙打
                 # 處理雙打選手
@@ -403,21 +435,26 @@ class TournamentService:
                 # 如果是 BYE 比賽，特殊處理
                 if p1_data['user_name'] == 'BYE' or p2_data['user_name'] == 'BYE':
                     # 對於 BYE 比賽，我們需要特殊處理
-                    bye_user_id = 0  # 或者創建一個特殊的 BYE 用戶
                     match_dict = {
                         'tournament_id': tournament_id,
                         'event_id': match_data['event_id'],
                         'group_id': match_data['group_id'],
                         'event_type': match_data['event_type'],
-                        'player1_id': p1_data['user_id'] or bye_user_id,
-                        'player2_id': p2_data['user_id'] or bye_user_id,
+                        'player1_id': p1_data['user_id'],
+                        'player2_id': p2_data['user_id'],
+                        'player1_name': p1_data['user_name'],
+                        'player2_name': p2_data['user_name'],
                         'player1_score': 0,
                         'player2_score': 0,
                         'status': 'Scheduled',
-                        'team1_player1_id': p1_data['user_id'] or bye_user_id,
-                        'team1_player2_id': p1_data['partner_id'] or bye_user_id,
-                        'team2_player1_id': p2_data['user_id'] or bye_user_id,
-                        'team2_player2_id': p2_data['partner_id'] or bye_user_id
+                        'team1_player1_id': p1_data['user_id'],
+                        'team1_player2_id': p1_data['partner_id'],
+                        'team2_player1_id': p2_data['user_id'],
+                        'team2_player2_id': p2_data['partner_id'],
+                        'team1_player1_name': p1_data['user_name'],
+                        'team1_player2_name': p1_data['partner_name'],
+                        'team2_player1_name': p2_data['user_name'],
+                        'team2_player2_name': p2_data['partner_name']
                     }
                 else:
                     # 正常雙打比賽
@@ -426,15 +463,21 @@ class TournamentService:
                         'event_id': match_data['event_id'],
                         'group_id': match_data['group_id'],
                         'event_type': match_data['event_type'],
-                        'player1_id': p1_data['user_id'],  # 主要選手
-                        'player2_id': p2_data['user_id'],  # 主要選手
+                        'player1_id': p1_data['user_id'],
+                        'player2_id': p2_data['user_id'],
+                        'player1_name': p1_data['user_name'],
+                        'player2_name': p2_data['user_name'],
                         'player1_score': 0,
                         'player2_score': 0,
                         'status': 'Scheduled',
                         'team1_player1_id': p1_data['user_id'],
-                        'team1_player2_id': p1_data['partner_id'] or p1_data['user_id'],  # 如果沒有搭檔，設為自己
+                        'team1_player2_id': p1_data['partner_id'],
                         'team2_player1_id': p2_data['user_id'],
-                        'team2_player2_id': p2_data['partner_id'] or p2_data['user_id']   # 如果沒有搭檔，設為自己
+                        'team2_player2_id': p2_data['partner_id'],
+                        'team1_player1_name': p1_data['user_name'],
+                        'team1_player2_name': p1_data['partner_name'],
+                        'team2_player1_name': p2_data['user_name'],
+                        'team2_player2_name': p2_data['partner_name']
                     }
             
             match = Match(**match_dict)
@@ -446,5 +489,5 @@ class TournamentService:
         except Exception as e:
             db.session.rollback()
             print(f"Error creating match record: {e}")
-            print(f"Match data: {match_data}")  # 加入除錯資訊
+            print(f"Match data: {match_data}")
             return None

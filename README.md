@@ -439,3 +439,9 @@ the host must upload the file using the provided format.
 ### 2025/07/13
 - Implemented the external registration function allowing the host to upload .xlsx or .csv file to register
 ---
+
+### 2025/07/14
+- Generate test file for external registration
+- Fixed the model structure
+- External registration is completed.
+---

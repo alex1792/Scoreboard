@@ -162,7 +162,7 @@ function CheckRegistrationPage() {
         alert(`Successfully generated ${data.data?.length || 0} matches!`);
         // 可以選擇重新載入頁面或導航到比賽頁面
         // window.location.reload();
-        navigate(`/matches`);
+        navigate(`/tournaments/${tournamentId}/matches`);
       } else {
         alert(`Error: ${data.message || 'Failed to generate matches'}`);
       }

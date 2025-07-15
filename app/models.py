@@ -65,14 +65,24 @@ class Match(db.Model):
     event_type = db.Column(db.String(10), nullable=False) # MS, WS, MD, WD, XD
 
     # for single matches
-    player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # 添加選手姓名字段
+    player1_name = db.Column(db.String(100), nullable=True)
+    player2_name = db.Column(db.String(100), nullable=True)
 
     # for doubles matches
-    team1_player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    team1_player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    team2_player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    team2_player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    team1_player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    team1_player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    team2_player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    team2_player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # 添加雙打選手姓名字段
+    team1_player1_name = db.Column(db.String(100), nullable=True)
+    team1_player2_name = db.Column(db.String(100), nullable=True)
+    team2_player1_name = db.Column(db.String(100), nullable=True)
+    team2_player2_name = db.Column(db.String(100), nullable=True)
 
     # score
     player1_score = db.Column(db.Integer, default=0)
