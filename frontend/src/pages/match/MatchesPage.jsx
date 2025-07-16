@@ -36,6 +36,12 @@ const MatchesPage = () => {
     <>
       <div className="container">
         <h1 className="page-title">All Matches</h1>
+        <div className="generate-match-schedule-btn-container">
+          <Link to={`/admin/tournaments/${tournamentId}/generate-schedule`}>
+            <button className="generate-match-schedule-btn">Generate Match Schedule</button>
+          </Link>
+        </div>
+        
 
         <div className="matches-grid">
           {matches.length > 0 ? (
@@ -51,7 +57,7 @@ const MatchesPage = () => {
                 >
                   <div className="match-header">
                     <div className="match-id">#{match.id}</div>
-                    <div className="match-category">{match.category}</div>
+                    <div className="match-category">{match.category} - {match.group}</div>
                   </div>
                   
                   <div className="players">

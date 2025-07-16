@@ -383,3 +383,43 @@ export async function uploadRegistrationFile(formData, tournamentId) {
     throw err;
   }
 }
+
+// ================================================================================
+// ================================================================================
+// ========================= Generate Schedule from Database =======================
+// ================================================================================
+// ================================================================================
+
+export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`http://localhost:5001/api/admin/${tournamentId}/generate_schedule_for_tournament`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                total_court: totalCourt
+            })
+        });
+
+        if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            } else {
+                // 返回 blob 數據，讓調用者決定如何處理
+                return await response.blob();
+            }
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+        }
+    } catch (err) {
+        console.error('Error generating schedule from database:', err);
+        throw err;
+    }
+}

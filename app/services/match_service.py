@@ -93,7 +93,13 @@ class MatchService:
 
     @staticmethod
     def get_matches_by_tournament(tournament_id):
-        matches = [get_match_data(match) for match in Match.query.filter_by(tournament_id=tournament_id)]
+        matches = [get_match_data(match) for match in Match.query.filter_by(tournament_id=tournament_id).all()]
         if not matches:
             return None
         return matches
+
+    @staticmethod
+    def get_raw_matches_by_tournament(tournament_id):
+        """獲取錦標賽的原始 Match 對象（未經 get_match_data 處理）"""
+        matches = Match.query.filter_by(tournament_id=tournament_id).all()
+        return matches if matches else []

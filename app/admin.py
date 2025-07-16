@@ -6,10 +6,11 @@ from .utils import check_authorization
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .extensions import socketio
 from .utils import create_match_record, get_match_data
-from .scheduler import generate_schedule
+from .scheduler import generate_schedule, generate_schedule_for_tournament_from_matches
 from .match_generator import generate_match
 from .services.user_service import UserService
 from .services.match_service import MatchService
+
 
 """
 This file contains the functions for the admin blueprint.
@@ -260,6 +261,61 @@ def upload_participants():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Error creating match schedule"}), 500
+
+@admin_bp.route('/<int:tournament_id>/generate_schedule_for_tournament', methods=['POST'])
+@jwt_required()
+def generate_schedule_for_tournament(tournament_id):
+    """
+    從資料庫中的比賽記錄生成賽程表
+    完全基於資料庫，不需要檔案上傳
+    """
+    try:
+        auth = check_authorization()
+        if auth:
+            return auth
+
+        # 從 JSON 請求中獲取參數
+        request_data = request.get_json() or {}
+        total_court = request_data.get('total_court', 6)
+        
+        try:
+            total_court = int(total_court)
+        except (ValueError, TypeError):
+            total_court = 6
+
+        # 從資料庫獲取原始 Match 對象
+        matches = MatchService.get_raw_matches_by_tournament(tournament_id)
+        if not matches:
+            return jsonify({
+                "status": "error",
+                "message": "No matches found for this tournament"
+            }), 404
+
+        # 創建輸出檔案路徑
+        instance_path = current_app.instance_path
+        os.makedirs(instance_path, exist_ok=True)
+        output_filename = f"tournament_{tournament_id}_schedule.xlsx"
+        output_path = os.path.join(instance_path, output_filename)
+        
+        # 生成賽程表
+        result = generate_schedule_for_tournament_from_matches(matches, total_court, output_path)
+        
+        # 返回生成的賽程表檔案
+        return send_file(
+            output_path,
+            as_attachment=True,
+            download_name=output_filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+            
+    except Exception as e:
+        print(f"Error generating schedule for tournament: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": f"Error generating schedule: {str(e)}"
+        }), 500
+
+
 
 # ------------- WebSocket events for user role updates ----------------
 @socketio.on('connect', namespace='/user_role_update')

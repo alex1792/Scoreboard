@@ -13,6 +13,17 @@ def read_file(fname='24FALL_USC_OPEN_TEST.xlsx'):
 # split player names, compute weights
 # match = [team1_names, team2_names, category, flight, weight]
 def get_match_info(f):
+    """
+    This function is used to get the match info from the file
+    It will return a list of matches with the following format:
+    [player1s, player2s, category, flight, weight]
+
+    player1s: a list of player names in team 1
+    player2s: a list of player names in team 2
+    category: the category of the match (MS, WS, MD, WD, XD)
+    flight: the group of the match (A, B, C...)
+    weight: the weight of the match, computed by the number of the remaining matches of each player
+    """
     # get all player's name
     player1s = f['Team1'].tolist()
     player2s = f['Team2'].tolist()
@@ -323,42 +334,162 @@ def backtracking_scheduler(matches, total_court, batches=None, prev_batch_player
 # write schedule to excel file
 def write_schedule(batches, total_court, filename):
     rows = []
+    all_consecutive_players = []  # 收集所有連續出場的選手
+    
     for batch_idx, batch in enumerate(batches, 1):
         for match in batch:
             consecutive_players = match[5] if len(match) > 5 else []
             consecutive_str = ", ".join(consecutive_players) if consecutive_players else ""
+            
+            # 收集所有連續出場的選手
+            all_consecutive_players.extend(consecutive_players)
+            
+            # 獲取更多比賽信息
+            category = match[2]
+            flight = match[3]
+            player1s = ' / '.join(match[0])
+            player2s = ' / '.join(match[1])
+            
+            # 判斷比賽類型
+            if len(match[0]) == 1 and len(match[1]) == 1:
+                match_type = "Single"
+            else:
+                match_type = "Double"
+            
             rows.append({
-                'Batch': batch_idx,
-                'Player1s': ' / '.join(match[0]),
-                'Player2s': ' / '.join(match[1]),
-                'Category': match[2],
-                'Flight': match[3],
-                'Affected_Players': consecutive_str
+                'Round': batch_idx,
+                'Court': f"Court {len(rows) % total_court + 1}",
+                'Match_Type': match_type,
+                'Category': category,
+                'Group': flight,
+                'Player1/Team1': player1s,
+                'Player2/Team2': player2s,
+                'Consecutive_Players': consecutive_str,
+                'Status': 'Scheduled',
+                'Score1': 0,
+                'Score2': 0,
+                'Umpire': '',
+                'Notes': ''
             })
+        
+        # 填充空行以達到 total_court 數量
         if len(batch) < total_court:
             for _ in range(total_court - len(batch)):
                 rows.append({
-                    'Batch': batch_idx,
-                    'Player1s': None,
-                    'Player2s': None,
-                    'Category': None,
-                    'Flight': None,
-                    'Affected_Players': None
+                    'Round': batch_idx,
+                    'Court': f"Court {len(rows) % total_court + 1}",
+                    'Match_Type': '',
+                    'Category': '',
+                    'Group': '',
+                    'Player1/Team1': '',
+                    'Player2/Team2': '',
+                    'Consecutive_Players': '',
+                    'Status': '',
+                    'Score1': '',
+                    'Score2': '',
+                    'Umpire': '',
+                    'Notes': ''
                 })
+
+    # 計算受影響選手統計
+    from collections import Counter
+    player_counts = Counter(all_consecutive_players)
+    total_affected_players = len(player_counts)
+    
+    # 添加統計信息行
+    rows.append({})  # 空行
+    rows.append({
+        'Round': 'Stats',
+        'Court': '',
+        'Match_Type': '',
+        'Category': '',
+        'Group': '',
+        'Player1/Team1': '',
+        'Player2/Team2': '',
+        'Consecutive_Players': '',
+        'Status': '',
+        'Score1': '',
+        'Score2': '',
+        'Umpire': '',
+        'Notes': ''
+    })
+    
+    # 添加受影響人數總計
+    rows.append({
+        'Round': 'Total Affected Players',
+        'Court': '',
+        'Match_Type': '',
+        'Category': '',
+        'Group': '',
+        'Player1/Team1': '',
+        'Player2/Team2': '',
+        'Consecutive_Players': '',
+        'Status': '',
+        'Score1': '',
+        'Score2': '',
+        'Umpire': '',
+        'Notes': total_affected_players
+    })
+    
+    # 添加每個受影響選手的次數
+    for player, count in player_counts.most_common():  # 按次數降序排列
+        rows.append({
+            'Round': '',
+            'Court': '',
+            'Match_Type': '',
+            'Category': '',
+            'Group': '',
+            'Player1/Team1': player,
+            'Player2/Team2': '',
+            'Consecutive_Players': '',
+            'Status': '',
+            'Score1': '',
+            'Score2': '',
+            'Umpire': '',
+            'Notes': f"Consecutive {count} times"
+        })
 
     df = pd.DataFrame(rows)
     df.to_excel(filename, index=False, sheet_name='MatchSchedule')
 
-    # use openpyxl to fill color
+    # 使用 openpyxl 添加顏色標記
     wb = load_workbook(filename)
     ws = wb['MatchSchedule']
-    fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # yellow
-
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
-        consecutive_cell = row[5]
-        if consecutive_cell.value:
+    
+    # 黃色標記連續出場的選手
+    yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    
+    # 綠色標記有比賽的行
+    green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+    
+    # 藍色標記統計信息行
+    blue_fill = PatternFill(start_color="87CEEB", end_color="87CEEB", fill_type="solid")
+    
+    # 紅色標記受影響選手統計
+    red_fill = PatternFill(start_color="FFB6C1", end_color="FFB6C1", fill_type="solid")
+    
+    for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=ws.max_column), 2):
+        consecutive_cell = row[7]  # Consecutive_Players 欄位
+        category_cell = row[3]     # Category 欄位
+        round_cell = row[0]        # Round 欄位
+        
+        # 檢查是否為統計信息行
+        if round_cell.value == 'Stats':
             for cell in row:
-                cell.fill = fill
+                cell.fill = blue_fill
+        elif round_cell.value == 'Total Affected Players':
+            for cell in row:
+                cell.fill = red_fill
+        elif round_cell.value == '' and row[5].value and 'Consecutive' in str(row[11].value or ''):
+            # 受影響選手詳細統計行
+            for cell in row:
+                cell.fill = red_fill
+        elif consecutive_cell.value:  # 有連續出場選手
+            for cell in row:
+                cell.fill = yellow_fill
+        elif category_cell.value:   # 有比賽但無連續出場
+            for cell in row:
+                cell.fill = green_fill
 
     wb.save(filename)
 
@@ -389,7 +520,7 @@ def generate_schedule(f, total_court, output_fname):
     
     write_schedule(batches, total_court, output_fname)
     
-    print_final_schedule(batches, remaining)
+    # print_final_schedule(batches, remaining)
 
 # generating schedule using backtracking(TLE)
 def generate_schedule_backtracking(fname, total_court):
@@ -411,3 +542,137 @@ def generate_schedule_backtracking(fname, total_court):
 # output_schedule_file_name = '24Fall_USC_OPEN_schedule.xlsx'
 
 # generate_schedule(file_name, total_court, output_schedule_file_name)
+
+# def generate_schedule_for_tournament_from_matches(matches, total_court, output_fname):
+#     """
+#     This function is used to generate the schedule for a tournament from a list of matches
+#     It will return a list of batches, each batch is a list of matches
+
+#     matches: a list of matches, each match is a list of two lists of player names
+#     total_court: the number of courts in the arena
+#     output_fname: the name of the output file
+    
+#     total_court: the number of courts in the arena
+
+#     output_fname: the name of the generated schedule file
+#     """
+#     batches, remaining, total_insert = scheduler(matches, total_court)
+
+#     batches = annotate_consecutive_players(batches)
+    
+#     write_schedule(batches, total_court, output_fname)
+    
+#     print_final_schedule(batches, remaining)
+
+# 在文件末尾添加新的基於資料庫的函數
+
+def get_match_info_from_database(matches):
+    """
+    Get matches from database and transform to the format of scheduler.
+    
+    Args:
+        matches: match filtered by tournament_id
+    
+    Returns:
+        list: scheduler format [[player1_list], [player2_list], category, group, weight]
+    """
+    from .models import Group  # 添加這個導入
+    
+    # 分析每個選手的比賽數量
+    players = {}
+    converted_matches = []
+    
+    for match in matches:
+        # 獲取 group 信息
+        group = Group.query.get(match.group_id) if match.group_id else None
+        group_name = group.name if group else 'A'
+        
+        # 獲取選手姓名
+        if match.event_type in ['MS', 'WS']:  # 單打
+            player1_name = match.player1_name or (match.player1.get_full_name() if match.player1 else "Unknown")
+            player2_name = match.player2_name or (match.player2.get_full_name() if match.player2 else "Unknown")
+            
+            # 更新選手比賽數量
+            players[player1_name] = players.get(player1_name, 0) + 1
+            players[player2_name] = players.get(player2_name, 0) + 1
+            
+            converted_matches.append([
+                [player1_name], 
+                [player2_name], 
+                match.event_type, 
+                group_name,  # 使用正確獲取的 group_name
+                1  # 預設權重
+            ])
+        else:  # 雙打
+            # 獲取選手姓名
+            team1_player1 = match.team1_player1_name or (match.team1_player1.get_full_name() if match.team1_player1 else "Unknown")
+            team1_player2 = match.team1_player2_name or (match.team1_player2.get_full_name() if match.team1_player2 else "Unknown")
+            team2_player1 = match.team2_player1_name or (match.team2_player1.get_full_name() if match.team2_player1 else "Unknown")
+            team2_player2 = match.team2_player2_name or (match.team2_player2.get_full_name() if match.team2_player2 else "Unknown")
+            
+            # 更新選手比賽數量
+            for player in [team1_player1, team1_player2, team2_player1, team2_player2]:
+                players[player] = players.get(player, 0) + 1
+            
+            converted_matches.append([
+                [team1_player1, team1_player2], 
+                [team2_player1, team2_player2], 
+                match.event_type, 
+                group_name,  # 使用正確獲取的 group_name
+                1  # 預設權重
+            ])
+    
+    # 計算每個比賽的權重
+    for match in converted_matches:
+        if len(match[0]) == 1 and len(match[1]) == 1:  # 單打
+            weight = players[match[0][0]] + players[match[1][0]]
+        else:  # 雙打
+            total_weight = 0
+            for player in match[0] + match[1]:
+                total_weight += players[player]
+            weight = total_weight / 2
+        match[4] = weight  # 更新權重
+    
+    return converted_matches
+
+def generate_schedule_from_database(matches, total_court, output_fname):
+    """
+    From database to generate schedule. No need to upload file.
+    
+    Args:
+        matches: matches from database
+        total_court: available courts in the arena
+        output_fname: output file name
+    """
+    # 從資料庫對象獲取比賽信息
+    match_data = get_match_info_from_database(matches)
+    
+    # 生成賽程表
+    batches, remaining, total_insert = scheduler(match_data, total_court)
+    
+    # 標註連續出場的選手
+    batches = annotate_consecutive_players(batches)
+    
+    # 寫入 Excel 檔案（保持與原本相同的格式）
+    write_schedule(batches, total_court, output_fname)
+    
+    # 打印結果
+    # print_final_schedule(batches, remaining)
+    
+    return {
+        'batches': batches,
+        'remaining': remaining,
+        'total_inserted': total_insert
+    }
+
+# 更新現有的函數以使用新的基於資料庫的函數
+def generate_schedule_for_tournament_from_matches(matches, total_court, output_fname):
+    """
+    From database to generate schedule. No need to upload file.
+    
+    Args:
+        matches: matches from database
+        total_court: available courts in the arena
+        output_fname: output file name
+    """
+    return generate_schedule_from_database(matches, total_court, output_fname)  
