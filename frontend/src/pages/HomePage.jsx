@@ -37,12 +37,12 @@ const Home = ({ currentUser }) => {
                   <span>View All Tournaments</span>
                 </Link>
             </div>
-            <div className="admin-icon-item">
+            {/* <div className="admin-icon-item">
               <Link to="/matches">
                 <img src="/documents-search-icon.png" alt="Check All Matches" className="admin-icon" />
                 <span>Check All Matches</span>
               </Link>
-            </div>
+            </div> */}
             {currentUser?.role === 'admin' && (
               <>
                 <div className="admin-icon-item">

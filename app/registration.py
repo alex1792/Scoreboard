@@ -65,7 +65,7 @@ def get_registrations(tournament_id):
             return auth
 
         registrations = RegistrationService.get_registrations_by_tournament(tournament_id)
-        print(f"Registrations: {registrations}")
+        # print(f"Registrations: {registrations}")
         if not registrations:
             return jsonify({"status": "error", "message": "No registrations found"}), 404
         
@@ -102,7 +102,7 @@ def upload_registration_file(tournament_id):
             return jsonify({"status": "error", "message": "No file uploaded"}), 400
         
         registration_result = RegistrationService.create_registration_from_excel(tournament_id, file)
-        print(f"Registration result: {registration_result}")
+        # print(f"Registration result: {registration_result}")
         return jsonify({"status": "success", "message": registration_result}), 200
             
     except Exception as e:

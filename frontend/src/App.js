@@ -57,7 +57,7 @@ function App() {
         <Routes>
           <Route path="/" element={<BaseLayout currentUser={currentUser} />}>
             {/* General Features */}
-            <Route path="tournaments/:tournamentId/matches" element={<MatchesPage />} />
+            <Route path="tournaments/:tournamentId/matches" element={<MatchesPage currentUser={currentUser}/>} />
             <Route path="matches/:matchId" element={<ScoreboardPage currentUser={currentUser}/>} />
             <Route path="tournaments" element={<TournamentPage />} />
             <Route path="tournaments/:tournamentId/signup" element={<SignUpTournamentPage />} />
@@ -74,7 +74,7 @@ function App() {
             <Route path="/admin/scheduler" element={<SchedulerPage />} />
             <Route path="/admin/match-generator" element={<MatchGenerator />} />
             <Route path="/admin/create-tournament" element={<CreateTournament />} />
-            <Route path="/admin/tournaments/:tournamentId/generate-schedule" element={<GenerateSchedulePage />} />
+            <Route path="/admin/tournaments/:tournamentId/generate-schedule" element={<GenerateSchedulePage currentUser={currentUser}/>} />
             {/* <Route path="admin/change-upire-status" element={<AssignUmpirePage />} /> */}
 
             {/* Home */}

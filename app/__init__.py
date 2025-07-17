@@ -38,30 +38,38 @@ def create_app():
         from .models import User
         from werkzeug.security import generate_password_hash
         if not User.query.filter_by(username='admin').first():
-            admin = User(
-                username='admin',
-                password=generate_password_hash('admin'),
-                role='admin',
-                first_name='Admin',
-                last_name='Admin'
-            )
+            user_data = {
+                'username': 'admin',
+                'password': generate_password_hash('admin'),
+                'role': 'admin',
+                'first_name': 'Admin',
+                'last_name': 'Admin'
+            }
+            
+            admin = User(**user_data)
             db.session.add(admin)
             db.session.commit()
 
         # 確保基本 Format 存在
         from .models import Format
         if not Format.query.filter_by(type='round_robin').first():
-            round_robin_format = Format(
-                type='round_robin',
-                rules='Round Robin format',
-            )
+            format_data = {
+                'type': 'round_robin',
+                'rules': 'Round Robin format',
+                'group_size': 4
+            }
+            
+            round_robin_format = Format(**format_data)
             db.session.add(round_robin_format)
         
         if not Format.query.filter_by(type='elimination').first():
-            elimination_format = Format(
-                type='elimination',
-                rules='Elimination format',
-            )
+            elimination_format_data = {
+                'type': 'elimination',
+                'rules': 'Elimination format',
+                'group_size': None  # 淘汰賽不需要分組大小
+            }
+            
+            elimination_format = Format(**elimination_format_data)
             db.session.add(elimination_format)
         
         db.session.commit()

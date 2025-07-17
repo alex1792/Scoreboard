@@ -337,7 +337,11 @@ def write_schedule(batches, total_court, filename):
     all_consecutive_players = []  # 收集所有連續出場的選手
     
     for batch_idx, batch in enumerate(batches, 1):
-        for match in batch:
+        # 為每個 batch 創建固定數量的 court
+        batch_rows = []
+        
+        # 添加實際的比賽
+        for court_idx, match in enumerate(batch, 1):
             consecutive_players = match[5] if len(match) > 5 else []
             consecutive_str = ", ".join(consecutive_players) if consecutive_players else ""
             
@@ -356,9 +360,9 @@ def write_schedule(batches, total_court, filename):
             else:
                 match_type = "Double"
             
-            rows.append({
+            batch_rows.append({
                 'Round': batch_idx,
-                'Court': f"Court {len(rows) % total_court + 1}",
+                'Court': f"Court {court_idx}",
                 'Match_Type': match_type,
                 'Category': category,
                 'Group': flight,
@@ -373,23 +377,25 @@ def write_schedule(batches, total_court, filename):
             })
         
         # 填充空行以達到 total_court 數量
-        if len(batch) < total_court:
-            for _ in range(total_court - len(batch)):
-                rows.append({
-                    'Round': batch_idx,
-                    'Court': f"Court {len(rows) % total_court + 1}",
-                    'Match_Type': '',
-                    'Category': '',
-                    'Group': '',
-                    'Player1/Team1': '',
-                    'Player2/Team2': '',
-                    'Consecutive_Players': '',
-                    'Status': '',
-                    'Score1': '',
-                    'Score2': '',
-                    'Umpire': '',
-                    'Notes': ''
-                })
+        for court_idx in range(len(batch) + 1, total_court + 1):
+            batch_rows.append({
+                'Round': batch_idx,
+                'Court': f"Court {court_idx}",
+                'Match_Type': '',
+                'Category': '',
+                'Group': '',
+                'Player1/Team1': '',
+                'Player2/Team2': '',
+                'Consecutive_Players': '',
+                'Status': '',
+                'Score1': '',
+                'Score2': '',
+                'Umpire': '',
+                'Notes': ''
+            })
+        
+        # 將這個 batch 的所有行添加到總行列表
+        rows.extend(batch_rows)
 
     # 計算受影響選手統計
     from collections import Counter

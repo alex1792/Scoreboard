@@ -471,19 +471,19 @@ the host must upload the file using the provided format.
 
 | Excel Column | Details | Info |
 |------------|------|------|
-| **Round** | "統計信息" | 統計信息標題行 |
-| **Notes** | 受影響選手總數 | 連續出場選手的人數 |
-| **Player1/Team1** | 選手姓名 | 受影響的選手姓名 |
-| **Notes** | "連續出場 X 次" | 該選手連續出場的次數 |
+| **Round** | "Stats info" | Stats info column |
+| **Notes** | Number of Affected players | Number of Consecutive players |
+| **Player1/Team1** | Player Name | Affected Player's name |
+| **Notes** | "Consecutive x times" | number of consecutive games |
 
 ## Color Info
 
-| 顏色 | 說明 |
+| Color | Info |
 |------|------|
-| 🟡 **黃色** | 有連續出場選手的比賽 |
-| �� **綠色** | 正常比賽（無連續出場） |
-| 🔵 **藍色** | 統計信息標題行 |
-| 🔴 **紅色** | 受影響選手統計行 |
+| 🟡 **Yellow** | games with consecutive players |
+| 🟢 **Green** | Unaffected game |
+| 🔵 **Blue** | Stats info |
+| 🔴 **Red** | Affected players |
 
 ## Database Relationship Info
 
@@ -491,37 +491,41 @@ the host must upload the file using the provided format.
 -- Match 表與其他表的關聯
 Match.event_id → Event.id
 Match.group_id → Group.id
-Match.player1_id → User.id (單打選手1)
-Match.player2_id → User.id (單打選手2)
-Match.team1_player1_id → User.id (雙打隊伍1選手1)
-Match.team1_player2_id → User.id (雙打隊伍1選手2)
-Match.team2_player1_id → User.id (雙打隊伍2選手1)
-Match.team2_player2_id → User.id (雙打隊伍2選手2)
-Match.umpire_id → User.id (裁判)
+Match.player1_id → User.id (single player1)
+Match.player2_id → User.id (single player2)
+Match.team1_player1_id → User.id (Double team1 player1)
+Match.team1_player2_id → User.id (Double team1 player2)
+Match.team2_player1_id → User.id (Double team2 player1)
+Match.team2_player2_id → User.id (Double team2 player2)
+Match.umpire_id → User.id (umpire id)
 ```
 
 ## Example:
 
 | Round | Court | Match_Type | Category | Flight | Player1/Team1 | Player2/Team2 | Consecutive_Players | Status | Score1 | Score2 | Umpire | Notes |
 |-------|-------|------------|----------|--------|---------------|---------------|-------------------|--------|--------|--------|--------|-------|
-| 1 | Court1 | 單打 | MS | A | John Smith | Jane Doe | John Smith, Jane Doe | Scheduled | 0 | 0 | | |
-| 1 | Court2 | 雙打 | MD | B | Mike & Tom | Alex & Bob | Mike, Tom | Scheduled | 0 | 0 | | |
-| 2 | Court1 | 單打 | WS | A | Sarah Wilson | Emma Davis | | Scheduled | 0 | 0 | | |
+| 1 | Court1 | Single | MS | A | John Smith | Jane Doe | John Smith, Jane Doe | Scheduled | 0 | 0 | | |
+| 1 | Court2 | Double | MD | B | Mike & Tom | Alex & Bob | Mike, Tom | Scheduled | 0 | 0 | | |
+| 2 | Court1 | Single | WS | A | Sarah Wilson | Emma Davis | | Scheduled | 0 | 0 | | |
 
 ## Stats Example:
 
 | Round | Court | Match_Type | Category | Flight | Player1/Team1 | Player2/Team2 | Consecutive_Players | Status | Score1 | Score2 | Umpire | Notes |
 |-------|-------|------------|----------|--------|---------------|---------------|-------------------|--------|--------|--------|--------|-------|
-| 統計信息 | | | | | | | | | | | | |
-| 受影響選手總數 | | | | | | | | | | | | 3 |
-| | | | | | John Smith | | | | | | | 連續出場 2 次 |
-| | | | | | Jane Doe | | | | | | | 連續出場 1 次 |
-| | | | | | Mike | | | | | | | 連續出場 1 次 |
+| Stats Info | | | | | | | | | | | | |
+| Number of Affected players | | | | | | | | | | | | 3 |
+| | | | | | John Smith | | | | | | | consecutive 2 times |
+| | | | | | Jane Doe | | | | | | | consecutive 1 time |
+| | | | | | Mike | | | | | | | cnosecutive 1 time |
 
 ---
 
 **注意事項：**
-- 連續出場選手按次數降序排列
-- 統計信息行使用特殊顏色標記
-- 空行用於分隔主要比賽數據和統計信息
+- Consecutive players are sorted
+- Stats info is marked by different color
+- empty row is used to separate match schedule with stats info
+---
+
+### 2025/07/16
+- Fixed the upload registration errors (causing issues with the generate match function)
 ---

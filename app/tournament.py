@@ -150,7 +150,7 @@ def get_matches_by_tournament(tournament_id):
         if not matches:
             print("No matches found")
             return jsonify({"status": "error", "message": "No matches found"}), 404
-        print(matches)
+        # print(matches)
         return jsonify({"status": "success", "message": "Matches fetched successfully", "data": matches}), 200
     except Exception as e:
         print(f"Error: {e}")

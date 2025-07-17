@@ -100,7 +100,7 @@ class RegistrationService:
         """從 Excel 資料創建報名記錄"""
         try:
             excel_data = pd.read_excel(file, engine='openpyxl')
-            print(f"Excel data: {excel_data}")
+            # print(f"Excel data: {excel_data}")
 
             created_registrations = []
             errors = []
@@ -123,10 +123,17 @@ class RegistrationService:
             events = Event.query.filter_by(tournament_id=tournament_id).all()
             event_map = {event.name: event.id for event in events}
 
-            # 取得所有 group（透過 event_id）
-            event_ids = [event.id for event in events]
-            groups = Group.query.filter(Group.event_id.in_(event_ids)).all()
-            group_map = {group.name: group.id for group in groups}
+            # 修改：使用 (event_name, group_name) 作為 key
+            groups = Group.query.join(Event).filter(Event.tournament_id == tournament_id).all()
+            group_map = {}
+            for group in groups:
+                event = Event.query.get(group.event_id)
+                if not event:
+                    errors.append(f"Event not found for group {group.name}")
+                    continue
+                key = (event.name, group.name)
+                group_map[key] = group.id
+                print(f"Group mapping: {event.name}-{group.name} -> Group ID {group.id}")
 
             # 用於追蹤每個 event-group 組合中已處理的搭檔
             processed_pairs = {}  # {(event_id, group_id): set of player pairs}
@@ -149,15 +156,20 @@ class RegistrationService:
                     if event_name not in event_map:
                         errors.append(f"Row {row_num}: Event '{event_name}' not found in tournament")
                         continue
-                    if group_name not in group_map:
-                        errors.append(f"Row {row_num}: Group '{group_name}' not found in tournament")
+                    
+                    # 修改：使用 (event_name, group_name) 作為 key
+                    group_key = (event_name, group_name)
+                    if group_key not in group_map:
+                        errors.append(f"Row {row_num}: Group '{group_name}' not found in event '{event_name}'")
                         continue
 
                     user = get_user_by_name(first_name, last_name)
                     partner = get_user_by_name(partner_first_name, partner_last_name) if partner_first_name and partner_last_name else None
 
                     event_id = event_map[event_name]
-                    group_id = group_map[group_name]
+                    group_id = group_map[group_key]  # 使用正確的 group_id
+
+                    print(f"Row {row_num}: {event_name}-{group_name} -> Event ID {event_id}, Group ID {group_id}")
 
                     # 檢查是否為雙打
                     is_doubles = bool(partner_first_name and partner_last_name)

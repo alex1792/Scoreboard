@@ -224,26 +224,34 @@ def upload_participants():
             return auth
 
         file = request.files.get('file')
-        categories = request.form.get('categories', 'MS,WS,MD,WD,XD')
-        flight = request.form.get('flight', 'A,B,C')
-        rules_type = request.form.get('rules', 'r,e')
-
-        categories = categories.split(',')
-        flight = flight.split(',')
-
-        rules = {}
-        for cat in categories:
-            for fl in flight:
-                key = f"{cat}-{fl}"
-                if rules_type == 'r':
-                    rules[key] = ['r', 4]
-                else:
-                    rules[key] = ['e']
+        rules_string = request.form.get('rules', '')  # 獲取前端發送的規則字符串
 
         if not file or not file.filename:
             return jsonify({"status": "error", "message": "No file provided"}), 400
         if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
             return jsonify({"status": "error", "message": "Invalid file format, only .csv and .xlsx are allowed"}), 400
+
+        # 解析規則字符串
+        rules = {}
+        if rules_string:
+            rule_parts = rules_string.split(';')
+            for part in rule_parts:
+                if ':' in part:
+                    key, rule_part = part.split(':', 1)
+                    if ',' in rule_part:
+                        rule_type, group_size = rule_part.split(',', 1)
+                        rules[key] = [rule_type, int(group_size)]
+                    else:
+                        rules[key] = [rule_part]
+
+        # 如果沒有規則，使用默認值
+        if not rules:
+            categories = ['MS', 'WS', 'MD', 'WD', 'XD']
+            flights = ['A', 'B', 'C']
+            for cat in categories:
+                for fl in flights:
+                    key = f"{cat}-{fl}"
+                    rules[key] = ['e']  # 默認淘汰賽
 
         import pandas as pd
         if file.filename.endswith('.csv'):
@@ -255,7 +263,11 @@ def upload_participants():
         os.makedirs(instance_path, exist_ok=True)
         output_path = os.path.join(instance_path, 'all_matches.xlsx')
         
-        generate_match(f, categories, flight, rules, output_path)
+        # 提取 categories 和 flights 用於 generate_match
+        categories = list(set([key.split('-')[0] for key in rules.keys()]))
+        flights = list(set([key.split('-')[1] for key in rules.keys()]))
+        
+        generate_match(f, categories, flights, rules, output_path)
 
         return send_file(output_path, as_attachment=True, download_name='all_matches.xlsx')
     except Exception as e:

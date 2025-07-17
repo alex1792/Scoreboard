@@ -208,7 +208,7 @@ def to_excel(all_match, filename='all_match.xlsx'):
     rows = []
     for cat, matches in all_match.items():
         for match in matches:
-            print(match)
+            # print(match)
             rows.append({
                 'ID': match['id'],
                 'Category': cat[:2],
@@ -260,15 +260,16 @@ def generate_match(f, categories, flight, rules, filename):
         if cat not in table:
             continue
 
-        if len(rule) > 1:
-            group = group_players(table[cat], rule[1])
+        if len(rule) > 1 and rule[0] == 'r':  # Round Robin with group size
+            group_size = rule[1]  # 使用傳入的分組大小
+            group = group_players(table[cat], group_size)
             match = generate_round_robin(group)
             all_match[cat] = match
-            print_match(match)
-        else:
+            # print_match(match)
+        else:  # Elimination
             match = generate_elimination(table[cat])
             all_match[cat] = match
-            print_match(match)
+            # print_match(match)
 
     # print_match(all_match)
     to_excel(all_match, filename)  
