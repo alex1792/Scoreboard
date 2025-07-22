@@ -529,3 +529,9 @@ Match.umpire_id → User.id (umpire id)
 ### 2025/07/16
 - Fixed the upload registration errors (causing issues with the generate match function)
 ---
+
+### 2025/07/22
+- Fixed the scheduling algorithm, only matches will be scheduled. Exempt for BYE matches.
+- Fixed the dependencies issues for the scheduler algorithm.
+- Created a ScheduleService to operate the schedule service.
+---

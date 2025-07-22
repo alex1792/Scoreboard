@@ -541,37 +541,6 @@ def generate_schedule_backtracking(fname, total_court):
     else:
         print("No feasible schedule found.")
 
-# example: You need to have three variables to run the whole process
-# how many courts in the arena
-# total_court = 6
-# file_name = '24FALL_USC_OPEN_TEST.xlsx'
-# output_schedule_file_name = '24Fall_USC_OPEN_schedule.xlsx'
-
-# generate_schedule(file_name, total_court, output_schedule_file_name)
-
-# def generate_schedule_for_tournament_from_matches(matches, total_court, output_fname):
-#     """
-#     This function is used to generate the schedule for a tournament from a list of matches
-#     It will return a list of batches, each batch is a list of matches
-
-#     matches: a list of matches, each match is a list of two lists of player names
-#     total_court: the number of courts in the arena
-#     output_fname: the name of the output file
-    
-#     total_court: the number of courts in the arena
-
-#     output_fname: the name of the generated schedule file
-#     """
-#     batches, remaining, total_insert = scheduler(matches, total_court)
-
-#     batches = annotate_consecutive_players(batches)
-    
-#     write_schedule(batches, total_court, output_fname)
-    
-#     print_final_schedule(batches, remaining)
-
-# 在文件末尾添加新的基於資料庫的函數
-
 def get_match_info_from_database(matches):
     """
     Get matches from database and transform to the format of scheduler.

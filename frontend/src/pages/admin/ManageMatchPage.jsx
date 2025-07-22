@@ -19,18 +19,26 @@ const MatchCard = ({ match, onDelete }) => {
     <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id}>
       <div className="match-header">
         <div className="match-id">#{match.id}</div>
+        {match.round && (
+          <div className="match-round">Round {match.round} - Match {match.match_number}</div>
+        )}
         <div className="match-category">{match.category}</div>
       </div>
+      
+      {/* 如果是晉級比賽，顯示前驅比賽信息 */}
+      {match.prev_match1_id && (
+        <div className="match-predecessors">
+          <small>Winner of Match #{match.prev_match1_id} vs Winner of Match #{match.prev_match2_id}</small>
+        </div>
+      )}
       
       <div className="players">
         <div className="player">
           <div className="player-name">{match.player1}</div>
-          {/* <small>ID: {match.player1_id}</small> */}
         </div>
         <div className="vs">vs</div>
         <div className="player">
           <div className="player-name">{match.player2}</div>
-          {/* <small>ID: {match.player2_id}</small> */}
         </div>
       </div>
 

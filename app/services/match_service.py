@@ -2,7 +2,17 @@ from ..models import Match, User, Event, db
 from ..utils import get_match_data
 
 class MatchService:
-    """比賽相關的業務邏輯服務"""
+    """
+    Match service related to matches
+    - get_all_matches: return all matches in the database
+    - get_match_by_id: return a match by match.id
+    - create_match: create a new match
+    - assign_umpire: assign an umpire to a match by match.id and umpire.id
+    - update_score: update the score of a specific match
+    - update_match_status: update the status of a match
+    - clear_all_matches: clear all matches in the database
+    - delete_match: delete a match by match.id
+    """
     
     @staticmethod
     def get_all_matches():
@@ -103,3 +113,32 @@ class MatchService:
         """獲取錦標賽的原始 Match 對象（未經 get_match_data 處理）"""
         matches = Match.query.filter_by(tournament_id=tournament_id).all()
         return matches if matches else []
+
+    @staticmethod
+    def update_match_winner(match_id, winner_name):
+        """更新比賽勝者並連鎖更新後續比賽"""
+        match = Match.query.get(match_id)
+        if not match:
+            return False
+        
+        # 更新當前比賽的勝者
+        # ... 更新邏輯
+        
+        # 查找並更新後續比賽
+        next_matches = Match.query.filter(
+            (Match.prev_match1_id == match_id) | 
+            (Match.prev_match2_id == match_id)
+        ).all()
+        
+        for next_match in next_matches:
+            if next_match.player1_from_match == match_id:
+                next_match.player1_name = winner_name
+            elif next_match.player2_from_match == match_id:
+                next_match.player2_name = winner_name
+            
+            # 如果兩個選手都確定了，可以開始這場比賽
+            if next_match.player1_name and next_match.player2_name:
+                next_match.status = 'pending'
+        
+        db.session.commit()
+        return True

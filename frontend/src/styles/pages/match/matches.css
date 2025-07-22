@@ -23,11 +23,10 @@
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
+    padding: 1.2rem;
     border-left: 4px solid;
     transition: transform 0.2s ease;
     max-width: 400px;   
-    padding: 0.8rem;    
     font-size: 0.92em;  
 }
 
@@ -123,11 +122,13 @@
   margin-bottom: 4px;
 } */
 
+/* 重新調整 match-header 的佈局 */
 .match-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline; /* 改為 baseline 對齊 */
   margin-bottom: 0.5rem;
+  padding-right: 0; /* 移除右邊距 */
 }
 
 .match-id {
@@ -136,8 +137,11 @@
 }
 
 .match-category {
-  font-size: 0.95em;
+  font-size: 0.9rem;
   color: #666;
+  text-align: right; /* 文字靠右對齊 */
+  display: block; /* 確保是塊級元素 */
+  width: 100%; /* 確保佔滿整個寬度 */
 }
 
 
@@ -620,4 +624,24 @@
   .stats-container {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* 添加新的樣式 */
+.match-round {
+  color: #666;
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.match-predecessors {
+  background: #f5f5f5;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.match-predecessors small {
+  font-style: italic;
 }

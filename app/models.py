@@ -64,11 +64,30 @@ class Match(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     event_type = db.Column(db.String(10), nullable=False) # MS, WS, MD, WD, XD
 
+    # the relationship between matches (only for elimination matches)
+    """
+    For elimination matches, we need to have the following fields:
+    - round: Round number. eg: Round 1 match 1 would be R1-M1
+    - match_number: Match number. eg: Round 1 match 2 would be R1-M2
+    - prev_match1_id: ID of the previous match of player 1. eg: in R2-M1, player1 is the winner of R1-M1, so prev_match1_id is match.id of R1-M1
+    - prev_match2_id: ID of the previous match of player 2. eg: in R2-M1, player2 is the winner of R1-M2, so prev_match2_id is match.id of R1-M2
+    - next_match_id: ID of the next match of the winner of the previous match. eg: in R2-M1, player1 is the winner of R1-M1, so next_match_id is match.id of R2-M1
+    - player1_from_match: ID of the player 1 of the previous match. eg: in R2-M1, player1 is the winner of R1-M1, so player1_from_match is user.id of player1
+    - player2_from_match: ID of the player 2 of the previous match. eg: in R2-M1, player2 is the winner of R1-M2, so player2_from_match is user.id of player2
+    """
+    round = db.Column(db.Integer, nullable=True)
+    match_number = db.Column(db.Integer, nullable=True)
+    prev_match1_id = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=True)
+    prev_match2_id = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=True)
+    next_match_id = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=True)
+    player1_from_match = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=True)
+    player2_from_match = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=True)
+
     # for single matches
     player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    # 添加選手姓名字段
+    # names for single players
     player1_name = db.Column(db.String(100), nullable=True)
     player2_name = db.Column(db.String(100), nullable=True)
 
@@ -78,7 +97,7 @@ class Match(db.Model):
     team2_player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     team2_player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    # 添加雙打選手姓名字段
+    # names for double players
     team1_player1_name = db.Column(db.String(100), nullable=True)
     team1_player2_name = db.Column(db.String(100), nullable=True)
     team2_player1_name = db.Column(db.String(100), nullable=True)

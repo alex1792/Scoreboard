@@ -200,10 +200,24 @@ const MatchesPage = ({ currentUser }) => {
                   className={`match-card status-${match.status.toLowerCase()}${animatingMatchId === match.id ? ' animating' : ''}`}
                   data-match-id={match.id}
                 >
+                  {/* 在比賽卡片中顯示更清楚的信息 */}
                   <div className="match-header">
-                    <div className="match-id">#{match.id}</div>
-                    <div className="match-category">{match.category} - {match.group}</div>
+                    <span className="match-id">#{match.id}</span>
+                    <span className="match-category">
+                      {match.round ? (
+                        `${match.category}-${match.group} : Round ${match.round} - Match ${match.match_number}`
+                      ) : (
+                        `${match.category}-${match.group}`
+                      )}
+                    </span>
                   </div>
+
+                  {/* 如果是晉級比賽，顯示前驅比賽信息 */}
+                  {match.prev_match1_id && (
+                    <div className="match-predecessors">
+                      <small>Winner of Match #{match.prev_match1_id} vs Winner of Match #{match.prev_match2_id}</small>
+                    </div>
+                  )}
                   
                   <div className="players">
                     <div className="player">

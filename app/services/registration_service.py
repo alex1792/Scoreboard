@@ -64,6 +64,7 @@ class RegistrationService:
                 partner_first_name = partner_info.get('firstName')
                 partner_last_name = partner_info.get('lastName')
                 partner = get_user_by_name(partner_first_name, partner_last_name)
+                partner_email = partner.email if partner else ''
                 
                 registration_data = {
                     'tournament_id': tournament_id,
@@ -71,9 +72,13 @@ class RegistrationService:
                     'event_id': event_id,
                     'group_id': group_id,
                     'status': 'pending',
+                    'player_first_name': player_first_name,
+                    'player_last_name': player_last_name,
+                    'player_email': player.email if player.email else '',
                     'partner_id': partner.id if partner else None,
                     'partner_first_name': partner_first_name,
-                    'partner_last_name': partner_last_name
+                    'partner_last_name': partner_last_name,
+                    'partner_email': partner_email
                 }
             else:
                 registration_data = {
@@ -82,9 +87,13 @@ class RegistrationService:
                     'event_id': event_id,
                     'group_id': group_id,
                     'status': 'pending',
+                    'player_first_name': player_first_name,
+                    'player_last_name': player_last_name,
+                    'player_email': player.email if player.email else '',
                     'partner_id': None,
                     'partner_first_name': None,
-                    'partner_last_name': None
+                    'partner_last_name': None,
+                    'partner_email': None
                 }
             
             new_registration = Registration(**registration_data)

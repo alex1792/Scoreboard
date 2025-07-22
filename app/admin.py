@@ -10,6 +10,7 @@ from .scheduler import generate_schedule, generate_schedule_for_tournament_from_
 from .match_generator import generate_match
 from .services.user_service import UserService
 from .services.match_service import MatchService
+from .services.schedule_service import TournamentScheduler
 
 
 """
@@ -200,6 +201,7 @@ def generate_match_schedule():
         
         generate_schedule(f, total_court, output_path)
 
+
         return send_file(output_path, as_attachment=True, download_name='round_robin_schedule.xlsx')
     except Exception as e:
         print(f"Error: {e}")
@@ -310,7 +312,11 @@ def generate_schedule_for_tournament(tournament_id):
         output_path = os.path.join(instance_path, output_filename)
         
         # 生成賽程表
-        result = generate_schedule_for_tournament_from_matches(matches, total_court, output_path)
+        # result = generate_schedule_for_tournament_from_matches(matches, total_court, output_path)
+
+        scheduler = TournamentScheduler(total_court=total_court)
+        scheduler.schedule_tournament(matches)
+        scheduler._write_schedule(output_path)
         
         # 返回生成的賽程表檔案
         return send_file(

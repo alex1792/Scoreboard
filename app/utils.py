@@ -64,8 +64,8 @@ def get_match_data(match):
     umpire = None
     if match.umpire_id is not None:
         umpire = User.query.get(match.umpire_id)
-    
-    return {
+
+    match_data = {
         "id": match.id,
         "category": event.category if event else "Unknown",
         "group": group.name if group else "Unknown",
@@ -77,6 +77,19 @@ def get_match_data(match):
         "umpire": umpire.get_full_name() if umpire else "N/A",
         "umpire_id": match.umpire_id
     }
+
+    if hasattr(match, 'round') and match.round is not None:
+        match_data.update({
+            "round": match.round,
+            "match_number": match.match_number,
+            "prev_match1_id": match.prev_match1_id,
+            "prev_match2_id": match.prev_match2_id,
+            "next_match_id": match.next_match_id,
+            "player1_from_match": match.player1_from_match,
+            "player2_from_match": match.player2_from_match
+        })
+    
+    return match_data
 
 """
 This function is used to check if the user is authorized to access the feature function.

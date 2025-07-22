@@ -359,7 +359,7 @@ class TournamentService:
 
     @staticmethod
     def _generate_elimination_matches(players_data, event, group):
-        """生成淘汰賽對戰組合"""
+        """Generate elimination matches"""
         print(f"=== Generating elimination matches ===")
         print(f"Players: {[p['user_name'] for p in players_data]}")
         print(f"Total players: {len(players_data)}")
@@ -370,101 +370,135 @@ class TournamentService:
             print("Not enough players for elimination")
             return matches
         
-        # 計算需要的總槽位數
+        # calculate the total number of slots
         total_slots = TournamentService._next_power_of_two(len(players_data))
         num_byes = total_slots - len(players_data)
         print(f"Total slots: {total_slots}, Byes: {num_byes}")
         
-        # 隨機分配 bye
+        # randomly assign bye to players in the first round if needed
         players_copy = players_data.copy()
         random.shuffle(players_copy)
         byes = players_copy[:num_byes]
         print(f"Bye players: {[p['user_name'] for p in byes]}")
         
-        # 重新洗牌
+        # re-shuffle the players
         random.shuffle(players_copy)
         
         round_number = 1
         current_round = []
+        match_number = 1
         
-        # 第一輪 - 簡化邏輯
+        # Frist Round
         idx = 0
         while idx < len(players_copy):
             if idx == len(players_copy) - 1:
-                # 最後一個選手，給他一個 BYE
+                # last player, his opponent is BYE
                 match_data = {
                     'event_id': event.id,
                     'group_id': group.id,
                     'event_type': event.category,
                     'player1_data': players_copy[idx],
                     'player2_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
-                    'round': round_number
+                    'round': round_number,
+                    'match_number': match_number,
+                    'prev_match1_id': None,
+                    'prev_match2_id': None,
+                    'player1_from_match': None,
+                    'player2_from_match': None
                 }
                 print(f"Created BYE match for last player: {players_copy[idx]['user_name']}")
                 idx += 1
             elif players_copy[idx] in byes:
-                # BYE 比賽
+                # BYE Match
                 match_data = {
                     'event_id': event.id,
                     'group_id': group.id,
                     'event_type': event.category,
                     'player1_data': players_copy[idx],
                     'player2_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
-                    'round': round_number
+                    'round': round_number,
+                    'match_number': match_number,
+                    'prev_match1_id': None,
+                    'prev_match2_id': None,
+                    'player1_from_match': None,
+                    'player2_from_match': None
                 }
                 print(f"Created BYE match for: {players_copy[idx]['user_name']}")
                 idx += 1
             else:
-                # 正常比賽
+                # Regular Match
                 match_data = {
                     'event_id': event.id,
                     'group_id': group.id,
                     'event_type': event.category,
                     'player1_data': players_copy[idx],
                     'player2_data': players_copy[idx + 1],
-                    'round': round_number
+                    'round': round_number,
+                    'match_number': match_number,
+                    'prev_match1_id': None,
+                    'prev_match2_id': None,
+                    'player1_from_match': None,
+                    'player2_from_match': None
                 }
                 print(f"Created normal match: {players_copy[idx]['user_name']} vs {players_copy[idx + 1]['user_name']}")
                 idx += 2
             
             current_round.append(match_data)
             matches.append(match_data)
+            match_number += 1
         
         print(f"First round matches: {len(matches)}")
         
-        # 後續輪次 - 簡化邏輯
+        # 後續輪次 - 建立關聯關係
         while len(current_round) > 1:
             round_number += 1
             next_round = []
+            match_number = 1
             
             for i in range(0, len(current_round), 2):
                 if i + 1 >= len(current_round):
                     # 處理奇數選手
+                    prev_match = current_round[i]
                     match_data = {
                         'event_id': event.id,
                         'group_id': group.id,
                         'event_type': event.category,
-                        'player1_data': {'user_id': None, 'user_name': f"Winner of Match {i+1}", 'partner_name': None},
+                        'player1_data': {'user_id': None, 'user_name': f"Winner of Match #{prev_match.get('id', i+1)}", 'partner_name': None},
                         'player2_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
-                        'round': round_number
+                        'round': round_number,
+                        'match_number': match_number,
+                        'prev_match1_id': prev_match.get('id'),
+                        'prev_match2_id': None,
+                        'player1_from_match': prev_match.get('id'),
+                        'player2_from_match': None
                     }
                     print(f"Created BYE match for odd player in round {round_number}")
                     next_round.append(match_data)
                     matches.append(match_data)
+                    match_number += 1
                     break
                 
                 # 正常比賽
+                prev_match1 = current_round[i]
+                prev_match2 = current_round[i+1]
+                
                 match_data = {
                     'event_id': event.id,
                     'group_id': group.id,
                     'event_type': event.category,
-                    'player1_data': {'user_id': None, 'user_name': f"Winner of Match {i+1}", 'partner_name': None},
-                    'player2_data': {'user_id': None, 'user_name': f"Winner of Match {i+2}", 'partner_name': None},
-                    'round': round_number
+                    'player1_data': {'user_id': None, 'user_name': f"Winner of Match #{prev_match1.get('id', i+1)}", 'partner_name': None},
+                    'player2_data': {'user_id': None, 'user_name': f"Winner of Match #{prev_match2.get('id', i+2)}", 'partner_name': None},
+                    'round': round_number,
+                    'match_number': match_number,
+                    'prev_match1_id': prev_match1.get('id'),
+                    'prev_match2_id': prev_match2.get('id'),
+                    'player1_from_match': prev_match1.get('id'),
+                    'player2_from_match': prev_match2.get('id')
                 }
-                print(f"Created next round match: Winner of Match {i+1} vs Winner of Match {i+2}")
+                print(f"Created next round match: Winner of Match #{prev_match1.get('id', i+1)} vs Winner of Match #{prev_match2.get('id', i+2)}")
                 next_round.append(match_data)
                 matches.append(match_data)
+                match_number += 1
             
             current_round = next_round
             print(f"Round {round_number} matches: {len(next_round)}")
@@ -522,86 +556,47 @@ class TournamentService:
                          p2_data.get('is_doubles', False))
             print(f"Is doubles: {is_doubles}")
             
-            if is_doubles:
-                # 雙打比賽
-                if is_bye_match:
-                    # BYE 雙打比賽
-                    match_dict = {
-                        'tournament_id': tournament_id,
-                        'event_id': match_data['event_id'],
-                        'group_id': match_data['group_id'],
-                        'event_type': match_data['event_type'],
-                        'player1_id': p1_data['user_id'],
-                        'player2_id': p2_data['user_id'],
-                        'player1_name': p1_data['user_name'],
-                        'player2_name': p2_data['user_name'],
-                        'player1_score': 0,
-                        'player2_score': 0,
-                        'status': 'Scheduled',
-                        'team1_player1_id': p1_data['user_id'],
-                        'team1_player2_id': p1_data.get('partner_id'),
-                        'team2_player1_id': p2_data['user_id'],
-                        'team2_player2_id': p2_data.get('partner_id'),
-                        'team1_player1_name': p1_data['user_name'],
-                        'team1_player2_name': p1_data.get('partner_name'),
-                        'team2_player1_name': p2_data['user_name'],
-                        'team2_player2_name': p2_data.get('partner_name')
-                    }
-                else:
-                    # 正常雙打比賽
-                    match_dict = {
-                        'tournament_id': tournament_id,
-                        'event_id': match_data['event_id'],
-                        'group_id': match_data['group_id'],
-                        'event_type': match_data['event_type'],
-                        'player1_id': p1_data['user_id'],
-                        'player2_id': p2_data['user_id'],
-                        'player1_name': p1_data['user_name'],
-                        'player2_name': p2_data['user_name'],
-                        'player1_score': 0,
-                        'player2_score': 0,
-                        'status': 'Scheduled',
-                        'team1_player1_id': p1_data['user_id'],
-                        'team1_player2_id': p1_data.get('partner_id'),
-                        'team2_player1_id': p2_data['user_id'],
-                        'team2_player2_id': p2_data.get('partner_id'),
-                        'team1_player1_name': p1_data['user_name'],
-                        'team1_player2_name': p1_data.get('partner_name'),
-                        'team2_player1_name': p2_data['user_name'],
-                        'team2_player2_name': p2_data.get('partner_name')
-                    }
+            # 基礎比賽資料
+            match_dict = {
+                'tournament_id': tournament_id,
+                'event_id': match_data['event_id'],
+                'group_id': match_data['group_id'],
+                'event_type': match_data['event_type'],
+                'player1_id': p1_data['user_id'],
+                'player2_id': p2_data['user_id'],
+                'player1_name': p1_data['user_name'],
+                'player2_name': p2_data['user_name'],
+                'player1_score': 0,
+                'player2_score': 0,
+                'status': 'Scheduled'
+            }
+            
+            # 添加淘汰賽相關欄位
+            if 'round' in match_data:
+                match_dict.update({
+                    'round': match_data['round'],
+                    'match_number': match_data['match_number'],
+                    'prev_match1_id': match_data.get('prev_match1_id'),
+                    'prev_match2_id': match_data.get('prev_match2_id'),
+                    'next_match_id': match_data.get('next_match_id'),
+                    'player1_from_match': match_data.get('player1_from_match'),
+                    'player2_from_match': match_data.get('player2_from_match')
+                })
             else:
-                # 單打比賽
-                if is_bye_match:
-                    # BYE 單打比賽
-                    match_dict = {
-                        'tournament_id': tournament_id,
-                        'event_id': match_data['event_id'],
-                        'group_id': match_data['group_id'],
-                        'event_type': match_data['event_type'],
-                        'player1_id': p1_data['user_id'],
-                        'player2_id': p2_data['user_id'],
-                        'player1_name': p1_data['user_name'],
-                        'player2_name': p2_data['user_name'],
-                        'player1_score': 0,
-                        'player2_score': 0,
-                        'status': 'Scheduled'
-                    }
-                else:
-                    # 正常單打比賽
-                    match_dict = {
-                        'tournament_id': tournament_id,
-                        'event_id': match_data['event_id'],
-                        'group_id': match_data['group_id'],
-                        'event_type': match_data['event_type'],
-                        'player1_id': p1_data['user_id'],
-                        'player2_id': p2_data['user_id'],
-                        'player1_name': p1_data['user_name'],
-                        'player2_name': p2_data['user_name'],
-                        'player1_score': 0,
-                        'player2_score': 0,
-                        'status': 'Scheduled'
-                    }
+                match_dict.update({'round': None, 'match_number': None})
+            
+            if is_doubles:
+                # 雙打比賽 - 添加雙打相關欄位
+                match_dict.update({
+                    'team1_player1_id': p1_data['user_id'],
+                    'team1_player2_id': p1_data.get('partner_id'),
+                    'team2_player1_id': p2_data['user_id'],
+                    'team2_player2_id': p2_data.get('partner_id'),
+                    'team1_player1_name': p1_data['user_name'],
+                    'team1_player2_name': p1_data.get('partner_name'),
+                    'team2_player1_name': p2_data['user_name'],
+                    'team2_player2_name': p2_data.get('partner_name')
+                })
             
             match = Match(**match_dict)
             db.session.add(match)
@@ -613,7 +608,4 @@ class TournamentService:
         except Exception as e:
             db.session.rollback()
             print(f"Error creating match record: {e}")
-            # print(f"Match data: {match_data}")
-            import traceback
-            traceback.print_exc()
             return None
