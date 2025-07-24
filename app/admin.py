@@ -315,7 +315,7 @@ def generate_schedule_for_tournament(tournament_id):
         # result = generate_schedule_for_tournament_from_matches(matches, total_court, output_path)
 
         scheduler = TournamentScheduler(total_court=total_court)
-        scheduler.schedule_tournament(matches)
+        scheduler.schedule_tournament(matches, tournament_id)
         scheduler._write_schedule(output_path)
         
         # 返回生成的賽程表檔案

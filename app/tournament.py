@@ -1,5 +1,5 @@
 from flask import jsonify, Blueprint
-from .models import Tournament, Format, Event, Group
+from .models import Tournament, Format, Event, Group, Match
 from .models import db
 from .utils import check_authorization
 from flask_jwt_extended import jwt_required
@@ -7,6 +7,7 @@ from flask import request
 from datetime import datetime
 from .services.tournament_service import TournamentService
 from .services.match_service import MatchService
+from .services.schedule_service import TournamentScheduler
 """
 This file contains the functions for the tournament blueprint. 
 """
@@ -155,3 +156,22 @@ def get_matches_by_tournament(tournament_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get matches"}), 500
+
+"""
+This function is used to get the tournament schedule.
+"""
+@tournament_bp.route('/<int:tournament_id>/schedule', methods=['GET'])
+def get_tournament_schedule(tournament_id):
+    """獲取錦標賽賽程表"""
+    try:
+        schedule_data = TournamentService.get_schedule_data(tournament_id)
+        if not schedule_data:
+            return jsonify({'status': 'error', 'message': 'No schedule data found'}), 404
+        
+        return jsonify({
+            'status': 'success',
+            'schedule': schedule_data
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

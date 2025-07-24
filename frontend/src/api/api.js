@@ -423,3 +423,27 @@ export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6)
         throw err;
     }
 }
+
+export async function  getTournamentSchedule(tournamentId) {
+    try {
+        console.log('Fetching schedule for tournament:', tournamentId);
+        const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}/schedule`);
+        
+        console.log('Response status:', response.status);
+        
+        if(response.ok) {
+            const data = await response.json();
+            console.log('Raw response data:', data);
+            
+            // 修正：直接返回 data，不要 data.data
+            return data;
+        } else {
+            const errorData = await response.json();
+            console.log('Error response:', errorData);
+            throw new Error(errorData.message || 'Failed to fetch tournament schedule');
+        }
+    } catch (err) {
+        console.error('Error fetching tournament schedule:', err);
+        throw err;
+    }
+}

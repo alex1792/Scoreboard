@@ -20,6 +20,7 @@ import SignUpTournamentPage from './pages/tournament/SignUpTournamentPage';
 import CheckRegistrationPage from './pages/tournament/CheckRegistrationPage';
 import UploadRegistrationPage from './pages/tournament/UploadRegistrationPage';
 import GenerateSchedulePage from './pages/admin/GenerateSchedulePage';
+import SchedulePage from './pages/tournament/SchedulePage';
 import { AuthProvider } from './context/AuthContext';
 
 // currentUser can be modified to reflect the actual user state
@@ -63,6 +64,7 @@ function App() {
             <Route path="tournaments/:tournamentId/signup" element={<SignUpTournamentPage />} />
             <Route path="tournaments/:tournamentId/check-registration" element={<CheckRegistrationPage />} />
             <Route path="tournaments/:tournamentId/upload-registration" element={<UploadRegistrationPage />} />
+            <Route path="tournaments/:tournamentId/schedule" element={<SchedulePage />} />
             
             {/* Admin Features */}
             <Route path="/admin/set-umpire" element={<AssignUmpirePage />} />

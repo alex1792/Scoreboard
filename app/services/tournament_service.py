@@ -1,4 +1,4 @@
-from ..models import Tournament, Event, Group, Format, db, Registration, Match
+from ..models import Tournament, Event, Group, Format, db, Registration, Match, Schedule
 from datetime import datetime
 import random
 
@@ -215,6 +215,88 @@ class TournamentService:
             raise e
 
     @staticmethod
+    def get_schedule_data(schedule_id):
+        """獲取賽程數據 - 考慮單打和雙打的不同儲存方式，以及 elimination 的 Winner of Match"""
+        
+        schedule = Schedule.query.get(schedule_id)
+        if not schedule:
+            return None
+        
+        def get_player_names(match):
+            """根據比賽類型獲取選手名稱，處理 elimination 的 Winner of Match"""
+            if match.event_type in ['MS', 'WS']:  # 單打
+                player1 = match.player1_name or 'TBD'
+                player2 = match.player2_name or 'TBD'
+                
+                # 處理 elimination 的 Winner of Match
+                if 'Winner of Match' in player1:
+                    player1 = f"Winner of {player1}"
+                if 'Winner of Match' in player2:
+                    player2 = f"Winner of {player2}"
+                    
+            else:  # 雙打 (MD, WD, XD)
+                # 組合一
+                team1_p1 = match.team1_player1_name or ''
+                team1_p2 = match.team1_player2_name or ''
+                
+                # 組合二
+                team2_p1 = match.team2_player1_name or ''
+                team2_p2 = match.team2_player2_name or ''
+                
+                # 檢查是否包含 Winner of Match
+                if 'Winner of Match' in team1_p1:
+                    player1 = f"Winner of {team1_p1}"
+                elif team1_p1 and team1_p2:
+                    player1 = f"{team1_p1} / {team1_p2}"
+                else:
+                    player1 = 'TBD'
+                
+                if 'Winner of Match' in team2_p1:
+                    player2 = f"Winner of {team2_p1}"
+                elif team2_p1 and team2_p2:
+                    player2 = f"{team2_p1} / {team2_p2}"
+                else:
+                    player2 = 'TBD'
+            
+            return player1, player2
+        
+        # 按日期和批次組織
+        schedule_by_date = {}
+        for item in schedule.schedule_items:
+            date_str = item.scheduled_date.strftime('%Y-%m-%d')
+            
+            if date_str not in schedule_by_date:
+                schedule_by_date[date_str] = {}
+            
+            batch_num = item.batch_number
+            if batch_num not in schedule_by_date[date_str]:
+                schedule_by_date[date_str][batch_num] = []
+            
+            match = item.match
+            
+            # 獲取選手名稱
+            player1, player2 = get_player_names(match)
+            
+            match_info = {
+                'court': item.court_number,
+                'time': f"{item.scheduled_start_time.strftime('%H:%M')} - {item.scheduled_end_time.strftime('%H:%M')}",
+                'category': match.event_type,
+                'player1': player1,
+                'player2': player2,
+                'status': item.status,
+                'round': match.round,
+                'match_number': match.match_number
+            }
+            
+            schedule_by_date[date_str][batch_num].append(match_info)
+        
+        return {
+            'schedule_id': schedule.id,
+            'total_matches': schedule.total_matches,
+            'schedule_by_date': schedule_by_date
+        }
+    
+    @staticmethod
     def _group_registrations_by_event_group(registrations):
         """
         將報名記錄按 event 和 group 分組，避免重複選手
@@ -330,30 +412,44 @@ class TournamentService:
 
     @staticmethod
     def _generate_round_robin_matches(players_data, event, group):
-        """生成輪迴賽對戰組合"""
+        """生成純輪迴賽對戰組合 - 所有選手之間都要比賽"""
         matches = []
+        match_number = 1
         
-        # 從 Format 獲取分組大小
-        format = Format.query.get(group.format_id)
-        group_size = getattr(format, 'group_size', 4) or 4  # 使用 Format 的 group_size
+        print(f"=== Generating pure round robin matches ===")
+        print(f"Total players: {len(players_data)}")
+        print(f"Players: {[p['user_name'] for p in players_data]}")
         
-        groups = TournamentService._group_players(players_data, group_size)
+        # 直接使用所有選手，生成 C(n,2) 的對戰組合
+        for i in range(len(players_data)):
+            for j in range(i + 1, len(players_data)):
+                player1 = players_data[i]
+                player2 = players_data[j]
+                
+                match_data = {
+                    'event_id': event.id,
+                    'group_id': group.id,
+                    'event_type': event.category,
+                    'player1_data': player1,
+                    'player2_data': player2,
+                    'round': 1,  # Round robin 都是第一輪
+                    'match_number': match_number,
+                    'prev_match1_id': None,
+                    'prev_match2_id': None,
+                    'player1_from_match': None,
+                    'player2_from_match': None
+                }
+                matches.append(match_data)
+                match_number += 1
+                print(f"Created match {match_number-1}: {player1['user_name']} vs {player2['user_name']}")
         
-        for group_idx, player_group in enumerate(groups):
-            # 為每個小組生成輪迴賽
-            for i in range(len(player_group)):
-                for j in range(i + 1, len(player_group)):
-                    player1 = player_group[i]
-                    player2 = player_group[j]
-                    
-                    match_data = {
-                        'event_id': event.id,
-                        'group_id': group.id,
-                        'event_type': event.category,
-                        'player1_data': player1,
-                        'player2_data': player2
-                    }
-                    matches.append(match_data)
+        # 驗證比賽數量：C(n,2) = n * (n-1) / 2
+        expected_matches = len(players_data) * (len(players_data) - 1) // 2
+        print(f"Total matches created: {len(matches)}")
+        print(f"Expected matches (C({len(players_data)},2)): {expected_matches}")
+        
+        if len(matches) != expected_matches:
+            print(f"WARNING: Created {len(matches)} matches, expected {expected_matches}")
         
         return matches
 
@@ -388,7 +484,7 @@ class TournamentService:
         current_round = []
         match_number = 1
         
-        # Frist Round
+        # First Round
         idx = 0
         while idx < len(players_copy):
             if idx == len(players_copy) - 1:
@@ -463,7 +559,7 @@ class TournamentService:
                         'event_id': event.id,
                         'group_id': group.id,
                         'event_type': event.category,
-                        'player1_data': {'user_id': None, 'user_name': f"Winner of Match #{prev_match.get('id', i+1)}", 'partner_name': None},
+                        'player1_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match['match_number']}", 'partner_name': None},
                         'player2_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
                         'round': round_number,
                         'match_number': match_number,
@@ -486,8 +582,8 @@ class TournamentService:
                     'event_id': event.id,
                     'group_id': group.id,
                     'event_type': event.category,
-                    'player1_data': {'user_id': None, 'user_name': f"Winner of Match #{prev_match1.get('id', i+1)}", 'partner_name': None},
-                    'player2_data': {'user_id': None, 'user_name': f"Winner of Match #{prev_match2.get('id', i+2)}", 'partner_name': None},
+                    'player1_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match1['match_number']}", 'partner_name': None},
+                    'player2_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match2['match_number']}", 'partner_name': None},
                     'round': round_number,
                     'match_number': match_number,
                     'prev_match1_id': prev_match1.get('id'),
@@ -495,7 +591,7 @@ class TournamentService:
                     'player1_from_match': prev_match1.get('id'),
                     'player2_from_match': prev_match2.get('id')
                 }
-                print(f"Created next round match: Winner of Match #{prev_match1.get('id', i+1)} vs Winner of Match #{prev_match2.get('id', i+2)}")
+                print(f"Created next round match: Winner of Match {prev_match1['match_number']} vs Winner of Match {prev_match2['match_number']}")
                 next_round.append(match_data)
                 matches.append(match_data)
                 match_number += 1

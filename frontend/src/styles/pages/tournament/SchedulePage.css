@@ -1,0 +1,262 @@
+.schedule-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.schedule-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schedule-header h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.schedule-info {
+  color: #666;
+  font-size: 14px;
+}
+
+/* View Schedule Button Styles */
+.view-schedule-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-schedule-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.view-schedule-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.view-schedule-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.view-schedule-btn .icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Alternative button styles */
+.view-schedule-btn.primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.view-schedule-btn.primary:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.view-schedule-btn.success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.view-schedule-btn.success:hover {
+  background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.view-schedule-btn.warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #212529;
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.view-schedule-btn.warning:hover {
+  background: linear-gradient(135deg, #e0a800 0%, #c69500 100%);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+}
+
+/* Small button variant */
+.view-schedule-btn.small {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+/* Large button variant */
+.view-schedule-btn.large {
+  padding: 16px 32px;
+  font-size: 16px;
+}
+
+/* Outline button variant */
+.view-schedule-btn.outline {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  box-shadow: none;
+}
+
+.view-schedule-btn.outline:hover {
+  background: #667eea;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Loading state */
+.view-schedule-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.view-schedule-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .view-schedule-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .schedule-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+}
+
+/* 其餘的現有樣式保持不變 */
+.date-section {
+  margin-bottom: 40px;
+}
+
+.date-section h2 {
+  color: #2c3e50;
+  border-bottom: 1px solid #bdc3c7;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.batch {
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.batch h3 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+  color: #495057;
+}
+
+.matches {
+  padding: 20px;
+}
+
+.match-item {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.match-header {
+  background: #f1f3f4;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.match-content {
+  padding: 15px;
+}
+
+.category {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.players {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.player1, .player2 {
+  flex: 1;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.vs {
+  color: #666;
+  font-weight: bold;
+}
+
+.status {
+  font-size: 12px;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.loading, .error, .no-schedule {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+}
+
+.error {
+  color: #dc3545;
+}
+
+.no-schedule {
+  color: #6c757d;
+}

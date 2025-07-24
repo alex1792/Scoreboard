@@ -535,3 +535,8 @@ Match.umpire_id → User.id (umpire id)
 - Fixed the dependencies issues for the scheduler algorithm.
 - Created a ScheduleService to operate the schedule service.
 ---
+
+### 2025/07/23
+- Add schedule in database model
+- Add a schedule page for each tournament
+---

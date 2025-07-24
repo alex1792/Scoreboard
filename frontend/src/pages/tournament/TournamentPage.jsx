@@ -137,6 +137,14 @@ const TournamentPage = () => {
                     >
                       Sign Up
                     </Link>
+
+                    {/* 新增：schedule button */}
+                    <Link 
+                      to={`/tournaments/${tournament.id}/schedule`}
+                      className="view-schedule-btn"
+                    >
+                      View Schedule
+                    </Link>
                     
                     {/* 新增：查看比賽按鈕 */}
                     <Link 

@@ -75,6 +75,12 @@ class Match(db.Model):
     - player1_from_match: ID of the player 1 of the previous match. eg: in R2-M1, player1 is the winner of R1-M1, so player1_from_match is user.id of player1
     - player2_from_match: ID of the player 2 of the previous match. eg: in R2-M1, player2 is the winner of R1-M2, so player2_from_match is user.id of player2
     """
+    batch = db.Column(db.Integer, nullable=True)
+    court = db.Column(db.Integer, nullable=True)
+    scheduled_time = db.Column(db.DateTime, nullable=True)
+    actual_start_time = db.Column(db.DateTime, nullable=True)
+    actual_end_time = db.Column(db.DateTime, nullable=True)
+    
     round = db.Column(db.Integer, nullable=True)
     match_number = db.Column(db.Integer, nullable=True)
     prev_match1_id = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=True)
@@ -106,6 +112,9 @@ class Match(db.Model):
     # score
     player1_score = db.Column(db.Integer, default=0)
     player2_score = db.Column(db.Integer, default=0)
+
+    # winner
+    winner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
     status = db.Column(db.String(20), default='pending')
     umpire_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
@@ -140,6 +149,58 @@ class Registration(db.Model):
     def create_registration(cls, **args):
         registration = cls(**args)
         return registration
+
+class Schedule(db.Model):
+    __tablename__ = 'schedules'
+    id = db.Column(db.Integer, primary_key=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
+
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
+
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+
+    total_courts = db.Column(db.Integer, nullable=False)
+    court_names = db.Column(db.JSON, nullable=True)
+    match_duration = db.Column(db.Integer, nullable=False, default=30)
+    
+    status = db.Column(db.String(20), default='draft')
+
+    total_matches = db.Column(db.Integer, default=0)
+    total_batches = db.Column(db.Integer, default=0)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    generated_at = db.Column(db.DateTime, nullable=True)
+    
+    # 明確指定外鍵
+    tournament = db.relationship('Tournament', foreign_keys=[tournament_id], backref='schedules')
+    schedule_items = db.relationship('ScheduleItem', backref='schedule', cascade='all, delete-orphan')
+
+class ScheduleItem(db.Model):
+    __tablename__ = 'schedule_items'
+    id = db.Column(db.Integer, primary_key=True)
+    schedule_id = db.Column(db.Integer, db.ForeignKey('schedules.id'), nullable=False)
+    match_id = db.Column(db.Integer, db.ForeignKey('matches.id'), nullable=False)
+    
+    batch_number = db.Column(db.Integer, nullable=False)  
+    order_in_batch = db.Column(db.Integer, nullable=False) 
+    court_number = db.Column(db.Integer, nullable=False)
+    
+    scheduled_date = db.Column(db.Date, nullable=False)
+    scheduled_start_time = db.Column(db.DateTime, nullable=False)
+    scheduled_end_time = db.Column(db.DateTime, nullable=False)
+    
+    status = db.Column(db.String(20), default='scheduled')  # scheduled, ongoing, completed, delayed, cancelled
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    match = db.relationship('Match', backref='schedule_items')
+
+
+
     
 
 
