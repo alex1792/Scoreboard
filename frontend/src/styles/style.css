@@ -8,7 +8,7 @@ html, body {
 
 /* 導航欄 */
 nav {
-    background: #4CAF50;
+    background: #ECECEC;  
     padding: 1rem;
 }
 
@@ -21,7 +21,7 @@ nav ul {
 
 /* Navigation bar */
 nav {
-    background: #4CAF50;
+    background: #ECECEC;
     padding: 1rem;
     display: flex;
     justify-content: space-between; /* Distribute items to both sides */
@@ -48,7 +48,7 @@ nav {
     
 /* Links styling */
 nav a {
-    color: white;
+    color: #373C3D;
     text-decoration: none;
 }
 
@@ -82,13 +82,13 @@ nav a:hover {
 
 /* 2025/05/30更新 */
 nav {
-  background: linear-gradient(90deg, #4CAF50, #2E7D32);
+  /* background: linear-gradient(90deg, #4CAF50, #2E7D32); */
   padding: 1.2rem 2rem;
   border-radius: 0 0 12px 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 nav a {
-  color: white;
+  color: #373C3D;
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;

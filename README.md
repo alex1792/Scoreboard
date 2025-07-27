@@ -540,3 +540,14 @@ Match.umpire_id → User.id (umpire id)
 - Add schedule in database model
 - Add a schedule page for each tournament
 ---
+
+### 2025/07/25
+- Modularized my code
+- Add Tournament description.
+- Displaying description in sign-up page
+---
+
+### 2025/07/26
+- Fix score update emit()
+- Fix umpire scoreboard page
+---

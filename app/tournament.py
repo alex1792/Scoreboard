@@ -162,9 +162,9 @@ This function is used to get the tournament schedule.
 """
 @tournament_bp.route('/<int:tournament_id>/schedule', methods=['GET'])
 def get_tournament_schedule(tournament_id):
-    """獲取錦標賽賽程表"""
+    """Return the tournament schedule from tournament service"""
     try:
-        schedule_data = TournamentService.get_schedule_data(tournament_id)
+        schedule_data = TournamentService.get_schedule_by_tournament(tournament_id)
         if not schedule_data:
             return jsonify({'status': 'error', 'message': 'No schedule data found'}), 404
         

@@ -59,6 +59,17 @@ const TournamentPage = () => {
     return currentUser && (currentUser.role === 'admin' || currentUser.role === 'host' || currentUser.role === 'organizer');
   };
 
+  // 添加格式化 description 的函數
+  const formatDescription = (description) => {
+      if (!description) return '';
+      return description.split('\n').map((line, index) => (
+          <span key={index}>
+              {line}
+              {index < description.split('\n').length - 1 && <br />}
+          </span>
+      ));
+  };
+
   if (error) {
     return (
       <div className="container">
@@ -80,99 +91,113 @@ const TournamentPage = () => {
   }
 
   return (
-    <>
+    <div className="tournament-page">  {/* 添加這個 wrapper */}
       <div className="container">
-        <h1 className="page-title">All Tournaments</h1>
-
-        <div className="tournaments-grid">
-          {tournaments.length > 0 ? (
-            tournaments.map((tournament) => (
-              <div key={tournament.id} className="tournament-card-wrapper">
-                <div className="tournament-card">
-                  <div className="tournament-header">
-                    <div className="tournament-id">#{tournament.id}</div>
-                  </div>
-                  
-                  <div className="tournament-name">
-                    {tournament.name}
-                  </div>
-
-                  <div className="tournament-info">
-                    <div className="info-item">
-                      <span className="info-label">Start Date:</span>
-                      <span className="info-value">{formatDate(tournament.start_date)}</span>
-                    </div>
-                    <div className="info-item">
-                      <span className="info-label">End Date:</span>
-                      <span className="info-value">{formatDate(tournament.end_date)}</span>
-                    </div>
-                    <div className="info-item">
-                      <span className="info-label">Status:</span>
-                      <span className="info-value">{tournament.status || 'TBD'}</span>
-                    </div>
-                    
-                    <div className="info-item">
-                      <span className="info-label">Location:</span>
-                      <span className="info-value">{tournament.location || 'TBD'}</span>
-                    </div>
-                    
-                    {tournament.registration_deadline && (
-                      <div className="info-item">
-                        <span className="info-label">Registration Deadline:</span>
-                        <span className="info-value">{formatDate(tournament.registration_deadline)}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="tournament-actions">
-                    <Link 
-                      to={`/tournaments/${tournament.id}`}
-                      className="view-details-btn"
-                    >
-                      View Details
-                    </Link>
-                    <Link 
-                      to={`/tournaments/${tournament.id}/signup`}
-                      className="signup-btn"
-                    >
-                      Sign Up
-                    </Link>
-
-                    {/* 新增：schedule button */}
-                    <Link 
-                      to={`/tournaments/${tournament.id}/schedule`}
-                      className="view-schedule-btn"
-                    >
-                      View Schedule
-                    </Link>
-                    
-                    {/* 新增：查看比賽按鈕 */}
-                    <Link 
-                      to={`/tournaments/${tournament.id}/matches`}
-                      className="view-matches-btn"
-                    >
-                      View Matches
-                    </Link>
-                    
-                    {/* 只有管理員才能看到查看報名信息的按鈕 */}
-                    {hasAdminAccess() && (
-                      <Link 
-                        to={`/tournaments/${tournament.id}/check-registration`}
-                        className="view-registrations-btn"
-                      >
-                        View Registrations
-                      </Link>
-                    )}
-                  </div>
-                </div>
+        <h1 className="page-title">Tournaments</h1>
+        
+        {loading && <div className="loading">Loading tournaments...</div>}
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        {!loading && !error && (
+          <>
+            {tournaments.length === 0 ? (
+              <div className="no-tournaments">
+                <p>No tournaments available.</p>
               </div>
-            ))
-          ) : (
-            <div className="no-tournaments">No tournaments found</div>
-          )}
-        </div>
+            ) : (
+              <div className="tournaments-grid">
+                {tournaments.map((tournament) => (
+                  <div key={tournament.id} className="tournament-card-wrapper">
+                    <div className="tournament-card">
+                      <div className="tournament-header">
+                        <div className="tournament-id">#{tournament.id}</div>
+                      </div>
+                      
+                      <div className="tournament-name">
+                        {tournament.name}
+                      </div>
+
+                      <div className="tournament-info">
+                        <div className="info-item">
+                          <span className="info-label">Start Date:</span>
+                          <span className="info-value">{formatDate(tournament.start_date)}</span>
+                        </div>
+                        <div className="info-item">
+                          <span className="info-label">End Date:</span>
+                          <span className="info-value">{formatDate(tournament.end_date)}</span>
+                        </div>
+                        <div className="info-item">
+                          <span className="info-label">Status:</span>
+                          <span className="info-value">{tournament.status || 'TBD'}</span>
+                        </div>
+                        
+                        <div className="info-item">
+                          <span className="info-label">Location:</span>
+                          <span className="info-value">{tournament.location || 'TBD'}</span>
+                        </div>
+                        
+                        {tournament.registration_deadline && (
+                          <div className="info-item">
+                            <span className="info-label">Registration Deadline:</span>
+                            <span className="info-value">{formatDate(tournament.registration_deadline)}</span>
+                          </div>
+                        )}
+
+                        {/* {tournament.description && (
+                            <div className="info-item description-item">
+                                <span className="info-label">Description:</span>
+                                <span className="info-value description-value">
+                                    {formatDescription(tournament.description)}
+                                </span>
+                            </div>
+                        )} */}
+                      </div>
+
+                      <div className="tournament-actions">
+                        {/* <Link 
+                          to={`/tournaments/${tournament.id}`}
+                          className="view-details-btn"
+                        >
+                          ℹ View Details
+                        </Link> */}
+                        <Link 
+                          to={`/tournaments/${tournament.id}/signup`}
+                          className="signup-btn"
+                        >
+                          ✍🏻 Sign Up
+                        </Link>
+                        <Link 
+                          to={`/tournaments/${tournament.id}/schedule`}
+                          className="view-schedule-btn"
+                        >
+                          🗓️ View Schedule
+                        </Link>
+                        <Link 
+                          to={`/tournaments/${tournament.id}/matches`}
+                          className="view-matches-btn"
+                        >
+                          🔍 View Matches
+                        </Link>
+                        {/* 只有管理員才能看到查看報名信息的按鈕 */}
+                        {hasAdminAccess() && (
+                          <Link 
+                            to={`/tournaments/${tournament.id}/check-registration`}
+                            className="view-registrations-btn"
+                          >
+                            👥 View Registrations
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

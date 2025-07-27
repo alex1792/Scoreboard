@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import io from 'socket.io-client';
 import '../../styles/pages/match/scoreboard.css';
 
-const Scoreboard = ({currentUser}) => {
-  // parent conponent沒有pass scoreboard的資料 所以這裡要再fetch一次
+const Scoreboard = () => {
+  const { currentUser } = useAuth();
+  
   const { matchId } = useParams();
   const [player1Name, setPlayer1Name] = useState('');
   const [player2Name, setPlayer2Name] = useState('');
@@ -12,6 +14,8 @@ const Scoreboard = ({currentUser}) => {
   const [score2, setScore2] = useState(0);
   const [matchStatus, setMatchStatus] = useState('');
   const [umpireId, setUmpireId] = useState('');
+  
+  const socketRef = useRef(null);
 
   // 1. Fetch match data from backend API
   useEffect(() => {
@@ -25,54 +29,74 @@ const Scoreboard = ({currentUser}) => {
           setScore2(result.data.score2);
           setMatchStatus(result.data.status);
           setUmpireId(result.data.umpire_id);
+          
+          console.log('Match data:', result.data);
         }
       });
   }, [matchId]);
 
-  // 2. socket.io listner for score updates
+  // 2. socket.io listener for score updates
   useEffect(() => {
-    // create a new socket connection
-    const socket = io('http://127.0.0.1:5001/scoreboard', {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionDelay: 3000,
-    });
+    let isConnecting = false;
 
-    // listen for match updates
-    socket.on('match_update', (data) => {
-      // console.log('Receive score update:', data);
-      // when checking data.id and matchId, make sure to convert them to numbers
-      if (Number(data.id) === Number(matchId)) {
-        setScore1(data.score1);
-        setScore2(data.score2);
-        setMatchStatus(data.status);
+    const connectSocket = () => {
+      if (isConnecting) return;
+      isConnecting = true;
+
+      if (socketRef.current) {
+        socketRef.current.disconnect();
       }
-    });
 
-    // handle connection error
-    socket.on('connect_error', (err) => {
-      console.error('連接錯誤:', err.message);
-      setTimeout(() => socket.connect(), 5000);
-    });
+      socketRef.current = io('http://127.0.0.1:5001/scoreboard', {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionDelay: 3000,
+      });
+
+      socketRef.current.on('connect', () => {
+        console.log('Socket connected');
+        isConnecting = false;
+      });
+
+      // 添加 match_update 事件監聽器
+      socketRef.current.on('match_update', (data) => {
+        console.log('收到分數更新:', data);
+        
+        // 檢查是否是當前比賽的更新
+        if (data.id === Number(matchId)) {
+          console.log('更新當前比賽分數:', data);
+          setScore1(data.score1);
+          setScore2(data.score2);
+          setMatchStatus(data.status);
+        }
+      });
+
+      socketRef.current.on('connect_error', () => {
+        console.log('Connection failed, retrying...');
+        isConnecting = false;
+      });
+    };
+
+    connectSocket();
 
     return () => {
-      socket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      isConnecting = false;
     };
   }, [matchId]);
-
 
   const handleScoreChange = async (player, delta) => {
     const token = localStorage.getItem('access_token');
     
-    // check if user is logged in or not, if not, alert user to login 
     if (!token) {
       alert('not logged in or token is lost, please login again');
       return;
     }
 
-    // At this point, user is logged in, so we can proceed to update score
     try {
-      // request info
       const requestInfo = {
         url: `http://localhost:5001/api/matches/${Number(matchId)}/score`,
         headers: { 
@@ -96,6 +120,8 @@ const Scoreboard = ({currentUser}) => {
 
       if (!res.ok) {
         alert(`update failed: ${data.message || res.status}`);
+      } else {
+        console.log('Score update request sent successfully');
       }
     } catch (err) {
       console.error('error：', err);
@@ -127,12 +153,11 @@ const Scoreboard = ({currentUser}) => {
       });
       
       const data = await res.json();
-      // console.log('狀態更新回應：', data);
       
       if (!res.ok) {
         alert(`狀態更新失敗: ${data.message || res.status}`);
       } else {
-        setMatchStatus(nextStatus);
+        console.log('Status update request sent successfully');
       }
     } catch (err) {
       console.error('狀態更新錯誤：', err);
@@ -140,7 +165,21 @@ const Scoreboard = ({currentUser}) => {
     }
   };
 
-// console.log('currentUser:', currentUser, 'umpireId:', umpireId);
+  // 調試信息
+  console.log('Debug info:', {
+    currentUser,
+    currentUserId: currentUser?.id,
+    umpireId,
+    isCurrentUserUmpire: currentUser && Number(currentUser.id) === Number(umpireId),
+    userRole: currentUser?.role
+  });
+
+  // 改進的權限判斷
+  const canEditScore = currentUser && (
+    Number(currentUser.id) === Number(umpireId) || 
+    currentUser.role === 'admin' ||
+    currentUser.role === 'host'
+  );
 
   return (
     <>
@@ -154,6 +193,10 @@ const Scoreboard = ({currentUser}) => {
             Match Status: <span id="match-status">{matchStatus}</span>
           </p>
           <p>Match ID: {matchId}</p>
+          {/* 調試信息 */}
+          <p>Umpire ID: {umpireId || 'Not assigned'}</p>
+          <p>Current User ID: {currentUser?.id || 'Not logged in'}</p>
+          <p>User Role: {currentUser?.role || 'No role'}</p>
         </div>
 
         {/* Scores */}
@@ -166,7 +209,7 @@ const Scoreboard = ({currentUser}) => {
         </div>
 
         {/* Umpire Controls */}
-        {currentUser && Number(currentUser.id) === Number(umpireId) && (
+        {canEditScore && (
           <>
             <div className="button-container">
               <div className="button-group">
@@ -196,6 +239,20 @@ const Scoreboard = ({currentUser}) => {
               </button>
             </div>
           </>
+        )}
+
+        {/* 如果沒有權限，顯示提示信息 */}
+        {!canEditScore && currentUser && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '1rem', 
+            background: '#f8f9fa', 
+            borderRadius: '8px',
+            marginTop: '1rem'
+          }}>
+            <p>You don't have permission to edit this match.</p>
+            <p>User ID: {currentUser.id} | Umpire ID: {umpireId}</p>
+          </div>
         )}
       </div>
     </>

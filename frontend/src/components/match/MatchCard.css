@@ -1,0 +1,192 @@
+/* MatchCard 組件樣式 */
+.match-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.2rem;
+    border-left: 4px solid;
+    transition: transform 0.2s ease;
+    max-width: 400px;   
+    font-size: 0.92em;
+    position: relative;
+}
+
+.match-card:hover {
+    transform: translateY(-3px);
+}
+
+.match-card.animating {
+    animation: pulse 0.2s ease-in-out;
+}
+
+/* 狀態顏色 */
+.status-ended { border-color: #4CAF50; }
+.status-ongoing { border-color: #FFC107; }
+.status-pending { border-color: #9E9E9E; }
+
+/* 分數顯示 */
+.score {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2196F3;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+/* 選手顯示 */
+.players {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.player {
+    text-align: center;
+    flex: 1;
+}
+
+.player-name {
+    font-weight: 600;
+    color: #333;
+}
+
+/* 比賽標題 */
+.match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    padding-right: 0;
+    background: transparent !important;
+}
+
+.match-id {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.match-category {
+    font-size: 0.9rem;
+    color: #666;
+    text-align: right;
+    display: block;
+    width: 100%;
+    margin-right: 36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 狀態標籤 */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+/* 裁判區域 */
+.umpire-section {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.set-umpire-btn {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.set-umpire-btn:hover {
+    background: #1565c0;
+}
+
+.umpire-label {
+    font-size: 0.95em;
+}
+
+.umpire-name {
+    font-weight: bold;
+    color: #1976d2;
+}
+
+/* 刪除按鈕 */
+.delete-match-btn {
+    background: #ff3434;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.delete-match-btn:hover {
+    background: #c30000;
+}
+
+/* 關閉按鈕 */
+.close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    background: #ff5656;
+    color: #424141;
+    border: none;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    background: #c30000;
+}
+
+/* 晉級比賽信息 */
+.match-predecessors {
+    background: #f5f5f5;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.match-predecessors small {
+    font-style: italic;
+}
+
+/* 動畫 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* 鏈接樣式 */
+.match-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.match-card-link * {
+    text-decoration: none;
+}

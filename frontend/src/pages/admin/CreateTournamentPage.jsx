@@ -9,7 +9,8 @@ const TournamentCreatePage = () => {
         name: '',
         start_date: '',
         end_date: '',
-        location: ''
+        location: '',
+        description: ''
     });
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [groups, setGroups] = useState({});
@@ -29,6 +30,26 @@ const TournamentCreatePage = () => {
             ...prev,
             [name]: value
         }));
+    };
+
+    // 添加處理 textarea 的函數
+    const handleTextareaChange = (e) => {
+        const { name, value } = e.target;
+        setTournamentData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // 添加處理鍵盤事件的函數
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && e.shiftKey) {
+            // Shift + Enter: 允許換行
+            return;
+        } else if (e.key === 'Enter') {
+            // 只有 Enter: 阻止預設行為（提交表單）
+            e.preventDefault();
+        }
     };
 
     // 處理 Event 勾選 - 修正版本
@@ -232,6 +253,18 @@ const TournamentCreatePage = () => {
                             value={tournamentData.location}
                             onChange={handleTournamentChange}
                             placeholder="Enter location"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Tournament Description:</label>
+                        <textarea
+                            name="description"
+                            value={tournamentData.description}
+                            onChange={handleTextareaChange}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Enter tournament description (Shift + Enter for new line)"
+                            rows={4}
+                            className="description-textarea"
                         />
                     </div>
                 </div>

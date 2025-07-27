@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import BaseLayout from './components/layout/BaseLayout';
 import ScoreboardPage from './pages/match/ScoreboardPage';
@@ -22,44 +22,28 @@ import UploadRegistrationPage from './pages/tournament/UploadRegistrationPage';
 import GenerateSchedulePage from './pages/admin/GenerateSchedulePage';
 import SchedulePage from './pages/tournament/SchedulePage';
 import { AuthProvider } from './context/AuthContext';
-
-// currentUser can be modified to reflect the actual user state
-// const currentUser = {
-//   isAuthenticated: false,
-//   username: '',
-//   id: 0,
-//   role: ''
-// };
+import { PrivateRoute, AdminRoute, UmpireRoute } from './components/PrivateRoute';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-
   // handle logout
   function LogoutHandler() {
     const navigate = useNavigate();
     useEffect(() => {
       // remove user's token
       localStorage.removeItem('access_token');
-      // set currentUser to null
-      setCurrentUser(null);
       // navigate to homepage
       navigate('/');
     }, [navigate]);
   }
 
-  // useEffect(() => {
-  //   console.log('currentUser.role in App: ',currentUser?.role);
-  // }, [currentUser]);
-  
-
   return (
-    <AuthProvider currentUser={currentUser} setCurrentUser={setCurrentUser}>
+    <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<BaseLayout currentUser={currentUser} />}>
+          <Route path="/" element={<BaseLayout />}>
             {/* General Features */}
-            <Route path="tournaments/:tournamentId/matches" element={<MatchesPage currentUser={currentUser}/>} />
-            <Route path="matches/:matchId" element={<ScoreboardPage currentUser={currentUser}/>} />
+            <Route path="tournaments/:tournamentId/matches" element={<MatchesPage />} />
+            <Route path="matches/:matchId" element={<ScoreboardPage />} />
             <Route path="tournaments" element={<TournamentPage />} />
             <Route path="tournaments/:tournamentId/signup" element={<SignUpTournamentPage />} />
             <Route path="tournaments/:tournamentId/check-registration" element={<CheckRegistrationPage />} />
@@ -67,24 +51,23 @@ function App() {
             <Route path="tournaments/:tournamentId/schedule" element={<SchedulePage />} />
             
             {/* Admin Features */}
-            <Route path="/admin/set-umpire" element={<AssignUmpirePage />} />
-            <Route path="/admin/users" element={<Users />} />
-            <Route path="admin/manage-matches" element={<ManageMatch />} />
-            <Route path="admin/create-match" element={<CreateMatch />} />
-            <Route path="admin/update-user-role" element={<ChangeUserStaus />} />
-            <Route path="/admin/upload-schedule" element={<UploadSchedule />} />
-            <Route path="/admin/scheduler" element={<SchedulerPage />} />
-            <Route path="/admin/match-generator" element={<MatchGenerator />} />
-            <Route path="/admin/create-tournament" element={<CreateTournament />} />
-            <Route path="/admin/tournaments/:tournamentId/generate-schedule" element={<GenerateSchedulePage currentUser={currentUser}/>} />
-            {/* <Route path="admin/change-upire-status" element={<AssignUmpirePage />} /> */}
-
+            <Route path="/admin/set-umpire" element={<AdminRoute><AssignUmpirePage /></AdminRoute>} />
+            <Route path="/admin/users" element={<AdminRoute><Users /></AdminRoute>} />
+            <Route path="admin/manage-matches" element={<AdminRoute><ManageMatch /></AdminRoute>} />
+            <Route path="admin/create-match" element={<AdminRoute><CreateMatch /></AdminRoute>} />
+            <Route path="admin/update-user-role" element={<AdminRoute><ChangeUserStaus /></AdminRoute>} />
+            <Route path="/admin/upload-schedule" element={<AdminRoute><UploadSchedule /></AdminRoute>} />
+            <Route path="/admin/scheduler" element={<AdminRoute><SchedulerPage /></AdminRoute>} />
+            <Route path="/admin/match-generator" element={<AdminRoute><MatchGenerator /></AdminRoute>} />
+            <Route path="/admin/create-tournament" element={<AdminRoute><CreateTournament /></AdminRoute>} />
+            <Route path="/admin/tournaments/:tournamentId/generate-schedule" element={<AdminRoute><GenerateSchedulePage /></AdminRoute>} />
+            
             {/* Home */}
-            <Route path="/" element={<Home currentUser={currentUser} />} />
+            <Route path="/" element={<Home />} />
             
             {/* Autherization Features */}
-            <Route path="login" element={<LoginPage setCurrentUser={setCurrentUser} />} />
-            <Route path="register" element={<RegisterPage setCurrentUser={setCurrentUser}/>} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
             <Route path="logout" element={<LogoutHandler />} />
             
           </Route>

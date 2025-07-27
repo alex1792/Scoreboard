@@ -501,3 +501,34 @@
     border-color: #28a745;
     background: linear-gradient(145deg, #ffffff 0%, #f0f8f0 100%);
 } 
+
+.description-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.3s ease;
+}
+
+.description-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.description-textarea::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .description-textarea {
+        font-size: 16px; /* 避免 iOS 縮放 */
+    }
+} 

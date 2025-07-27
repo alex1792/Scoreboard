@@ -17,6 +17,7 @@ class TournamentService:
             tournament_data = {
                 'id': tournament.id,
                 'name': tournament.name,
+                'description': tournament.description,  # 添加這行
                 'start_date': tournament.start_date.isoformat() if tournament.start_date else None,
                 'end_date': tournament.end_date.isoformat() if tournament.end_date else None,
                 'location': tournament.location,
@@ -57,6 +58,7 @@ class TournamentService:
         tournament_data = {
             'id': tournament.id,
             'name': tournament.name,
+            'description': tournament.description,  # 添加這行
             'start_date': tournament.start_date.isoformat() if tournament.start_date else None,
             'end_date': tournament.end_date.isoformat() if tournament.end_date else None,
             'location': tournament.location,
@@ -296,6 +298,17 @@ class TournamentService:
             'schedule_by_date': schedule_by_date
         }
     
+    @staticmethod
+    def get_schedule_by_tournament(tournament_id):
+        """根據 tournament_id 獲取賽程數據"""
+        # 獲取該 tournament 的最新 schedule
+        schedule = Schedule.query.filter_by(tournament_id=tournament_id).order_by(Schedule.created_at.desc()).first()
+        if not schedule:
+            return None
+        
+        # 使用現有的 get_schedule_data 方法
+        return TournamentService.get_schedule_data(schedule.id)
+
     @staticmethod
     def _group_registrations_by_event_group(registrations):
         """
@@ -683,16 +696,30 @@ class TournamentService:
             
             if is_doubles:
                 # 雙打比賽 - 添加雙打相關欄位
-                match_dict.update({
-                    'team1_player1_id': p1_data['user_id'],
-                    'team1_player2_id': p1_data.get('partner_id'),
-                    'team2_player1_id': p2_data['user_id'],
-                    'team2_player2_id': p2_data.get('partner_id'),
-                    'team1_player1_name': p1_data['user_name'],
-                    'team1_player2_name': p1_data.get('partner_name'),
-                    'team2_player1_name': p2_data['user_name'],
-                    'team2_player2_name': p2_data.get('partner_name')
-                })
+                if 'Winner of Match' in p1_data['user_name'] or 'Winner of Match' in p2_data['user_name']:
+                    # 晉級比賽：只設置第一個選手名稱
+                    match_dict.update({
+                        'team1_player1_id': p1_data['user_id'],
+                        'team1_player2_id': None,
+                        'team2_player1_id': p2_data['user_id'],
+                        'team2_player2_id': None,
+                        'team1_player1_name': p1_data['user_name'],
+                        'team1_player2_name': None,  # 不設置，避免 "Winner of Match / N/A"
+                        'team2_player1_name': p2_data['user_name'],
+                        'team2_player2_name': None   # 不設置，避免 "Winner of Match / N/A"
+                    })
+                else:
+                    # 第一輪比賽：正常設置雙打選手
+                    match_dict.update({
+                        'team1_player1_id': p1_data['user_id'],
+                        'team1_player2_id': p1_data.get('partner_id'),
+                        'team2_player1_id': p2_data['user_id'],
+                        'team2_player2_id': p2_data.get('partner_id'),
+                        'team1_player1_name': p1_data['user_name'],
+                        'team1_player2_name': p1_data.get('partner_name'),
+                        'team2_player1_name': p2_data['user_name'],
+                        'team2_player2_name': p2_data.get('partner_name')
+                    })
             
             match = Match(**match_dict)
             db.session.add(match)

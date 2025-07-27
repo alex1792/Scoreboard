@@ -70,12 +70,10 @@ const SchedulePage = () => {
 
   const renderDate = (date, batches) => (
     <div key={date} className="date-section">
-      <h2>{new Date(date).toLocaleDateString()}</h2>
-      <div className="batches">
-        {Object.entries(batches).map(([batchNum, matches]) => 
-          renderBatch(batchNum, matches)
-        )}
-      </div>
+      <h2>{date}</h2>
+      {Object.entries(batches).map(([batchNumber, matches]) => 
+        renderBatch(batchNumber, matches)
+      )}
     </div>
   );
 

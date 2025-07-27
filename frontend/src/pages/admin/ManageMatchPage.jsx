@@ -4,62 +4,7 @@ import '../../styles/pages/match/matches.css';
 import { useMatchInfoListener } from '../../api/socketService';
 import { useFetchMatchInfo } from '../../api/api';
 import { deleteMatch } from '../../api/api';
-
-
-const MatchCard = ({ match, onDelete }) => {
-  const statusColorMap = {
-    ended: '#4CAF50',
-    ongoing: '#FFC107',
-    pending: '#9E9E9E'
-  };
-
-  const statusColor = statusColorMap[match.status?.toLowerCase()] || '#ccc';
-
-  return (
-    <div className={`match-card status-${match.status?.toLowerCase()}`} data-match-id={match.match_id}>
-      <div className="match-header">
-        <div className="match-id">#{match.id}</div>
-        {match.round && (
-          <div className="match-round">Round {match.round} - Match {match.match_number}</div>
-        )}
-        <div className="match-category">{match.category}</div>
-      </div>
-      
-      {/* 如果是晉級比賽，顯示前驅比賽信息 */}
-      {match.prev_match1_id && (
-        <div className="match-predecessors">
-          <small>Winner of Match #{match.prev_match1_id} vs Winner of Match #{match.prev_match2_id}</small>
-        </div>
-      )}
-      
-      <div className="players">
-        <div className="player">
-          <div className="player-name">{match.player1}</div>
-        </div>
-        <div className="vs">vs</div>
-        <div className="player">
-          <div className="player-name">{match.player2}</div>
-        </div>
-      </div>
-
-      <div className="score">{match.score1} : {match.score2}</div>
-
-      <div className="status">
-        <span className={`status-badge status-${match.status?.toLowerCase()}`}
-              style={{ backgroundColor: statusColor + '20', color: statusColor }}>
-          {match.status?.toUpperCase()}
-        </span>
-      </div>
-
-      <div className="umpire-section">
-        <span className="umpire-label">
-          Umpire: <span className="umpire-name">{typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}</span>
-        </span>
-        <button className="delete-match-btn" onClick={() => onDelete(match.id)}>Delete Match</button>
-      </div>
-    </div>
-  );
-};
+import MatchCard from '../../components/match/MatchCard';
 
 const ManageMatchPage = () => {
   const [matches, setMatches] = useState([]);
@@ -76,7 +21,6 @@ const ManageMatchPage = () => {
   const handleDeleteMatch = async (matchId) => {
     const success = await deleteMatch(matchId);
     if (success) {
-      // Update local state immediately without waiting for socket event
       setMatches(prev => prev.filter(match => match.id !== matchId));
     }
   };
@@ -92,7 +36,13 @@ const ManageMatchPage = () => {
         </div>
         <div className="matches-grid">
           {matches.map(match => (
-            <MatchCard key={match.id} match={match} onDelete={handleDeleteMatch} />
+            <MatchCard
+              key={match.id}
+              match={match}
+              onDelete={handleDeleteMatch}
+              showDeleteButton={true}
+              showPredecessors={true}
+            />
           ))}
         </div>
       </div>

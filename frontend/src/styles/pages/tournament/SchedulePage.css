@@ -24,7 +24,8 @@
 }
 
 /* View Schedule Button Styles */
-.view-schedule-btn {
+/* 使用更具體的選擇器，避免與其他頁面衝突 */
+.schedule-page .view-schedule-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -40,95 +41,96 @@
   gap: 8px;
 }
 
-.view-schedule-btn:hover {
+.schedule-page .view-schedule-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
 
-.view-schedule-btn:active {
+.schedule-page .view-schedule-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
 }
 
-.view-schedule-btn:disabled {
+.schedule-page .view-schedule-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.view-schedule-btn .icon {
+.schedule-page .view-schedule-btn .icon {
   width: 16px;
   height: 16px;
   fill: currentColor;
 }
 
 /* Alternative button styles */
-.view-schedule-btn.primary {
+/* 其他樣式也使用更具體的選擇器 */
+.schedule-page .view-schedule-btn.primary {
   background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 
-.view-schedule-btn.primary:hover {
+.schedule-page .view-schedule-btn.primary:hover {
   background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
   box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
 }
 
-.view-schedule-btn.success {
+.schedule-page .view-schedule-btn.success {
   background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
-.view-schedule-btn.success:hover {
+.schedule-page .view-schedule-btn.success:hover {
   background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
   box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.view-schedule-btn.warning {
+.schedule-page .view-schedule-btn.warning {
   background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
   color: #212529;
   box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
 }
 
-.view-schedule-btn.warning:hover {
+.schedule-page .view-schedule-btn.warning:hover {
   background: linear-gradient(135deg, #e0a800 0%, #c69500 100%);
   box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
 }
 
 /* Small button variant */
-.view-schedule-btn.small {
+.schedule-page .view-schedule-btn.small {
   padding: 8px 16px;
   font-size: 12px;
 }
 
 /* Large button variant */
-.view-schedule-btn.large {
+.schedule-page .view-schedule-btn.large {
   padding: 16px 32px;
   font-size: 16px;
 }
 
 /* Outline button variant */
-.view-schedule-btn.outline {
+.schedule-page .view-schedule-btn.outline {
   background: transparent;
   color: #667eea;
   border: 2px solid #667eea;
   box-shadow: none;
 }
 
-.view-schedule-btn.outline:hover {
+.schedule-page .view-schedule-btn.outline:hover {
   background: #667eea;
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 /* Loading state */
-.view-schedule-btn.loading {
+.schedule-page .view-schedule-btn.loading {
   position: relative;
   color: transparent;
 }
 
-.view-schedule-btn.loading::after {
+.schedule-page .view-schedule-btn.loading::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -149,7 +151,7 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .view-schedule-btn {
+  .schedule-page .view-schedule-btn {
     padding: 10px 20px;
     font-size: 13px;
   }
@@ -199,7 +201,7 @@
   overflow: hidden;
 }
 
-.match-header {
+.schedule-page .match-item .match-header {
   background: #f1f3f4;
   padding: 10px 15px;
   display: flex;
@@ -209,25 +211,26 @@
   color: #666;
 }
 
-.match-content {
+.schedule-page .match-item .match-content {
   padding: 15px;
 }
 
-.category {
+.schedule-page .match-item .category {
   font-weight: bold;
   color: #2c3e50;
   margin-bottom: 8px;
   font-size: 14px;
 }
 
-.players {
+.schedule-page .match-item .players {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
 }
 
-.player1, .player2 {
+.schedule-page .match-item .player1,
+.schedule-page .match-item .player2 {
   flex: 1;
   padding: 8px 12px;
   background: #f8f9fa;
@@ -236,12 +239,12 @@
   font-size: 14px;
 }
 
-.vs {
+.schedule-page .match-item .vs {
   color: #666;
   font-weight: bold;
 }
 
-.status {
+.schedule-page .match-item .status {
   font-size: 12px;
   color: #28a745;
   font-weight: bold;

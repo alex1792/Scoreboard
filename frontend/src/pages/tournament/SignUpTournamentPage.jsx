@@ -229,6 +229,17 @@ const SignUpTournamentPage = () => {
         );
     }
 
+    // 添加格式化函數
+    const formatDescription = (description) => {
+        if (!description) return '';
+        return description.split('\n').map((line, index) => (
+            <span key={index}>
+                {line}
+                {index < description.split('\n').length - 1 && <br />}
+            </span>
+        ));
+    };
+
     return (
         <div className="signup-tournament-page">
             <div className="container">
@@ -254,6 +265,14 @@ const SignUpTournamentPage = () => {
                             <span className="label">Location:</span>
                             <span className="value">{tournament.location}</span>
                         </div>
+                        {tournament.description && (
+                            <div className="info-item description-item">
+                                <span className="label">Description:</span>
+                                <span className="value description-value">
+                                    {formatDescription(tournament.description)}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -267,39 +267,56 @@
 
 /* 各個按鈕的顏色主題 */
 .view-details-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  background: #F78888;
+  color: #000000;
 }
 
 .view-details-btn:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  /* background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%); */
+  background: #F78888;
 }
 
 .signup-btn {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); */
+  background: #5DA2D5;
+  color: #000000;
 }
 
 .signup-btn:hover {
-  background: linear-gradient(135deg, #e085e8 0%, #e04a5f 100%);
+  /* background: linear-gradient(135deg, #e085e8 0%, #e04a5f 100%); */
+  
+  background: #5DA2D5;
+}
+
+.view-schedule-btn {
+  background: #F3D250;
+}
+
+.view-schedule-btn:hover {
+  background: #F3D250;
 }
 
 .view-matches-btn {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); */
+  background: #90CCF4;
+  color: #000000;
 }
 
 .view-matches-btn:hover {
-  background: linear-gradient(135deg, #3e9bed 0%, #00e1eb 100%);
+  /* background: linear-gradient(135deg, #3e9bed 0%, #00e1eb 100%); */
+  background: #90CCF4;
 }
 
 .view-registrations-btn {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); */
+  background: #F78888;
+  color: #000000;
 }
 
 .view-registrations-btn:hover {
-  background: linear-gradient(135deg, #3ad66b 0%, #2ee8c7 100%);
+  /* background: linear-gradient(135deg, #3ad66b 0%, #2ee8c7 100%); */
+  background: #F78888;
 }
 
 /* 按鈕圖標樣式（如果有的話） */
@@ -390,48 +407,6 @@
   position: relative;
 }
 
-/* 按鈕顏色主題 */
-.view-details-btn {
-  background: #6c757d;
-  color: white;
-  border-color: #6c757d;
-}
-
-.view-details-btn:hover {
-  background: #5a6268;
-  border-color: #5a6268;
-  transform: translateY(-1px);
-}
-
-.signup-btn {
-  background: #28a745;
-  color: white;
-  border-color: #28a745;
-}
-
-.signup-btn:hover {
-  background: #218838;
-  border-color: #218838;
-  transform: translateY(-1px);
-}
-
-.view-matches-btn {
-  background: #17a2b8;
-  color: white;
-  border-color: #17a2b8;
-}
-
-.view-matches-btn:hover {
-  background: #138496;
-  border-color: #138496;
-  transform: translateY(-1px);
-}
-
-.view-registrations-btn {
-  background: #ffc107;
-  color: #212529;
-  border-color: #ffc107;
-}
 
 .view-registrations-btn:hover {
   background: #e0a800;
@@ -451,3 +426,66 @@
     min-width: auto;
   }
 }
+
+.description-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.description-value {
+    white-space: pre-line;
+    line-height: 1.6;
+    color: #495057;
+    font-style: italic;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border-left: 3px solid #667eea;
+}
+
+/* 使用更具體的選擇器，避免與其他頁面衝突 */
+.tournament-page .tournament-actions .view-schedule-btn {
+  background: #5DA2D5;
+  color: white;
+}
+
+.tournament-page .tournament-actions .view-schedule-btn:hover {
+  background: #4A8BC4;
+}
+
+.tournament-page .tournament-actions .view-details-btn {
+  background: #F78888;
+  color: white;
+}
+
+.tournament-page .tournament-actions .view-details-btn:hover {
+  background: #F78888;
+}
+
+.tournament-page .tournament-actions .signup-btn {
+  background: #F3D250;
+  color: white;
+}
+
+.tournament-page .tournament-actions .signup-btn:hover {
+  background: #E6C545;
+}
+
+.tournament-page .tournament-actions .view-matches-btn {
+  background: #90CCF4;
+  color: white;
+}
+
+.tournament-page .tournament-actions .view-matches-btn:hover {
+  background: #7BB8E3;
+}
+
+/* .tournament-page .tournament-actions .view-registrations-btn {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.tournament-page .tournament-actions .view-registrations-btn:hover {
+  background: linear-gradient(135deg, #3ad66b 0%, #2ee8c7 100%);
+} */

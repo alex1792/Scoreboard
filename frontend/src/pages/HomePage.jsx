@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useFetchUmpireMatchId } from '../api/api';
 
-const Home = ({ currentUser }) => {
+const Home = () => {
   const [myMatchId, setMyMatchId] = useState(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   // get umpire's match and save it, so that the link
   // will be valid to be displayed
@@ -37,12 +39,7 @@ const Home = ({ currentUser }) => {
                   <span>View All Tournaments</span>
                 </Link>
             </div>
-            {/* <div className="admin-icon-item">
-              <Link to="/matches">
-                <img src="/documents-search-icon.png" alt="Check All Matches" className="admin-icon" />
-                <span>Check All Matches</span>
-              </Link>
-            </div> */}
+            
             {currentUser?.role === 'admin' && (
               <>
                 <div className="admin-icon-item">
@@ -73,22 +70,6 @@ const Home = ({ currentUser }) => {
             )}
           </div>
         </section>
-
-        {/* {currentUser?.role === 'admin' && (
-          <section className="card admin-section">
-            <div className="admin-management">
-              <h3>Match Management</h3>
-              <ul className="link-list">
-                <li><Link to="/admin/set-umpire">Manage Umpires</Link></li>
-                <li><Link to="/admin/users">Check All Users</Link></li>
-                <li><Link to="/admin/manage-matches">Manage Matches</Link></li>
-                <li><Link to="/admin/create-match">Create New Match</Link></li>
-                <li><Link to="/admin/update-user-role">Update User Role</Link></li>
-                <li><Link to="/admin/upload-schedule">Uplaod Match Schedule</Link></li>
-              </ul>
-            </div>
-          </section>
-        )} */}
       </main>
     </>
   );

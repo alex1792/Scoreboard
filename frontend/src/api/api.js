@@ -424,6 +424,11 @@ export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6)
     }
 }
 
+// ================================================================================
+// ================================================================================
+// ========================= GetSchedule Data from Database =======================
+// ================================================================================
+// ================================================================================
 export async function  getTournamentSchedule(tournamentId) {
     try {
         console.log('Fetching schedule for tournament:', tournamentId);
@@ -434,8 +439,6 @@ export async function  getTournamentSchedule(tournamentId) {
         if(response.ok) {
             const data = await response.json();
             console.log('Raw response data:', data);
-            
-            // 修正：直接返回 data，不要 data.data
             return data;
         } else {
             const errorData = await response.json();

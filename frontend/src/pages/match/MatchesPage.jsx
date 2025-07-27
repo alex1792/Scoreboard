@@ -1,12 +1,13 @@
 import { useRef, useState, useContext, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useMatchInfoListener } from '../../api/socketService';
-import { useFetchMatchInfo, useFetchMatchInfoByTournament } from '../../api/api';
-import { AuthContext } from '../../context/AuthContext';
+import { useFetchMatchInfoByTournament } from '../../api/api';
+import { useAuth } from '../../context/AuthContext';  // 改用 useAuth
+import MatchCard from '../../components/match/MatchCard';
 import '../../styles/pages/match/matches.css';
 
-const MatchesPage = ({ currentUser }) => {
-  const { currentUser: contextUser } = useContext(AuthContext);
+const MatchesPage = () => {  // 移除 currentUser prop
+  const { currentUser } = useAuth();  // 使用 useAuth hook
   const [matches, setMatches] = useState([]);
   const [filteredMatches, setFilteredMatches] = useState([]);
   const [animatingMatchId, setAnimatingMatchId] = useState(null);
@@ -20,8 +21,10 @@ const MatchesPage = ({ currentUser }) => {
   const [availableGroups, setAvailableGroups] = useState([]);
   const [eventGroups, setEventGroups] = useState({}); // 存儲每個 event 對應的 groups
 
-  // 使用 props 中的 currentUser 或 context 中的 currentUser
-  const user = currentUser || contextUser;
+  // 檢查用戶權限
+  const hasAdminAccess = () => {
+    return currentUser && (currentUser?.role === 'admin' || currentUser?.role === 'host' || currentUser?.role === 'organizer');
+  };
 
   // fetch match info from backend
   useFetchMatchInfoByTournament(setMatches, tournamentId);
@@ -102,11 +105,6 @@ const MatchesPage = ({ currentUser }) => {
     if (eventName.includes('WD')) return 'Women Doubles';
     if (eventName.includes('XD')) return 'Mixed Doubles';
     return eventName;
-  };
-
-  // 檢查用戶權限
-  const hasAdminAccess = () => {
-    return user && (user?.role === 'admin' || user?.role === 'host' || user?.role === 'organizer');
   };
 
   return (
@@ -191,69 +189,13 @@ const MatchesPage = ({ currentUser }) => {
         <div className="matches-grid">
           {filteredMatches.length > 0 ? (
             filteredMatches.map((match) => (
-              <Link
+              <MatchCard
                 key={match.id}
-                to={`/matches/${match.id}`}
-                className="match-card-link"
-              >
-                <div
-                  className={`match-card status-${match.status.toLowerCase()}${animatingMatchId === match.id ? ' animating' : ''}`}
-                  data-match-id={match.id}
-                >
-                  {/* 在比賽卡片中顯示更清楚的信息 */}
-                  <div className="match-header">
-                    <span className="match-id">#{match.id}</span>
-                    <span className="match-category">
-                      {match.round ? (
-                        `${match.category}-${match.group} : Round ${match.round} - Match ${match.match_number}`
-                      ) : (
-                        `${match.category}-${match.group}`
-                      )}
-                    </span>
-                  </div>
-
-                  {/* 如果是晉級比賽，顯示前驅比賽信息 */}
-                  {match.prev_match1_id && (
-                    <div className="match-predecessors">
-                      <small>Winner of Match #{match.prev_match1_id} vs Winner of Match #{match.prev_match2_id}</small>
-                    </div>
-                  )}
-                  
-                  <div className="players">
-                    <div className="player">
-                      <div className="player-name">{match.player1}</div>
-                    </div>
-
-                    <div className="vs">vs</div>
-
-                    <div className="player">
-                      <div className="player-name">{match.player2}</div>
-                    </div>
-                  </div>
-
-                  <div className="score">
-                    {match.score1} : {match.score2}
-                  </div>
-
-                  <div className="status">
-                    <span
-                      className={`status-badge status-${match.status.toLowerCase()}`}
-                      style={getStatusColor(match.status)}
-                    >
-                      {match.status.toUpperCase()}
-                    </span>
-                  </div>
-
-                  <div className="umpire-section">
-                    <span className="umpire-label">
-                      Umpire:{' '}
-                      <span className="umpire-name">
-                        {match.umpire || 'To Be Assigned'}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              </Link>
+                match={match}
+                isClickable={true}
+                animating={animatingMatchId === match.id}
+                showPredecessors={true}
+              />
             ))
           ) : (
             <div className="no-matches">

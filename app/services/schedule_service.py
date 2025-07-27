@@ -56,7 +56,27 @@ class TournamentScheduler:
         self._fill_remaining_matches()
 
         if tournament_id:
-            schedule_data = {'start_time': '09:00', 'end_time': '18:00', 'match_duration': 30}
+            # 獲取 tournament 的實際時間
+            tournament = Tournament.query.get(tournament_id)
+            if tournament:
+                # 使用 tournament 的開始時間作為比賽開始時間
+                start_time = tournament.start_date.strftime('%H:%M')
+                # 設置結束時間為開始時間後 9 小時（或根據需要調整）
+                end_time = (tournament.start_date + timedelta(hours=9)).strftime('%H:%M')
+                
+                schedule_data = {
+                    'start_time': start_time,
+                    'end_time': end_time, 
+                    'match_duration': 30
+                }
+            else:
+                # 如果找不到 tournament，使用默認時間
+                schedule_data = {
+                    'start_time': '09:00',
+                    'end_time': '18:00',
+                    'match_duration': 30
+                }
+            
             self.create_schedule(tournament_id, schedule_data)
 
     def _group_by_round(self, matches):
@@ -716,15 +736,15 @@ class TournamentScheduler:
             
             db.session.commit()
             
-            # 創建新賽程
+            # 創建新賽程 - 使用固定的時間設定
             schedule_dict = {
                 'tournament_id': tournament_id,
                 'start_date': tournament.start_date,
                 'end_date': tournament.end_date,
-                'start_time': datetime.strptime(schedule_data['start_time'], '%H:%M').time(),
-                'end_time': datetime.strptime(schedule_data['end_time'], '%H:%M').time(),
+                'start_time': datetime.strptime('09:00', '%H:%M').time(),  # 固定 9:00 開始
+                'end_time': datetime.strptime('18:00', '%H:%M').time(),    # 固定 18:00 結束
                 'total_courts': self.total_court,
-                'match_duration': schedule_data.get('match_duration', 60),
+                'match_duration': 30,  # 固定 30 分鐘
                 'total_matches': len(self.scheduled_matches),
                 'total_batches': len(self.scheduled_matches) // self.total_court + (1 if len(self.scheduled_matches) % self.total_court > 0 else 0),
                 'status': 'active'
@@ -737,21 +757,35 @@ class TournamentScheduler:
             
             # 創建 schedule items
             current_date = schedule.start_date
-            current_time = schedule.start_time
             batch_number = 1
             order_in_batch = 0
+            
+            # 計算每個 batch 的時間
+            batch_start_time = schedule.start_time  # 9:00
+            batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 9:30
+            batch_end_time = batch_end_time.time()
             
             for i, match in enumerate(self.scheduled_matches):
                 # 檢查是否需要新的批次
                 if order_in_batch >= self.total_court:
                     batch_number += 1
-                    current_time = self._add_time(current_time, schedule_data.get('batch_interval', 120))
                     order_in_batch = 0
                     
+                    # 計算下一個 batch 的時間
+                    batch_start_time = batch_end_time  # 9:30
+                    batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 10:00
+                    batch_end_time = batch_end_time.time()
+                    
                     # 檢查是否需要新的一天
-                    if current_time >= schedule.end_time:
+                    if batch_start_time >= schedule.end_time:  # 如果超過 18:00
                         current_date += timedelta(days=1)
-                        current_time = schedule.start_time
+                        batch_start_time = schedule.start_time  # 重設為 9:00
+                        batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 9:30
+                        batch_end_time = batch_end_time.time()
+                
+                # 防呆：如果超過賽事結束日期就不排了
+                if current_date > schedule.end_date:
+                    break
                 
                 # 準備 schedule_item_dict
                 schedule_item_dict = {
@@ -761,8 +795,8 @@ class TournamentScheduler:
                     'order_in_batch': order_in_batch,
                     'court_number': order_in_batch + 1,
                     'scheduled_date': current_date,
-                    'scheduled_start_time': datetime.combine(current_date, current_time),
-                    'scheduled_end_time': datetime.combine(current_date, current_time) + timedelta(minutes=schedule.match_duration),
+                    'scheduled_start_time': datetime.combine(current_date, batch_start_time),
+                    'scheduled_end_time': datetime.combine(current_date, batch_end_time),
                     'status': 'scheduled'
                 }
                 

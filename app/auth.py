@@ -91,7 +91,7 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    # serch user in database by username
+    # search user in database by username
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password_hash(user.password, password):
@@ -106,13 +106,20 @@ def login():
         expires_delta=datetime.timedelta(days=7)
     )
     
-
+    # 修正回傳格式，確保與前端期望一致
     return jsonify({
         "status": "success",
         "message": "Login successful.",
         "data": {
             "access_token": access_token,
-            "user": user.serialize()
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "role": user.role
+            }
         }
     }), 200
 
@@ -135,4 +142,21 @@ def get_current_user():
     return jsonify({
         "status": "success",
         "data": user.serialize()
+    }), 200
+
+@auth_bp.route('/validate', methods=['GET'])
+@jwt_required()
+def validate_token():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+    
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "role": user.role
     }), 200

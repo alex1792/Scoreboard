@@ -15,7 +15,7 @@ file structure.
 
 def get_match_data(match):
     if match.event_type in ['MS', 'WS']: 
-        # 優先使用存儲的姓名，如果沒有則嘗試從 User 表獲取
+        # 單打處理
         if match.player1_name:
             player1 = match.player1_name
         else:
@@ -28,7 +28,7 @@ def get_match_data(match):
             user2 = User.query.get(match.player2_id) if match.player2_id else None
             player2 = user2.get_full_name() if user2 else "N/A"
     else: 
-        # 雙打：優先使用存儲的姓名
+        # 雙打處理
         if match.team1_player1_name:
             team1_player1 = match.team1_player1_name
         else:
@@ -53,8 +53,29 @@ def get_match_data(match):
             user4 = User.query.get(match.team2_player2_id) if match.team2_player2_id else None
             team2_player2 = user4.get_full_name() if user4 else "N/A"
         
-        player1 = f"{team1_player1} & {team1_player2}"
-        player2 = f"{team2_player1} & {team2_player2}"
+        # 統一處理雙打選手顯示邏輯
+        if match.prev_match1_id is not None:
+            # 淘汰賽晉級比賽
+            if 'Winner of Match' in team1_player1:
+                player1 = team1_player1  # 直接使用 "Winner of Match #X"
+            else:
+                player1 = f"Winner of Match #{match.prev_match1_id}"
+            
+            if 'Winner of Match' in team2_player1:
+                player2 = team2_player1  # 直接使用 "Winner of Match #Y"
+            else:
+                player2 = f"Winner of Match #{match.prev_match2_id}"
+        else:
+            # 第一輪比賽（Round Robin 或 Elimination 第一輪）
+            if team1_player1 and team1_player2 and team1_player1 != "N/A" and team1_player2 != "N/A":
+                player1 = f"{team1_player1} / {team1_player2}"
+            else:
+                player1 = team1_player1 or team1_player2 or "TBD"
+            
+            if team2_player1 and team2_player2 and team2_player1 != "N/A" and team2_player2 != "N/A":
+                player2 = f"{team2_player1} / {team2_player2}"
+            else:
+                player2 = team2_player1 or team2_player2 or "TBD"
 
     # 獲取相關對象
     event = Event.query.get(match.event_id)
@@ -78,7 +99,8 @@ def get_match_data(match):
         "umpire_id": match.umpire_id
     }
 
-    if hasattr(match, 'round') and match.round is not None:
+    # 檢查是否有淘汰賽相關字段
+    if hasattr(match, 'round') and match.round is not None and hasattr(match, 'match_number') and match.match_number is not None:
         match_data.update({
             "round": match.round,
             "match_number": match.match_number,

@@ -1,7 +1,17 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/style.css';
 
-const BaseLayout = ({ currentUser }) => {
+const BaseLayout = () => {
+  const { currentUser, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    logout();
+    navigate('/');
+  };
+
   return (
     <>
       <nav>
@@ -9,10 +19,14 @@ const BaseLayout = ({ currentUser }) => {
         <ul>
           <li><Link to="/">Score Board</Link></li>
           <li><Link to="/matches">Matches</Link></li>
-          {currentUser && currentUser.username ? (
+          {isAuthenticated && currentUser && currentUser.username ? (
             <>
               <li><span>Welcome, {currentUser.username}</span></li>
-              <li><Link to="/logout">Logout</Link></li>
+              <li>
+                <a href="#" onClick={handleLogout} className="nav-link">
+                  Logout
+                </a>
+              </li>
             </>
           ) : (
             <>
