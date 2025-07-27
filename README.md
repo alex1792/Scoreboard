@@ -550,4 +550,6 @@ Match.umpire_id → User.id (umpire id)
 ### 2025/07/26
 - Fix score update emit()
 - Fix umpire scoreboard page
+- Fix registered time in the check registration page
+- Add modify registration.status functions
 ---

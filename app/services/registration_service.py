@@ -33,6 +33,7 @@ class RegistrationService:
                 'partner_name': partner_name,
                 'event_name': registration.event.name,
                 'group_name': registration.group.name,
+                'registration_date': registration.registration_date.isoformat() if registration.registration_date else None
             }
             registrations_data.append(registration_data)
         
@@ -267,3 +268,19 @@ class RegistrationService:
                 'success': False,
                 'error': f'Unexpected error: {str(e)}'
             }
+
+    @staticmethod
+    def update_registration_status(registration_id, new_status):
+        """update registration.status (pending, confirmed, cancelled)"""
+        try:
+            registration = Registration.query.get(registration_id)
+            if not registration:
+                return None
+            
+            registration.status = new_status
+            db.session.commit()
+            return registration
+        
+        except Exception as e:
+            db.session.rollback()
+            return None

@@ -6,15 +6,13 @@ import '../../styles/pages/match/scoreboard.css';
 
 const Scoreboard = () => {
   const { currentUser } = useAuth();
-  
   const { matchId } = useParams();
   const [player1Name, setPlayer1Name] = useState('');
   const [player2Name, setPlayer2Name] = useState('');
   const [score1, setScore1] = useState(0);
   const [score2, setScore2] = useState(0);
-  const [matchStatus, setMatchStatus] = useState('');
-  const [umpireId, setUmpireId] = useState('');
-  
+  const [matchStatus, setMatchStatus] = useState('Scheduled');
+  const [umpireId, setUmpireId] = useState(null);
   const socketRef = useRef(null);
 
   // 1. Fetch match data from backend API
@@ -181,81 +179,98 @@ const Scoreboard = () => {
     currentUser.role === 'host'
   );
 
-  return (
-    <>
-      <div className="scoreboard-container">
-        {/* Match Info */}
-        <div className="match-info">
-          <p>
-            <strong>{player1Name}</strong> vs <strong>{player2Name}</strong>
-          </p>
-          <p>
-            Match Status: <span id="match-status">{matchStatus}</span>
-          </p>
-          <p>Match ID: {matchId}</p>
-          {/* 調試信息 */}
-          <p>Umpire ID: {umpireId || 'Not assigned'}</p>
-          <p>Current User ID: {currentUser?.id || 'Not logged in'}</p>
-          <p>User Role: {currentUser?.role || 'No role'}</p>
-        </div>
+  const statusColorMap = {
+    'Scheduled': '#9E9E9E',
+    'Ongoing': '#FFC107',
+    'Finished': '#4CAF50'
+  };
 
-        {/* Scores */}
-        <div className="scores">
-          <div className="score-container">
-            <span id="player1-score" className="score">{score1}</span>
-            <span className="separator">-</span>
-            <span id="player2-score" className="score">{score2}</span>
+  const statusColor = statusColorMap[matchStatus] || '#ccc';
+
+  return (
+    <div className="scoreboard-page">
+      <div className="scoreboard-card">
+        {/* 簡化的 Header */}
+        <div className="match-header">
+          <div className="match-id">Match #{matchId}</div>
+          <div className="match-status-badge">
+            <span
+              className={`status-badge status-${matchStatus.toLowerCase()}`}
+              style={{ backgroundColor: statusColor + '20', color: statusColor }}
+            >
+              {matchStatus.toUpperCase()}
+            </span>
           </div>
         </div>
 
-        {/* Umpire Controls */}
+        {/* 選手姓名 - 水平排列 */}
+        <div className="players-row">
+          <div className="player-name">{player1Name}</div>
+          <div className="vs-divider">VS</div>
+          <div className="player-name">{player2Name}</div>
+        </div>
+
+        {/* 大分數顯示 - 核心焦點 */}
+        <div className="score-display">
+          <div className="score-container">
+            <div className="score-box">
+              <span className="score-number">{score1}</span>
+            </div>
+            <div className="score-separator">:</div>
+            <div className="score-box">
+              <span className="score-number">{score2}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 控制按鈕 - 網格布局 */}
         {canEditScore && (
-          <>
-            <div className="button-container">
-              <div className="button-group">
-                <button className="btn btn-add" onClick={() => handleScoreChange('Player1', 1)}>
-                  Player1 +1
-                </button>
-                <button className="btn btn-minus" onClick={() => handleScoreChange('Player1', -1)}>
-                  Player1 -1
-                </button>
+          <div className="control-section">
+            <div className="score-controls">
+              <div className="player-controls">
+                <h4 className="player-label">Player 1</h4>
+                <div className="button-row">
+                  <button className="btn btn-minus" onClick={() => handleScoreChange('Player1', -1)}>
+                    -1
+                  </button>
+                  <button className="btn btn-add" onClick={() => handleScoreChange('Player1', 1)}>
+                    +1
+                  </button>
+                </div>
               </div>
 
-              <div className="button-group">
-                <button className="btn btn-add" onClick={() => handleScoreChange('Player2', 1)}>
-                  Player2 +1
-                </button>
-                <button className="btn btn-minus" onClick={() => handleScoreChange('Player2', -1)}>
-                  Player2 -1
-                </button>
+              <div className="player-controls">
+                <h4 className="player-label">Player 2</h4>
+                <div className="button-row">
+                  <button className="btn btn-minus" onClick={() => handleScoreChange('Player2', -1)}>
+                    -1
+                  </button>
+                  <button className="btn btn-add" onClick={() => handleScoreChange('Player2', 1)}>
+                    +1
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="match-status-container">
+            {/* 比賽狀態控制 */}
+            <div className="match-controls">
               <button className="btn btn-status" onClick={handleStatusToggle}>
-                {matchStatus === 'Scheduled' && 'Start Match'}
-                {matchStatus === 'Ongoing' && 'End Match'}
-                {matchStatus === 'Finished' && 'Restart Match'}
+                {matchStatus === 'Scheduled' && '▶ Start Match'}
+                {matchStatus === 'Ongoing' && '⏹ End Match'}
+                {matchStatus === 'Finished' && '🔄 Restart Match'}
               </button>
             </div>
-          </>
+          </div>
         )}
 
-        {/* 如果沒有權限，顯示提示信息 */}
+        {/* 權限提示 - 簡化版本 */}
         {!canEditScore && currentUser && (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '1rem', 
-            background: '#f8f9fa', 
-            borderRadius: '8px',
-            marginTop: '1rem'
-          }}>
+          <div className="permission-message">
             <p>You don't have permission to edit this match.</p>
-            <p>User ID: {currentUser.id} | Umpire ID: {umpireId}</p>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

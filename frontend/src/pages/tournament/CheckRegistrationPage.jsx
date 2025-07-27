@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import '../../styles/pages/tournament/CheckRegistrationPage.css';
-import { fetchInfoToBackend } from '../../api/api';
+import { fetchInfoToBackend, updateRegistrationStatus } from '../../api/api';
 
 function CheckRegistrationPage() {
   const { tournamentId } = useParams();
@@ -10,6 +10,7 @@ function CheckRegistrationPage() {
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState([]);
   
   // 篩選狀態
   const [selectedEvent, setSelectedEvent] = useState('all');
@@ -174,6 +175,93 @@ function CheckRegistrationPage() {
     }
   };
 
+  const formatRegistrationDate = (dateString) => {
+    if(!dateString) return 'Invalid date';
+
+    try {
+      const date = new Date(dateString);
+      if(isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting registration date:', error);
+      return 'Invalid date';
+    }
+  };
+
+  const handleStatusChange = async (registrationId, newStatus) => {
+    setUpdatingStatus(prev => ({...prev, [registrationId]: true}));
+
+    try {
+      const response  = await updateRegistrationStatus(registrationId, newStatus);
+      if(response.status === 'success') {
+        setRegistrations(prev =>
+          prev.map(reg => reg.id === registrationId ? {...reg, status: newStatus} : reg)
+        );
+
+        // update filtered registrations
+        filterRegistrations();
+      } else {
+        alert(`Failed to update status: ${response.message}`);
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status, please try again');
+    } finally {
+      setUpdatingStatus(prev => ({...prev, [registrationId]: false}));
+    }
+  };
+
+  // 修改狀態顯示組件
+  const StatusDropdown = ({ registration }) => {
+    const isUpdating = updatingStatus[registration.id];
+    // const canEdit = hasEditPermission();
+  
+    // if (!canEdit) {
+    //   return (
+    //     <span 
+    //       className="status-badge"
+    //       style={{ backgroundColor: getStatusColor(registration.status) }}
+    //     >
+    //       {registration.status}
+    //     </span>
+    //   );
+    // }
+  
+    return (
+      <select
+        value={registration.status}
+        onChange={(e) => handleStatusChange(registration.id, e.target.value)}
+        disabled={isUpdating}
+        className="status-dropdown"
+        style={{ 
+          backgroundColor: getStatusColor(registration.status),
+          color: 'white',
+          border: 'none',
+          borderRadius: '20px',
+          padding: '4px 12px',
+          fontSize: '0.8em',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          cursor: isUpdating ? 'not-allowed' : 'pointer'
+        }}
+      >
+        <option value="pending">Pending</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    );
+  };
+
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -183,16 +271,6 @@ function CheckRegistrationPage() {
     );
   }
 
-  // if (error) {
-  //   return (
-  //     <div className="error-container">
-  //       <div className="error-message">⚠️ {error}</div>
-  //       <button onClick={fetchRegistrations} className="retry-button">
-  //         Try Again
-  //       </button>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="check-registration-container">
@@ -320,12 +398,13 @@ function CheckRegistrationPage() {
               <div key={registration.id} className="registration-card">
                 <div className="registration-header">
                   <h4>{getEventType(registration.event_name)}</h4>
-                  <span 
+                  <StatusDropdown registration={registration} />
+                  {/* <span 
                     className="status-badge"
                     style={{ backgroundColor: getStatusColor(registration.status) }}
                   >
                     {registration.status}
-                  </span>
+                  </span> */}
                 </div>
                 
                 <div className="registration-details">
@@ -344,7 +423,7 @@ function CheckRegistrationPage() {
                   </div>
                   
                   <div className="date-info">
-                    <strong>Registered:</strong> {new Date(registration.registration_date).toLocaleDateString()}
+                    <strong>Registered:</strong> {formatRegistrationDate(registration.registration_date)}
                   </div>
                 </div>
               </div>

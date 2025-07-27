@@ -79,6 +79,7 @@ def get_registrations(tournament_id):
                 'event_name': registration.get('event_name'),
                 'group_name': registration.get('group_name'),
                 'status': registration.get('status'),
+                'registration_date': registration.get('registration_date')
             }
             registrations_data.append(registration_data)
 
@@ -92,7 +93,7 @@ def get_registrations(tournament_id):
         return jsonify({"status": "error", "message": "Failed to get registrations"}), 500
 
 
-@registration_bp.route('/<int:tournament_id>/upload', methods=['POST'])
+@registration_bp.route('/tournament/<int:tournament_id>/upload', methods=['POST'])
 @jwt_required()
 def upload_registration_file(tournament_id):
     print(f"Uploading registration file for tournament {tournament_id}")
@@ -108,3 +109,32 @@ def upload_registration_file(tournament_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to upload registration file"}), 500
+
+
+@registration_bp.route('/<int:registration_id>/status', methods=['PUT'])
+@jwt_required()
+def update_registration_status(registration_id):
+    """Update registration.status (pending, confirmed, cancelled)"""
+    try:
+        auth = check_authorization()
+        if auth:
+            return auth
+        
+        data = request.get_json()
+
+        if not data:
+            return jsonify({"status": "error", "message": "No data provided"}), 400
+        new_status = data.get('status')
+
+        if not new_status in ['pending', 'confirmed', 'cancelled']:
+            return jsonify({"status": "error", "message": "Invalid status"}), 400
+        
+        registration = RegistrationService.update_registration_status(registration_id, new_status)
+        if not registration:
+            return jsonify({"status": "error", "message": "Registration not found"}), 404
+        return jsonify({"status": "success", "message": "Registration status updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to update registration status"}), 500
+

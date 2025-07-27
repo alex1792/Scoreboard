@@ -367,7 +367,7 @@ export async function fetchInfoFromBackend(url) {
 export async function uploadRegistrationFile(formData, tournamentId) {
   try {
     const token = localStorage.getItem('access_token');
-    const response = await fetch(`http://localhost:5001/api/registrations/${tournamentId}/upload`, {
+    const response = await fetch(`http://localhost:5001/api/registrations/tournament/${tournamentId}/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -447,6 +447,37 @@ export async function  getTournamentSchedule(tournamentId) {
         }
     } catch (err) {
         console.error('Error fetching tournament schedule:', err);
+        throw err;
+    }
+}
+
+
+// ================================================================================
+// ================================================================================
+// ========================= Update Registration Status ===========================
+// ================================================================================
+// ================================================================================
+
+export const  updateRegistrationStatus = async (registrationId, newStatus) => {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`http://localhost:5001/api/registrations/${registrationId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        if(response.ok) {
+            return await response.json();
+        } else {
+            console.error('Failed to update registration status:', response.message);
+            throw new Error(response.message);
+        }
+    } catch (err) {
+        console.error('Error updating registration status:', err);
         throw err;
     }
 }

@@ -60,12 +60,12 @@ const Home = () => {
                     <span>User Management</span>
                   </Link>
                 </div>
-                <div className="admin-icon-item">
+                {/* <div className="admin-icon-item">
                   <Link to="/admin/upload-schedule">
                     <img src="/upload-arrow-icon.png" alt="Upload Schedule" className="admin-icon" />
                     <span>Upload Schedule</span>
                   </Link>
-                </div>
+                </div> */}
               </>
             )}
           </div>

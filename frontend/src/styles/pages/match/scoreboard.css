@@ -1,179 +1,268 @@
-/* 主容器美化 */
-.scoreboard-container {
-  background: #fff;
-  border-radius: 18px;
-  padding: 2.5rem 2rem;
-  margin: 2.5rem auto;
-  max-width: 600px;
-  box-shadow: 0 8px 32px rgba(44,62,80,0.13);
-  border: 1px solid #e0e6ed;
-}
-
-/* 比賽資訊區塊 */
-.match-info {
-  text-align: center;
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  color: #222;
-  background: #f6fafd;
-  border-radius: 12px;
-  padding: 1.2rem 0.5rem;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.06);
-}
-.match-info p {
-  margin: 0.5rem 0;
-  font-weight: 500;
-  letter-spacing: 1px;
-}
-
-/* 分數區塊：雙欄排版，名稱與分數明顯分隔 */
-.scores {
+/* 簡約三色配色方案 */
+.scoreboard-page {
   display: flex;
   justify-content: center;
-  align-items: stretch;
-  gap: 3rem;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: #f9f9f9;
+}
+
+.scoreboard-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  border-left: 4px solid #666;
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.match-id {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: #f5f5f5;
+  color: #333;
+}
+
+.players-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.player-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  text-align: center;
+}
+
+.vs-divider {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #666;
+  margin: 0 1rem;
+  padding: 0.5rem 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.score-display {
   margin: 2rem 0;
 }
+
 .score-container {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 2rem;
 }
-.score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 110px;
-  padding: 1.2rem 0.7rem;
-  border-radius: 16px;
-  background: #e3f2fd;
-  box-shadow: 0 2px 12px rgba(58,123,213,0.07);
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #1976d2;
-  position: relative;
-}
-.score::before {
-  content: attr(data-player);
-  display: block;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #3a7bd5;
-  margin-bottom: 0.5rem;
-  letter-spacing: 1px;
-}
-.separator {
-  font-size: 2.5rem;
-  color: #bbb;
-  font-weight: bold;
-}
 
-/* 按鈕區塊美化 */
-.button-container {
-  margin-top: 2.5rem;
+.score-box {
+  background: #ECECEC;
+  border-radius: 12px;
+  padding: 2rem 3rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 2.5rem;
-}
-.button-group {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.7rem;
-}
-.button-group form {
-  display: inline-block;
 }
 
+.score-number {
+  font-size: 4rem;
+  font-weight: 800;
+  color: #5c5c5c;
+}
+
+.score-separator {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 1rem;
+}
+
+.control-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+.score-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.player-controls {
+  text-align: center;
+}
+
+.player-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* 統一按鈕樣式 */
 .btn {
-  padding: 0.7rem 1.8rem;
+  padding: 0.8rem 1.5rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 0.2rem 0;
-  transition: background 0.2s, transform 0.13s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.06);
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+  min-width: 60px;
+  background: #666; /* 輔助色 - 用於減分按鈕 */
+  color: white;
 }
+
+.btn:hover {
+  background: #555;
+  transform: translateY(-2px);
+}
+
+/* 加分按鈕使用藍色 */
 .btn-add {
-  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-  color: #fff;
+  background: #90CCF4; /* 改為藍色，與狀態按鈕一致 */
+  color: white;
 }
+
 .btn-add:hover {
-  background: linear-gradient(90deg, #34d36b 0%, #27e5c3 100%);
-  transform: scale(1.08);
+  background: #90CCF4; /* 深藍色 hover */
+  transform: translateY(-2px);
 }
+
+/* 減分按鈕保持灰色 */
 .btn-minus {
-  background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
-  color: #fff;
+  background: #F78888; /* 保持輔助色 */
+  color: white;
 }
+
 .btn-minus:hover {
-  background: linear-gradient(90deg, #e05a84 0%, #eedd44 100%);
-  transform: scale(1.08);
+  background: #F78888;
+  transform: translateY(-2px);
 }
+
+/* 狀態按鈕使用藍色 */
 .btn-status {
-  background: #2196F3;
-  color: #fff;
-  padding: 0.9rem 2.5rem;
-  border-radius: 12px;
-  margin-top: 0.8rem;
+  background: #F3D250;
+  color: white;
+  padding: 1rem 2rem;
   font-size: 1.1rem;
+  width: 100%;
+  max-width: 200px;
 }
+
 .btn-status:hover {
-  background: #1976D2;
-  transform: scale(1.04);
+  background: #F3D250;
+  transform: translateY(-2px);
 }
 
-.match-status-container {
-  display: flex;
-  justify-content: center; /* 水平置中 */
-  align-items: center;     /* 垂直置中（可選） */
-  margin-top: 2rem;        /* 與上方區塊留白 */
+.match-controls {
+  text-align: center;
 }
 
-
-/* Match Status 顏色提示 */
-#match-status {
-  font-weight: bold;
-  padding: 0.2em 0.8em;
-  border-radius: 6px;
-}
-#match-status:contains('ongoing') {
-  background: #e0f7fa;
-  color: #00796b;
-}
-#match-status:contains('finished') {
-  background: #ffe0e0;
-  color: #c62828;
+.permission-message {
+  text-align: center;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 1rem;
+  color: #666;
 }
 
-/* 響應式設計 */
+/* 使用更強的選擇器 */
+.btn.btn-add {
+  background: #90CCF4 !important; /* 強制使用藍色 */
+  color: white !important;
+}
+
+.btn.btn-add:hover {
+  background: #90CCF4 !important;
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
-  .scoreboard-container {
-    padding: 1rem;
-    margin: 1rem 0;
-    max-width: 98vw;
-    border-radius: 8px;
+  .scoreboard-card {
+    padding: 1.5rem;
+    margin: 1rem;
   }
-  .scores {
+  
+  .score-number {
+    font-size: 3rem;
+  }
+  
+  .score-box {
+    padding: 1.5rem 2rem;
+  }
+  
+  .score-controls {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .players-row {
     flex-direction: column;
-    gap: 1.2rem;
-    margin: 1rem 0;
-  }
-  .score-container {
-    flex-direction: column;
-    gap: 1.2rem;
-  }
-  .score {
-    min-width: 70px;
-    font-size: 2rem;
-    padding: 0.7rem 0.2rem;
-    border-radius: 8px;
-  }
-  .button-container {
     gap: 1rem;
-    flex-direction: column;
+  }
+  
+  .vs-divider {
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .scoreboard-page {
+    padding: 1rem;
+  }
+  
+  .scoreboard-card {
+    padding: 1rem;
+  }
+  
+  .score-number {
+    font-size: 2.5rem;
+  }
+  
+  .score-box {
+    padding: 1rem 1.5rem;
+  }
+  
+  .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 }
