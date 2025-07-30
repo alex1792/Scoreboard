@@ -213,6 +213,44 @@ def delete_match(match_id):
         return jsonify({"status": "error", "message": "Failed to delete match"}), 500
 # ----------------------------------------------------------------------  
 
+"""
+This function is used to set the match to next game. For example, game 1 finished, move on to game 2.
+"""
+@match_bp.route('/<int:match_id>/next_game', methods=['POST'])
+@jwt_required()
+def next_game(match_id):
+    try:
+        authorization = check_authorization()
+        if authorization:
+            return authorization
+        
+        match_data = MatchService.next_game(match_id)
+        socketio.emit('match_update', match_data, namespace='/scoreboard')
+        return jsonify({"status": "success", "message": "Next game set successfully"})
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to set next game"}), 500
+
+"""
+This function is used to end the match. It will summarize the score of the match, and determine the winner.
+"""
+@match_bp.route('/<int:match_id>/end_match', methods=['POST'])
+@jwt_required()
+def end_match(match_id):
+    try:
+        authorization = check_authorization()
+        if authorization:
+            return authorization
+
+        match_data = MatchService.end_match(match_id)
+        socketio.emit('match_update', match_data, namespace='/scoreboard')
+        return jsonify({"status": "success", "message": "Match ended successfully"})
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 404
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "Failed to end match"}), 500
+
 # socket io
 """
 This function is used to handle the WebSocket connection for the scoreboard updates.

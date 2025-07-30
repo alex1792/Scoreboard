@@ -647,7 +647,6 @@ class TournamentService:
         """創建 Match 記錄"""
         try:
             print(f"=== Creating match record ===")
-            # print(f"Match data: {match_data}")
             
             p1_data = match_data['player1_data']
             p2_data = match_data['player2_data']
@@ -704,9 +703,9 @@ class TournamentService:
                         'team2_player1_id': p2_data['user_id'],
                         'team2_player2_id': None,
                         'team1_player1_name': p1_data['user_name'],
-                        'team1_player2_name': None,  # 不設置，避免 "Winner of Match / N/A"
+                        'team1_player2_name': None,
                         'team2_player1_name': p2_data['user_name'],
-                        'team2_player2_name': None   # 不設置，避免 "Winner of Match / N/A"
+                        'team2_player2_name': None
                     })
                 else:
                     # 第一輪比賽：正常設置雙打選手
@@ -720,7 +719,41 @@ class TournamentService:
                         'team2_player1_name': p2_data['user_name'],
                         'team2_player2_name': p2_data.get('partner_name')
                     })
-            
+        
+            # BYE match 處理 - 自動設置勝者
+            if is_bye_match:
+                # 確定哪個是 BYE，哪個是實際選手
+                if p1_data['user_name'] == 'BYE':
+                    actual_player = p2_data
+                    bye_player = p1_data
+                else:
+                    actual_player = p1_data
+                    bye_player = p2_data
+                
+                # 設置勝者信息
+                if is_doubles:
+                    match_dict.update({
+                        'winner1_id': actual_player['user_id'],
+                        'winner2_id': actual_player.get('partner_id'),
+                        'loser1_id': bye_player['user_id'],
+                        'loser2_id': None,
+                        'winner_name': f"{actual_player['user_name']} / {actual_player.get('partner_name', '')}",
+                        'loser_name': 'BYE',
+                        'status': 'Finished',  # BYE match 自動完成
+                    })
+                else:
+                    match_dict.update({
+                        'winner1_id': actual_player['user_id'],
+                        'winner2_id': None,
+                        'loser1_id': bye_player['user_id'],
+                        'loser2_id': None,
+                        'winner_name': actual_player['user_name'],
+                        'loser_name': 'BYE',
+                        'status': 'Finished',  # BYE match 自動完成
+                    })
+                
+                # print(f"BYE match - Winner: {actual_player['user_name']}")
+        
             match = Match(**match_dict)
             db.session.add(match)
             db.session.commit()

@@ -27,6 +27,19 @@ def get_match_data(match):
         else:
             user2 = User.query.get(match.player2_id) if match.player2_id else None
             player2 = user2.get_full_name() if user2 else "N/A"
+            
+        # 處理單打淘汰賽晉級比賽
+        if match.prev_match1_id is not None:
+            if 'Winner of Match' in player1:
+                player1 = player1  # 直接使用 "Winner of Match #X"
+            else:
+                player1 = f"Winner of Match #{match.prev_match1_id}"
+            
+            if 'Winner of Match' in player2:
+                player2 = player2  # 直接使用 "Winner of Match #Y"
+            else:
+                player2 = f"Winner of Match #{match.prev_match2_id}"
+                
     else: 
         # 雙打處理
         if match.team1_player1_name:
@@ -96,10 +109,22 @@ def get_match_data(match):
         "score2": match.player2_score,
         "status": match.status,
         "umpire": umpire.get_full_name() if umpire else "N/A",
-        "umpire_id": match.umpire_id
+        "umpire_id": match.umpire_id,
+        "current_game": match.current_game,
+        "player1_game_won": match.player1_game_won,
+        "player2_game_won": match.player2_game_won, 
+        "game1_score1": match.game1_score1,
+        "game1_score2": match.game1_score2,
+        "game2_score1": match.game2_score1,
+        "game2_score2": match.game2_score2,
+        "game3_score1": match.game3_score1,
+        "game3_score2": match.game3_score2,
+        "current_game": match.current_game,
+        "player1_game_won": match.player1_game_won,
+        "player2_game_won": match.player2_game_won
     }
 
-    # 檢查是否有淘汰賽相關字段
+    # check if the match is elimination match
     if hasattr(match, 'round') and match.round is not None and hasattr(match, 'match_number') and match.match_number is not None:
         match_data.update({
             "round": match.round,
@@ -110,6 +135,33 @@ def get_match_data(match):
             "player1_from_match": match.player1_from_match,
             "player2_from_match": match.player2_from_match
         })
+    
+    # 添加勝者信息
+    if match.status == 'Finished':
+        # 優先使用 winner_name 和 loser_name（用於文件上傳註冊）
+        if match.winner_name and match.loser_name:
+            winner_name = match.winner_name
+            loser_name = match.loser_name
+        else:
+            # 從 User 關係獲取（用於 User-based registrations）
+            if match.event_type in ['MS', 'WS']:  # 單打
+                winner_name = match.winner1.get_full_name() if match.winner1 else 'Unknown'
+                loser_name = match.loser1.get_full_name() if match.loser1 else 'Unknown'
+            else:  # 雙打
+                winner1_name = match.winner1.get_full_name() if match.winner1 else 'Unknown'
+                winner2_name = match.winner2.get_full_name() if match.winner2 else 'Unknown'
+                loser1_name = match.loser1.get_full_name() if match.loser1 else 'Unknown'
+                loser2_name = match.loser2.get_full_name() if match.loser2 else 'Unknown'
+                
+                winner_name = f"{winner1_name} / {winner2_name}"
+                loser_name = f"{loser1_name} / {loser2_name}"
+        
+        match_data['winner'] = winner_name
+        match_data['loser'] = loser_name
+        match_data['winner1_id'] = match.winner1_id
+        match_data['winner2_id'] = match.winner2_id
+        match_data['loser1_id'] = match.loser1_id
+        match_data['loser2_id'] = match.loser2_id
     
     return match_data
 

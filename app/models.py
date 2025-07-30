@@ -109,12 +109,35 @@ class Match(db.Model):
     team2_player1_name = db.Column(db.String(100), nullable=True)
     team2_player2_name = db.Column(db.String(100), nullable=True)
 
-    # score
+    # support recording score of 3 games
+    game1_score1 = db.Column(db.Integer, default=0)
+    game1_score2 = db.Column(db.Integer, default=0)
+    game2_score1 = db.Column(db.Integer, default=0)
+    game2_score2 = db.Column(db.Integer, default=0)
+    game3_score1 = db.Column(db.Integer, default=0)
+    game3_score2 = db.Column(db.Integer, default=0)
+
+    current_game = db.Column(db.Integer, default=1)
+    player1_game_won = db.Column(db.Integer, default=0)
+    player2_game_won = db.Column(db.Integer, default=0)
+    
+    # current score
     player1_score = db.Column(db.Integer, default=0)
     player2_score = db.Column(db.Integer, default=0)
 
-    # winner
-    winner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    # winner and loser
+    winner1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    winner2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    loser1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    loser2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    winner_name = db.Column(db.String(100), nullable=True)
+    loser_name = db.Column(db.String(100), nullable=True)
+
+    winner1 = db.relationship('User', foreign_keys=[winner1_id])
+    winner2 = db.relationship('User', foreign_keys=[winner2_id])
+    loser1 = db.relationship('User', foreign_keys=[loser1_id])
+    loser2 = db.relationship('User', foreign_keys=[loser2_id])
 
     status = db.Column(db.String(20), default='pending')
     umpire_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)

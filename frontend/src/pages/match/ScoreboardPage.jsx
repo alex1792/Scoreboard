@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import io from 'socket.io-client';
@@ -15,6 +15,10 @@ const Scoreboard = () => {
   const [umpireId, setUmpireId] = useState(null);
   const socketRef = useRef(null);
 
+  // 新增三局制相關的 state
+  const [currentGame, setCurrentGame] = useState(1);
+  const [gamesWon, setGamesWon] = useState({ player1: 0, player2: 0 });
+
   // 1. Fetch match data from backend API
   useEffect(() => {
     fetch(`http://localhost:5001/api/matches/${matchId}`)
@@ -27,6 +31,13 @@ const Scoreboard = () => {
           setScore2(result.data.score2);
           setMatchStatus(result.data.status);
           setUmpireId(result.data.umpire_id);
+          
+          // 新增：處理三局制數據
+          setCurrentGame(result.data.current_game || 1);
+          setGamesWon({
+            player1: result.data.player1_game_won || 0,
+            player2: result.data.player2_game_won || 0
+          });
           
           console.log('Match data:', result.data);
         }
@@ -58,6 +69,7 @@ const Scoreboard = () => {
 
       // 添加 match_update 事件監聽器
       socketRef.current.on('match_update', (data) => {
+        console.log('Received match update:', data); // 添加這行來調試
         console.log('收到分數更新:', data);
         
         // 檢查是否是當前比賽的更新
@@ -127,6 +139,73 @@ const Scoreboard = () => {
     }
   };
 
+  // 新增：下一局按鈕處理
+  const handleNextGame = async () => {
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      alert('not logged in or token is lost, please login again');
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5001/api/matches/${Number(matchId)}/next_game`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(`Next game failed: ${data.message || res.status}`);
+      } else {
+        console.log('Next game request sent successfully');
+        // 重置當前分數
+        setScore1(0);
+        setScore2(0);
+        setCurrentGame(currentGame + 1);
+      }
+    } catch (err) {
+      console.error('Next game error：', err);
+      alert('connection error, please try again later');
+    }
+  };
+
+  // 新增：結束比賽按鈕處理
+  const handleEndMatch = async () => {
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      alert('not logged in or token is lost, please login again');
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5001/api/matches/${Number(matchId)}/end_match`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(`End match failed: ${data.message || res.status}`);
+      } else {
+        console.log('End match request sent successfully');
+        setMatchStatus('Finished');
+      }
+    } catch (err) {
+      console.error('End match error：', err);
+      alert('connection error, please try again later');
+    }
+  };
+
   const getNextStatus = (current) => {
     if(current === "Scheduled") return "Ongoing";
     if(current === "Ongoing") return "Finished";
@@ -187,6 +266,10 @@ const Scoreboard = () => {
 
   const statusColor = statusColorMap[matchStatus] || '#ccc';
 
+  // 新增：按鈕顯示邏輯
+  const shouldShowNextGame = currentGame < 3 && matchStatus === 'Ongoing';
+  const shouldShowEndMatch = matchStatus === 'Ongoing';
+
   return (
     <div className="scoreboard-page">
       <div className="scoreboard-card">
@@ -201,6 +284,16 @@ const Scoreboard = () => {
               {matchStatus.toUpperCase()}
             </span>
           </div>
+        </div>
+
+        {/* 新增：遊戲歷史顯示 */}
+        <div className="game-history">
+          {/* 這裡可以顯示 game1_score1, game2_score1 等 */}
+        </div>
+
+        {/* 新增：局數勝負顯示 */}
+        <div className="games-won">
+          <span>Games: {gamesWon.player1} - {gamesWon.player2}</span>
         </div>
 
         {/* 選手姓名 - 水平排列 */}
@@ -252,8 +345,18 @@ const Scoreboard = () => {
               </div>
             </div>
 
-            {/* 比賽狀態控制 */}
+            {/* 新增：三局制控制按鈕 */}
             <div className="match-controls">
+              {shouldShowNextGame && (
+                <button className="btn btn-next-game" onClick={handleNextGame}>
+                  Next Game
+                </button>
+              )}
+              {shouldShowEndMatch && (
+                <button className="btn btn-end-match" onClick={handleEndMatch}>
+                  End This Match
+                </button>
+              )}
               <button className="btn btn-status" onClick={handleStatusToggle}>
                 {matchStatus === 'Scheduled' && '▶ Start Match'}
                 {matchStatus === 'Ongoing' && '⏹ End Match'}

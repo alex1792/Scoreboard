@@ -552,4 +552,11 @@ Match.umpire_id → User.id (umpire id)
 - Fix umpire scoreboard page
 - Fix registered time in the check registration page
 - Add modify registration.status functions
+- Modified ScoreboardPage layout
+---
+
+### 2025/07/28
+- Implemented winner to the match-card
+- Modified match card layout
+- Update create match logic, consider bye matches, assign winner when creating.
 ---
