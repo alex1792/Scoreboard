@@ -9,7 +9,8 @@
 }
 
 .scoreboard-card {
-  background: #fff;
+  /* background: #fff; */
+  background: linear-gradient(to bottom, #fff, #e3e3e3);
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 2rem;
@@ -66,7 +67,7 @@
   color: #666;
   margin: 0 1rem;
   padding: 0.5rem 1rem;
-  background: #f5f5f5;
+  /* background: #f5f5f5; */
   border-radius: 8px;
 }
 
@@ -135,60 +136,108 @@
   gap: 1rem;
 }
 
-/* 統一按鈕樣式 */
+/* 統一的按鈕基礎樣式 */
 .btn {
-  padding: 0.8rem 1.5rem;
-  border: none;
   border-radius: 8px;
+  border: none;
+  padding: 8px 16px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: transform 0.2s ease;
-  min-width: 60px;
-  background: #666; /* 輔助色 - 用於減分按鈕 */
-  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
-  background: #555;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 加分按鈕使用藍色 */
-.btn-add {
-  background: #90CCF4; /* 改為藍色，與狀態按鈕一致 */
-  color: white;
+.btn:active {
+  transform: translateY(0);
 }
 
-.btn-add:hover {
-  background: #90CCF4; /* 深藍色 hover */
-  transform: translateY(-2px);
-}
-
-/* 減分按鈕保持灰色 */
+/* 統一的分數控制按鈕 */
 .btn-minus {
-  background: #F78888; /* 保持輔助色 */
-  color: white;
+  background: #f8f9fa !important;
+  color: #6c757d !important;
+  border: 2px solid #dee2e6 !important;
+  border-radius: 50% !important;
+  width: 60px !important;
+  height: 60px !important;
+  padding: 0 !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  min-width: unset !important;
+  max-width: unset !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;  /* 統一陰影 */
 }
 
 .btn-minus:hover {
-  background: #F78888;
-  transform: translateY(-2px);
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;  /* 統一 hover 陰影 */
 }
 
-/* 狀態按鈕使用藍色 */
-.btn-status {
-  background: #F3D250;
-  color: white;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  width: 100%;
-  max-width: 200px;
+.btn-add {
+  background: #f8f9fa !important;
+  color: #6c757d !important;
+  border: 2px solid #dee2e6 !important;
+  border-radius: 50% !important;
+  width: 60px !important;
+  height: 60px !important;
+  padding: 0 !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  min-width: unset !important;
+  max-width: unset !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;  /* 與 btn-minus 相同的陰影 */
 }
 
-.btn-status:hover {
-  background: #F3D250;
-  transform: translateY(-2px);
+.btn-add:hover {
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;  /* 與 btn-minus 相同的 hover 陰影 */
+}
+
+/* 移除重複的 control-btn 定義，只保留一個 */
+.control-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  box-shadow: 5px 5px 10px #d1d1d1, -5px -5px 10px #ffffff;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .match-controls {
@@ -204,17 +253,23 @@
   color: #666;
 }
 
-/* 使用更強的選擇器 */
-.btn.btn-add {
-  background: #90CCF4 !important; /* 強制使用藍色 */
-  color: white !important;
+
+
+/* 音樂播放器風格的控制按鈕 */
+.music-player-controls {
+  margin-top: 20px;
+  text-align: center;
 }
 
-.btn.btn-add:hover {
-  background: #90CCF4 !important;
-  transform: translateY(-2px);
+.control-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
+/* 響應式設計 */
 @media (max-width: 768px) {
   .scoreboard-card {
     padding: 1.5rem;
@@ -241,6 +296,16 @@
   
   .vs-divider {
     margin: 0;
+  }
+
+  .control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+  
+  .control-buttons {
+    gap: 10px;
   }
 }
 
@@ -290,23 +355,4 @@
   margin: 0.5rem 0;
   font-weight: 600;
   color: #333;
-}
-
-/* 新增按鈕樣式 */
-.btn-next-game {
-  background: #2196F3;
-  color: white;
-}
-
-.btn-next-game:hover {
-  background: #1976D2;
-}
-
-.btn-end-match {
-  background: #f44336;
-  color: white;
-}
-
-.btn-end-match:hover {
-  background: #d32f2f;
 }

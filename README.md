@@ -560,3 +560,17 @@ Match.umpire_id → User.id (umpire id)
 - Modified match card layout
 - Update create match logic, consider bye matches, assign winner when creating.
 ---
+
+### 2025/07/29
+- Support 3 games in each match
+- Update determine winner function logic
+- Modified database table model
+- Display more info on the match-card
+---
+
+### 2025/07/31
+- Update scoreboard page template
+- Update next match when elimination match is finished
+- Emit to frontend
+- Fix creating match record bugs (not assigning prev_match_id to elimination match)
+---

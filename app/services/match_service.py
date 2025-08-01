@@ -1,4 +1,4 @@
-from ..models import Match, User, Event, db
+from ..models import Match, User, Event, db, ScheduleItem
 from ..utils import get_match_data
 
 class MatchService:
@@ -100,6 +100,12 @@ class MatchService:
         if not match:
             raise ValueError("Match not found")
         
+        # 先刪除相關的 ScheduleItem
+        schedule_items = ScheduleItem.query.filter_by(match_id=match_id).all()
+        for item in schedule_items:
+            db.session.delete(item)
+        
+        # 然後刪除 Match
         db.session.delete(match)
         db.session.commit()
 
@@ -159,25 +165,6 @@ class MatchService:
         match = Match.query.get(match_id)
         if not match:
             raise ValueError("Match not found")
-
-        # 添加詳細的調試信息
-        # print(f"=== Match {match_id} Debug Info ===")
-        # print(f"Event type: {match.event_type}")
-        # print(f"Scores: {match.player1_score} vs {match.player2_score}")
-        # print(f"Player1 ID: {match.player1_id}, Player1 Name: {match.player1_name}")
-        # print(f"Player2 ID: {match.player2_id}, Player2 Name: {match.player2_name}")
-        # print(f"Team1 Player1 ID: {match.team1_player1_id}, Name: {match.team1_player1_name}")
-        # print(f"Team1 Player2 ID: {match.team1_player2_id}, Name: {match.team1_player2_name}")
-        # print(f"Team2 Player1 ID: {match.team2_player1_id}, Name: {match.team2_player1_name}")
-        # print(f"Team2 Player2 ID: {match.team2_player2_id}, Name: {match.team2_player2_name}")
-
-        # invalid score
-        # if match.player1_score < 0 or match.player2_score < 0:
-        #     raise ValueError('Invalid score. Score cannot be negative.')
-        
-        # draw
-        # if match.player1_score == match.player2_score:
-        #     raise ValueError("Match is a draw")
 
         # check match.player1_game_won and match.player2_game_won
         if match.player1_game_won == match.player2_game_won:
@@ -246,6 +233,13 @@ class MatchService:
         # print(f"Before commit - loser1_id: {match.loser1_id}, loser2_id: {match.loser2_id}")
         
         db.session.commit()
+
+        print(f"Match next_match_id: {match.next_match_id}")
+
+        if match.next_match_id:
+            print(f"Updating next round match: {match.next_match_id}")
+            MatchService.update_next_round_match(match_id)
+
         
         # print(f"After commit - winner1_id: {match.winner1_id}, winner2_id: {match.winner2_id}")
         # print(f"After commit - loser1_id: {match.loser1_id}, loser2_id: {match.loser2_id}")
@@ -287,7 +281,7 @@ class MatchService:
         # go to next game, reset the score and current game must be incremented
         match.player1_score = 0
         match.player2_score = 0
-        match.current_game += 1
+        # match.current_game += 1
         
         db.session.commit()
 
@@ -319,6 +313,8 @@ class MatchService:
             match.player1_game_won += 1
         elif match.player1_score < match.player2_score:
             match.player2_game_won += 1
+        elif match.player1_score == 0 and match.player2_score == 0:
+            pass
         else:
             return ValueError("Game is a draw")
         
@@ -331,3 +327,65 @@ class MatchService:
         db.session.commit()
 
         return get_match_data(match)
+
+    @staticmethod
+    def update_next_round_match(match_id):
+        """For elimination matches, once the winner is determined, update the next round"""
+        match = Match.query.get(match_id)
+        if not match:
+            return ValueError("Match not found")
+
+        if not match.next_match_id:
+            return  # no next match, return
+
+        next_match = Match.query.get(match.next_match_id)
+        if not next_match:
+            return ValueError("Next match not found")
+
+        # determine the winner name
+        winner_name = ""
+        if match.winner1_id is not None or match.winner2_id is not None:
+            # winner id exists
+            if match.event_type in ['MS', 'WS']:
+                # single match: only one winner
+                winner_id = match.winner1_id if match.winner1_id is not None else match.winner2_id
+                winner = User.query.get(winner_id)
+                if winner:
+                    winner_name = winner.get_full_name()
+            else:
+                # double match: two winners
+                winner1 = User.query.get(match.winner1_id)
+                winner2 = User.query.get(match.winner2_id)
+                if winner1 and winner2:
+                    winner_name = f"{winner1.get_full_name()} / {winner2.get_full_name()}"
+        else:
+            # winner id does not exist, use winner_name
+            winner_name = match.winner_name
+
+        print(f"winner name: {winner_name}")
+        # update the next match
+        if next_match.prev_match1_id == match_id:
+            if match.event_type in ['MS', 'WS']:
+                next_match.player1_name = winner_name
+            else:
+                names = winner_name.split(' / ')
+                next_match.team1_player1_name = names[0].strip()
+                next_match.team1_player2_name = names[1].strip() if len(names) > 1 else ""
+        elif next_match.prev_match2_id == match_id:
+            if match.event_type in ['MS', 'WS']:
+                next_match.player2_name = winner_name
+            else:
+                names = winner_name.split(' / ')
+                next_match.team2_player1_name = names[0].strip()
+                next_match.team2_player2_name = names[1].strip() if len(names) > 1 else ""
+        db.session.commit()
+        
+        print(f"next match player1_name: {next_match.player1_name}")
+        print(f"next match player2_name: {next_match.player2_name}")
+        print(f"next match team1_player1_name: {next_match.team1_player1_name}")
+        print(f"next match team1_player2_name: {next_match.team1_player2_name}")
+        print(f"next match team2_player1_name: {next_match.team2_player1_name}")
+        print(f"next match team2_player2_name: {next_match.team2_player2_name}")
+
+        
+        return get_match_data(next_match)  

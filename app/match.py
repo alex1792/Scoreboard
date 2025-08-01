@@ -224,8 +224,17 @@ def next_game(match_id):
         if authorization:
             return authorization
         
+        # broadcast the updated match info
         match_data = MatchService.next_game(match_id)
         socketio.emit('match_update', match_data, namespace='/scoreboard')
+
+        if match_data and match_data.get('next_match_id'):
+            next_match_data = get_match_data(Match.query.get(match_data['next_match_id']))
+            print(f"next match data: {next_match_data}")
+            if next_match_data:
+                socketio.emit('match_update', next_match_data, namespace='/scoreboard')
+                print('emit next match data...')
+
         return jsonify({"status": "success", "message": "Next game set successfully"})
     except Exception as e:
         print(f"Error: {e}")
@@ -244,6 +253,14 @@ def end_match(match_id):
 
         match_data = MatchService.end_match(match_id)
         socketio.emit('match_update', match_data, namespace='/scoreboard')
+
+        if match_data and match_data.get('next_match_id'):
+            next_match_data = get_match_data(Match.query.get(match_data['next_match_id']))
+            print(f"next match data: {next_match_data}")
+            if next_match_data:
+                socketio.emit('match_update', next_match_data, namespace='/scoreboard')
+                print('emit next match data...')
+            
         return jsonify({"status": "success", "message": "Match ended successfully"})
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404

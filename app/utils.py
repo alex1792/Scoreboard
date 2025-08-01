@@ -28,17 +28,20 @@ def get_match_data(match):
             user2 = User.query.get(match.player2_id) if match.player2_id else None
             player2 = user2.get_full_name() if user2 else "N/A"
             
-        # 處理單打淘汰賽晉級比賽
+        # 處理單打淘汰賽晉級比賽 - 修正邏輯
         if match.prev_match1_id is not None:
-            if 'Winner of Match' in player1:
-                player1 = player1  # 直接使用 "Winner of Match #X"
-            else:
-                player1 = f"Winner of Match #{match.prev_match1_id}"
+            # 只有在 player1_name 還是 "Winner of Match" 格式時才重新生成
+            if not match.player1_name or 'Winner of Match' in player1:
+                if 'Winner of Match' in player1:
+                    player1 = player1  # 保持原樣
+                else:
+                    player1 = f"Winner of Match #{match.prev_match1_id}"
             
-            if 'Winner of Match' in player2:
-                player2 = player2  # 直接使用 "Winner of Match #Y"
-            else:
-                player2 = f"Winner of Match #{match.prev_match2_id}"
+            if not match.player2_name or 'Winner of Match' in player2:
+                if 'Winner of Match' in player2:
+                    player2 = player2  # 保持原樣
+                else:
+                    player2 = f"Winner of Match #{match.prev_match2_id}"
                 
     else: 
         # 雙打處理
@@ -66,18 +69,32 @@ def get_match_data(match):
             user4 = User.query.get(match.team2_player2_id) if match.team2_player2_id else None
             team2_player2 = user4.get_full_name() if user4 else "N/A"
         
-        # 統一處理雙打選手顯示邏輯
+        # 統一處理雙打選手顯示邏輯 - 修正邏輯
         if match.prev_match1_id is not None:
             # 淘汰賽晉級比賽
-            if 'Winner of Match' in team1_player1:
-                player1 = team1_player1  # 直接使用 "Winner of Match #X"
+            if not match.team1_player1_name or 'Winner of Match' in team1_player1:
+                if 'Winner of Match' in team1_player1:
+                    player1 = team1_player1  # 保持原樣
+                else:
+                    player1 = f"Winner of Match #{match.prev_match1_id}"
             else:
-                player1 = f"Winner of Match #{match.prev_match1_id}"
+                # 使用已更新的名稱
+                if team1_player1 and team1_player2 and team1_player1 != "N/A" and team1_player2 != "N/A":
+                    player1 = f"{team1_player1} / {team1_player2}"
+                else:
+                    player1 = team1_player1 or team1_player2 or "TBD"
             
-            if 'Winner of Match' in team2_player1:
-                player2 = team2_player1  # 直接使用 "Winner of Match #Y"
+            if not match.team2_player1_name or 'Winner of Match' in team2_player1:
+                if 'Winner of Match' in team2_player1:
+                    player2 = team2_player1  # 保持原樣
+                else:
+                    player2 = f"Winner of Match #{match.prev_match2_id}"
             else:
-                player2 = f"Winner of Match #{match.prev_match2_id}"
+                # 使用已更新的名稱
+                if team2_player1 and team2_player2 and team2_player1 != "N/A" and team2_player2 != "N/A":
+                    player2 = f"{team2_player1} / {team2_player2}"
+                else:
+                    player2 = team2_player1 or team2_player2 or "TBD"
         else:
             # 第一輪比賽（Round Robin 或 Elimination 第一輪）
             if team1_player1 and team1_player2 and team1_player1 != "N/A" and team1_player2 != "N/A":

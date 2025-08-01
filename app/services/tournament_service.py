@@ -200,10 +200,30 @@ class TournamentService:
                 print(f"Generated {len(matches)} matches for this group")
                 
                 # 創建 Match 記錄
+                created_matches = {}  # 用於存儲已創建的比賽，key 為 (round, match_number)
+                
                 for match_data in matches:
+                    # 如果是後續輪次的比賽，需要設置 prev_match_id
+                    if match_data.get('round', 1) > 1:
+                        # 根據 round 和 match_number 計算 prev_match 的 round 和 match_number
+                        prev_round = match_data['round'] - 1
+                        prev_match1_number = (match_data['match_number'] - 1) * 2 + 1
+                        prev_match2_number = prev_match1_number + 1
+                        
+                        # 從已創建的比賽中獲取 prev_match_id
+                        prev_match1_key = (prev_round, prev_match1_number)
+                        prev_match2_key = (prev_round, prev_match2_number)
+                        
+                        if prev_match1_key in created_matches:
+                            match_data['prev_match1_id'] = created_matches[prev_match1_key].id
+                        if prev_match2_key in created_matches:
+                            match_data['prev_match2_id'] = created_matches[prev_match2_key].id
+                    
                     match = TournamentService._create_match_record(match_data, tournament_id)
                     if match:
                         all_matches.append(match)
+                        # 存儲已創建的比賽
+                        created_matches[(match_data['round'], match_data['match_number'])] = match
                         print(f"Created match {match.id}")
                     else:
                         print(f"Failed to create match for data: {match_data}")
@@ -416,7 +436,7 @@ class TournamentService:
             print(f"Generated {len(matches)} round-robin matches")
             return matches
         elif format.type == 'elimination':
-            matches = TournamentService._generate_elimination_matches(players_data, event, group)
+            matches = TournamentService._generate_elimination_matches(players_data, event, group, event.tournament_id)
             print(f"Generated {len(matches)} elimination matches")
             return matches
         else:
@@ -467,17 +487,17 @@ class TournamentService:
         return matches
 
     @staticmethod
-    def _generate_elimination_matches(players_data, event, group):
+    def _generate_elimination_matches(players_data, event, group, tournament_id):
         """Generate elimination matches"""
         print(f"=== Generating elimination matches ===")
         print(f"Players: {[p['user_name'] for p in players_data]}")
         print(f"Total players: {len(players_data)}")
         
-        matches = []
+        all_matches = []  # 用於收集所有比賽
         
         if len(players_data) < 2:
             print("Not enough players for elimination")
-            return matches
+            return all_matches
         
         # calculate the total number of slots
         total_slots = TournamentService._next_power_of_two(len(players_data))
@@ -553,67 +573,72 @@ class TournamentService:
                 idx += 2
             
             current_round.append(match_data)
-            matches.append(match_data)
             match_number += 1
         
-        print(f"First round matches: {len(matches)}")
+        print(f"First round matches: {len(current_round)}")
         
-        # 後續輪次 - 建立關聯關係
+        # 後續輪次 - 需要先保存前一輪比賽
         while len(current_round) > 1:
             round_number += 1
             next_round = []
             match_number = 1
             
+            # 不要立即保存到資料庫，只建立 match_data
             for i in range(0, len(current_round), 2):
                 if i + 1 >= len(current_round):
                     # 處理奇數選手
-                    prev_match = current_round[i]
+                    prev_match_data = current_round[i]
                     match_data = {
                         'event_id': event.id,
                         'group_id': group.id,
                         'event_type': event.category,
-                        'player1_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match['match_number']}", 'partner_name': None},
+                        'player1_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match_data['match_number']}", 'partner_name': None},
                         'player2_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
                         'round': round_number,
                         'match_number': match_number,
-                        'prev_match1_id': prev_match.get('id'),
+                        'prev_match1_id': prev_match_data.get('id'),  # 使用實際的 ID
                         'prev_match2_id': None,
-                        'player1_from_match': prev_match.get('id'),
+                        'player1_from_match': prev_match_data.get('id'),
                         'player2_from_match': None
                     }
                     print(f"Created BYE match for odd player in round {round_number}")
                     next_round.append(match_data)
-                    matches.append(match_data)
                     match_number += 1
                     break
                 
                 # 正常比賽
-                prev_match1 = current_round[i]
-                prev_match2 = current_round[i+1]
+                prev_match1_data = current_round[i]
+                prev_match2_data = current_round[i+1]
                 
                 match_data = {
                     'event_id': event.id,
                     'group_id': group.id,
                     'event_type': event.category,
-                    'player1_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match1['match_number']}", 'partner_name': None},
-                    'player2_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match2['match_number']}", 'partner_name': None},
+                    'player1_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match1_data['match_number']}", 'partner_name': None},
+                    'player2_data': {'user_id': None, 'user_name': f"Winner of Match {prev_match2_data['match_number']}", 'partner_name': None},
                     'round': round_number,
                     'match_number': match_number,
-                    'prev_match1_id': prev_match1.get('id'),
-                    'prev_match2_id': prev_match2.get('id'),
-                    'player1_from_match': prev_match1.get('id'),
-                    'player2_from_match': prev_match2.get('id')
+                    'prev_match1_id': prev_match1_data.get('id'),  # 使用實際的 ID
+                    'prev_match2_id': prev_match2_data.get('id'),  # 使用實際的 ID
+                    'player1_from_match': prev_match1_data.get('id'),
+                    'player2_from_match': prev_match2_data.get('id')
                 }
-                print(f"Created next round match: Winner of Match {prev_match1['match_number']} vs Winner of Match {prev_match2['match_number']}")
+                print(f"Created next round match: Winner of Match {prev_match1_data['match_number']} vs Winner of Match {prev_match2_data['match_number']}")
                 next_round.append(match_data)
-                matches.append(match_data)
                 match_number += 1
             
+            # 添加當前輪次的比賽到 all_matches
+            all_matches.extend(current_round)
+            
+            # 更新 current_round 為下一輪
             current_round = next_round
             print(f"Round {round_number} matches: {len(next_round)}")
         
-        print(f"Total elimination matches: {len(matches)}")
-        return matches
+        # 添加最後一輪的比賽到 all_matches（冠軍賽）
+        all_matches.extend(current_round)
+        
+        print(f"Total elimination matches: {len(all_matches)}")
+        return all_matches
 
     @staticmethod
     def _group_players(players_data, group_size):
@@ -756,6 +781,19 @@ class TournamentService:
         
             match = Match(**match_dict)
             db.session.add(match)
+            db.session.flush()  # 獲取 match.id
+            
+            # 更新前一輪比賽的 next_match_id
+            if match_data.get('prev_match1_id'):
+                prev_match1 = Match.query.get(match_data['prev_match1_id'])
+                if prev_match1:
+                    prev_match1.next_match_id = match.id
+            
+            if match_data.get('prev_match2_id'):
+                prev_match2 = Match.query.get(match_data['prev_match2_id'])
+                if prev_match2:
+                    prev_match2.next_match_id = match.id
+            
             db.session.commit()
             
             print(f"Successfully created match {match.id}")

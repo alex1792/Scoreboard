@@ -191,8 +191,8 @@ const MatchCard = ({
         <div className={`player-row ${player1Winner ? 'winner' : ''}`}>
           <div className="player-info">
             <span className="player-name">
-              {match.player1}
               {player1Winner && <span className="winner-crown">👑</span>}
+              {match.player1}
             </span>
           </div>
           {shouldShowScore && (
@@ -206,8 +206,8 @@ const MatchCard = ({
         <div className={`player-row ${player2Winner ? 'winner' : ''}`}>
           <div className="player-info">
             <span className="player-name">
-              {match.player2}
               {player2Winner && <span className="winner-crown">👑</span>}
+              {match.player2}
             </span>
           </div>
           {shouldShowScore && (

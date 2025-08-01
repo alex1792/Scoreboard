@@ -19,6 +19,9 @@ const Scoreboard = () => {
   const [currentGame, setCurrentGame] = useState(1);
   const [gamesWon, setGamesWon] = useState({ player1: 0, player2: 0 });
 
+  // 添加暫停狀態
+  const [isPaused, setIsPaused] = useState(false);
+
   // 1. Fetch match data from backend API
   useEffect(() => {
     fetch(`http://localhost:5001/api/matches/${matchId}`)
@@ -32,7 +35,7 @@ const Scoreboard = () => {
           setMatchStatus(result.data.status);
           setUmpireId(result.data.umpire_id);
           
-          // 新增：處理三局制數據
+          // 新增：處理三局制數據 - 確保所有字段都有默認值
           setCurrentGame(result.data.current_game || 1);
           setGamesWon({
             player1: result.data.player1_game_won || 0,
@@ -71,13 +74,34 @@ const Scoreboard = () => {
       socketRef.current.on('match_update', (data) => {
         console.log('Received match update:', data); // 添加這行來調試
         console.log('收到分數更新:', data);
+        console.log('Current matchId:', matchId); // 新增調試
+        console.log('Data id:', data.id); // 新增調試
         
         // 檢查是否是當前比賽的更新
         if (data.id === Number(matchId)) {
           console.log('更新當前比賽分數:', data);
+          console.log('更新前的 gamesWon:', gamesWon); // 新增調試
+          
           setScore1(data.score1);
           setScore2(data.score2);
           setMatchStatus(data.status);
+          
+          // 新增：更新三局制相關數據
+          const newCurrentGame = data.current_game || 1;
+          const newGamesWon = {
+            player1: data.player1_game_won || 0,
+            player2: data.player2_game_won || 0
+          };
+          
+          console.log('新的 current_game:', newCurrentGame); // 新增調試
+          console.log('新的 gamesWon:', newGamesWon); // 新增調試
+          
+          setCurrentGame(newCurrentGame);
+          setGamesWon(newGamesWon);
+          
+          console.log('更新後的 gamesWon:', newGamesWon); // 新增調試
+        } else {
+          console.log('不是當前比賽的更新，忽略'); // 新增調試
         }
       });
 
@@ -148,6 +172,10 @@ const Scoreboard = () => {
       return;
     }
 
+    console.log('點擊 Next Game 按鈕'); // 新增調試
+    console.log('當前 currentGame:', currentGame); // 新增調試
+    console.log('當前 gamesWon:', gamesWon); // 新增調試
+
     try {
       const res = await fetch(`http://localhost:5001/api/matches/${Number(matchId)}/next_game`, {
         method: 'POST',
@@ -158,15 +186,16 @@ const Scoreboard = () => {
       });
 
       const data = await res.json();
+      console.log('Next game API 響應:', data); // 新增調試
 
       if (!res.ok) {
         alert(`Next game failed: ${data.message || res.status}`);
       } else {
         console.log('Next game request sent successfully');
-        // 重置當前分數
-        setScore1(0);
-        setScore2(0);
-        setCurrentGame(currentGame + 1);
+        // 移除手動更新，讓 Socket.IO 處理
+        // setScore1(0);
+        // setScore2(0);
+        // setCurrentGame(currentGame + 1);
       }
     } catch (err) {
       console.error('Next game error：', err);
@@ -206,17 +235,35 @@ const Scoreboard = () => {
     }
   };
 
+  // 簡化的狀態切換邏輯
   const getNextStatus = (current) => {
-    if(current === "Scheduled") return "Ongoing";
-    if(current === "Ongoing") return "Finished";
-    if(current === "Finished") return "Scheduled";
+    if (current === "Scheduled") return "Ongoing";
+    if (current === "Ongoing") return "Ongoing"; // 保持 Ongoing，不變
+    if (current === "Finished") return "Scheduled";
     return "Ongoing";
   };
 
+  // 簡化的按鈕處理
   const handleStatusToggle = async () => {
     const token = localStorage.getItem('access_token');
-    const nextStatus = getNextStatus(matchStatus);
+    
+    if (!token) {
+      alert('not logged in or token is lost, please login again');
+      return;
+    }
+
     try {
+      let newStatus;
+      
+      if (matchStatus === 'Scheduled') {
+        newStatus = 'Ongoing';
+      } else if (matchStatus === 'Ongoing') {
+        // 如果已經是 Ongoing，就不做任何改變
+        return;
+      } else if (matchStatus === 'Finished') {
+        newStatus = 'Scheduled';
+      }
+
       const res = await fetch(`http://localhost:5001/api/matches/${matchId}/score`, {
         method: 'POST',
         headers: { 
@@ -225,7 +272,7 @@ const Scoreboard = () => {
         },
         body: JSON.stringify({
           action_type: 'change_status',
-          new_status: nextStatus
+          new_status: newStatus
         }),
       });
       
@@ -266,7 +313,7 @@ const Scoreboard = () => {
 
   const statusColor = statusColorMap[matchStatus] || '#ccc';
 
-  // 新增：按鈕顯示邏輯
+  // 修正按鈕顯示邏輯
   const shouldShowNextGame = currentGame < 3 && matchStatus === 'Ongoing';
   const shouldShowEndMatch = matchStatus === 'Ongoing';
 
@@ -316,18 +363,19 @@ const Scoreboard = () => {
           </div>
         </div>
 
-        {/* 控制按鈕 - 網格布局 */}
+        {/* 控制按鈕 - 音樂播放器風格 */}
         {canEditScore && (
           <div className="control-section">
+            {/* 分數控制保持不變 */}
             <div className="score-controls">
               <div className="player-controls">
                 <h4 className="player-label">Player 1</h4>
                 <div className="button-row">
                   <button className="btn btn-minus" onClick={() => handleScoreChange('Player1', -1)}>
-                    -1
+                    -
                   </button>
                   <button className="btn btn-add" onClick={() => handleScoreChange('Player1', 1)}>
-                    +1
+                    +
                   </button>
                 </div>
               </div>
@@ -336,32 +384,62 @@ const Scoreboard = () => {
                 <h4 className="player-label">Player 2</h4>
                 <div className="button-row">
                   <button className="btn btn-minus" onClick={() => handleScoreChange('Player2', -1)}>
-                    -1
+                    -
                   </button>
                   <button className="btn btn-add" onClick={() => handleScoreChange('Player2', 1)}>
-                    +1
+                    +
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* 新增：三局制控制按鈕 */}
-            <div className="match-controls">
-              {shouldShowNextGame && (
-                <button className="btn btn-next-game" onClick={handleNextGame}>
-                  Next Game
-                </button>
-              )}
-              {shouldShowEndMatch && (
-                <button className="btn btn-end-match" onClick={handleEndMatch}>
-                  End This Match
-                </button>
-              )}
-              <button className="btn btn-status" onClick={handleStatusToggle}>
-                {matchStatus === 'Scheduled' && '▶ Start Match'}
-                {matchStatus === 'Ongoing' && '⏹ End Match'}
-                {matchStatus === 'Finished' && '🔄 Restart Match'}
-              </button>
+            {/* 音樂播放器風格的控制按鈕 */}
+            <div className="music-player-controls">
+              <div className="control-buttons">
+                {/* Start/Pause 按鈕 */}
+                {matchStatus === 'Scheduled' && (
+                  <button 
+                    className="control-btn btn-play-pause"
+                    onClick={handleStatusToggle}
+                    title='Start Match'
+                  >
+                    ▶
+                  </button>
+                )}
+
+                {/* Next Game 按鈕 - 只在進行中且未暫停時顯示 */}
+                {shouldShowNextGame && (
+                  <button 
+                    className="control-btn btn-next"
+                    onClick={handleNextGame}
+                    title="Next Game"
+                  >
+                    ⏭
+                  </button>
+                )}
+
+                {/* End Match 按鈕 - 只在進行中且未暫停時顯示 */}
+                {shouldShowEndMatch && (
+                  <button 
+                    className="control-btn btn-stop"
+                    onClick={handleEndMatch}
+                    title="End Match"
+                  >
+                    ⏹
+                  </button>
+                )}
+
+                {/* Restart Match 按鈕 - 只在比賽結束時顯示 */}
+                {matchStatus === 'Finished' && (
+                  <button 
+                    className="control-btn btn-restart"
+                    onClick={handleStatusToggle}
+                    title="Restart Match"
+                  >
+                    ↩︎
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
