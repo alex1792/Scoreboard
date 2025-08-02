@@ -2,7 +2,7 @@ from flask import jsonify, Blueprint
 from .models import Tournament, Format, Event, Group, Match
 from .models import db
 from .utils import check_authorization
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request
 from datetime import datetime
 from .services.tournament_service import TournamentService
@@ -36,8 +36,6 @@ def get_tournaments():
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get tournaments"}), 500
 
-
-
 """
 This function is  used to get the details of a specific tournament. Search by tournament_id.
 It will return the details of the tournament, including the id, name, start_date, end_date, 
@@ -69,7 +67,7 @@ This function is used to create a new tournament. It will create a new tournamen
 def create_tournament():
     """create tournament from tournament_service"""
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
     except Exception as e:
@@ -82,6 +80,14 @@ def create_tournament():
 
         tournament_info = data.get('tournament')
         events_info = data.get('events')
+
+        # get current user id
+        current_user_id = get_jwt_identity()
+        if not current_user_id:
+            return jsonify({"status": "error", "message": "Please Login to create a tournament"}), 401
+
+        # add host_id to tournament_info
+        tournament_info['host_id'] = current_user_id
 
         if not tournament_info or not events_info:
             return jsonify({"status": "error", "message": "Missing tournament or events data"}), 400
@@ -104,7 +110,7 @@ def generate_matches_by_registration(tournament_id):
     """generate matches by registration records from tournament_service"""
     print('generate_matches_by_registration')
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
     except Exception as e:

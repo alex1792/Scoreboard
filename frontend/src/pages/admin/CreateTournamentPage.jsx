@@ -10,7 +10,7 @@ const TournamentCreatePage = () => {
         start_date: '',
         end_date: '',
         location: '',
-        description: ''
+        description: '',
     });
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [groups, setGroups] = useState({});
@@ -305,7 +305,7 @@ const TournamentCreatePage = () => {
                                     />
                                     <button 
                                         onClick={() => handleAddGroup(eventName)}
-                                        className="btn-add"
+                                        className="btn-add-group"
                                     >
                                         Add Group
                                     </button>

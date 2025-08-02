@@ -58,9 +58,9 @@ which is MS-A and MD-A respectively.
 @registration_bp.route('/tournament/<int:tournament_id>/registrations', methods=['GET'])
 @jwt_required()
 def get_registrations(tournament_id):
-    print(f"Getting registrations for tournament {tournament_id}")
+    # print(f"Getting registrations for tournament {tournament_id}")
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
 
@@ -116,7 +116,7 @@ def upload_registration_file(tournament_id):
 def update_registration_status(registration_id):
     """Update registration.status (pending, confirmed, cancelled)"""
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
         

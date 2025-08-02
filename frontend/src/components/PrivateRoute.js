@@ -52,3 +52,41 @@ export const UmpireRoute = ({ children }) => {
     
     return children;
 };
+
+// requires user role to be host to access the page
+export const HostRoute = ({ children}) => {
+    const { isAuthenticated, currentUser, loading } = useAuth();
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
+    }
+
+    if (currentUser?.role !== 'host' && currentUser?.role !== 'admin') {
+        return <Navigate to='/' />;
+    }
+
+    return children;
+};
+
+// requires user role to be either admin, host or umpire to access the page
+export const HostOrUmpireRoute = ({ children }) => {
+    const { isAuthenticated, currentUser, loading } = useAuth();
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
+    }
+
+    if (!['admin', 'host', 'umpire'].includes(currentUser?.role)) {
+        return <Navigate to='/' />;
+    }
+    
+    return children;
+};

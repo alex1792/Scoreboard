@@ -40,7 +40,8 @@ const Home = () => {
                 </Link>
             </div>
             
-            {currentUser?.role === 'admin' && (
+            {/* admin or host only */}
+            {(currentUser?.role === 'admin' || currentUser?.role === 'host') && (
               <>
                 <div className="admin-icon-item">
                   <Link to="/admin/create-tournament">
@@ -48,6 +49,17 @@ const Home = () => {
                     <span>Create Tournament</span>
                   </Link>
                 </div>
+                {/* <div className="admin-icon-item">
+                  <Link to="/admin/upload-schedule">
+                    <img src="/upload-arrow-icon.png" alt="Upload Schedule" className="admin-icon" />
+                    <span>Upload Schedule</span>
+                  </Link>
+                </div> */}
+              </>
+            )}
+            {/* admin only */}
+            {currentUser?.role ==='admin' && (
+              <>
                 <div className="admin-icon-item">
                   <Link to="/admin/set-umpire">
                     <img src="/file-setting-icon.png" alt="Match Management" className="admin-icon" />
@@ -60,12 +72,6 @@ const Home = () => {
                     <span>User Management</span>
                   </Link>
                 </div>
-                {/* <div className="admin-icon-item">
-                  <Link to="/admin/upload-schedule">
-                    <img src="/upload-arrow-icon.png" alt="Upload Schedule" className="admin-icon" />
-                    <span>Upload Schedule</span>
-                  </Link>
-                </div> */}
               </>
             )}
           </div>

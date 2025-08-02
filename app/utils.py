@@ -196,14 +196,29 @@ Permisions:
 - host: can access create tournament, check registration, check match
 - umpire: can access update match score
 - user: can access sign-up tournament, check match, check all tournaments
-- guest: can access check all tournaments, check tournament match scores
+- guest(not logged in): can access check all tournaments, check tournament match scores
 """
-def check_authorization(role='admin'):
+def check_authorization(required_role='admin'):
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
+
+    if not current_user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    # define the permission hierachy (higher role = higher permission)
+    role_hierachy = {
+        'admin': 4,
+        'host': 3,
+        'umpire': 2,
+        'user': 1,
+        'guest': 0
+    }
+
+    current_user_role_level = role_hierachy[current_user.role]
+    required_role_level = role_hierachy[required_role]
     
-    # check if not admin, return error
-    if not current_user or (current_user.role != 'admin' and current_user.role != role):
+    # check if current user role has the permission to access the feature
+    if current_user_role_level < required_role_level:
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     return None
 

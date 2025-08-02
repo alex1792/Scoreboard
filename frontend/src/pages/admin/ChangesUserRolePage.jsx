@@ -43,6 +43,7 @@ const ChangeUserStaus = () => {
           required
         >
           <option value="admin">Admin</option>
+          <option value="host">Host</option>
           <option value="umpire">Umpire</option>
           <option value="user">User</option>
         </select>

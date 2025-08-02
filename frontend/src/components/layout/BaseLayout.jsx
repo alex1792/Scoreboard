@@ -18,7 +18,7 @@ const BaseLayout = () => {
         <h1><Link to="/">Score Board</Link></h1>
         <ul>
           <li><Link to="/">Score Board</Link></li>
-          <li><Link to="/matches">Matches</Link></li>
+          <li><Link to="/tournaments">Tournaments</Link></li>
           {isAuthenticated && currentUser && currentUser.username ? (
             <>
               <li><span>Welcome, {currentUser.username}</span></li>

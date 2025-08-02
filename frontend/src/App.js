@@ -22,7 +22,7 @@ import UploadRegistrationPage from './pages/tournament/UploadRegistrationPage';
 import GenerateSchedulePage from './pages/admin/GenerateSchedulePage';
 import SchedulePage from './pages/tournament/SchedulePage';
 import { AuthProvider } from './context/AuthContext';
-import { PrivateRoute, AdminRoute, UmpireRoute } from './components/PrivateRoute';
+import { PrivateRoute, AdminRoute, UmpireRoute, HostRoute, HostOrUmpireRoute } from './components/PrivateRoute';
 
 function App() {
   // handle logout
@@ -54,12 +54,12 @@ function App() {
             <Route path="/admin/set-umpire" element={<AdminRoute><AssignUmpirePage /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><Users /></AdminRoute>} />
             <Route path="admin/manage-matches" element={<AdminRoute><ManageMatch /></AdminRoute>} />
-            <Route path="admin/create-match" element={<AdminRoute><CreateMatch /></AdminRoute>} />
+            <Route path="admin/create-match" element={<HostRoute><CreateMatch /></HostRoute>} />
             <Route path="admin/update-user-role" element={<AdminRoute><ChangeUserStaus /></AdminRoute>} />
             <Route path="/admin/upload-schedule" element={<AdminRoute><UploadSchedule /></AdminRoute>} />
-            <Route path="/admin/scheduler" element={<AdminRoute><SchedulerPage /></AdminRoute>} />
-            <Route path="/admin/match-generator" element={<AdminRoute><MatchGenerator /></AdminRoute>} />
-            <Route path="/admin/create-tournament" element={<AdminRoute><CreateTournament /></AdminRoute>} />
+            <Route path="/admin/scheduler" element={<HostRoute><SchedulerPage /></HostRoute>} />
+            <Route path="/admin/match-generator" element={<HostRoute><MatchGenerator /></HostRoute>} />
+            <Route path="/admin/create-tournament" element={<HostRoute><CreateTournament /></HostRoute>} />
             <Route path="/admin/tournaments/:tournamentId/generate-schedule" element={<AdminRoute><GenerateSchedulePage /></AdminRoute>} />
             
             {/* Home */}

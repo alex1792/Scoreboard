@@ -72,6 +72,7 @@ const UserCard = ({ user, onRoleUpdate, currentUserRole }) => {
               }}
             >
               <option value="user">USER</option>
+              <option value="host">HOST</option>
               <option value="umpire">UMPIRE</option>
               <option value="admin">ADMIN</option>
             </select>

@@ -2,8 +2,9 @@ import { useRef, useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useMatchInfoListener } from '../../api/socketService';
 import { useFetchMatchInfoByTournament } from '../../api/api';
-import { useAuth } from '../../context/AuthContext';  // 改用 useAuth
+import { useAuth } from '../../context/AuthContext'; 
 import MatchCard from '../../components/match/MatchCard';
+import { deleteMatch, assignUmpire } from '../../api/api';
 import '../../styles/pages/match/matches.css';
 
 const MatchesPage = () => {  // 移除 currentUser prop
@@ -13,6 +14,7 @@ const MatchesPage = () => {  // 移除 currentUser prop
   const [animatingMatchId, setAnimatingMatchId] = useState(null);
   const socketRef = useRef(null);
   const { tournamentId } = useParams();
+  const [tournament, setTournament] = useState(null);
 
   // 篩選狀態
   const [selectedEvent, setSelectedEvent] = useState('all');
@@ -23,14 +25,41 @@ const MatchesPage = () => {  // 移除 currentUser prop
 
   // 檢查用戶權限
   const hasAdminAccess = () => {
-    return currentUser && (currentUser?.role === 'admin' || currentUser?.role === 'host' || currentUser?.role === 'organizer');
+    if(!currentUser) return false;
+
+    // admin
+    if(currentUser?.role === 'admin') return true;
+
+    // host, and tournament.host_id === currentUser.id
+    if(currentUser?.role === 'host' && tournament) {
+      return tournament.host_id === currentUser.id;
+    }
+    
+    return false;
   };
 
   // fetch match info from backend
-  useFetchMatchInfoByTournament(setMatches, tournamentId);
+  useFetchMatchInfoByTournament(setMatches, tournamentId, setTournament);
 
   // match info listener
   useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });
+
+  // get tournament info from backend
+  useEffect(() => {
+    const fetchTournament = async () => {
+      try {
+        const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setTournament(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching tournament:', error);
+      }
+    };
+
+    fetchTournament();
+  }, [tournamentId]);
 
   // 設置 events 和 groups 選項
   useEffect(() => {
@@ -105,6 +134,21 @@ const MatchesPage = () => {  // 移除 currentUser prop
     if (eventName.includes('WD')) return 'Women Doubles';
     if (eventName.includes('XD')) return 'Mixed Doubles';
     return eventName;
+  };
+
+  // Handle match deletion with local state update
+  const handleDeleteMatch = async (matchId) => {
+    if(!window.confirm('Are you sure you want to delete this match?')) {
+      return;
+    }
+    
+    const success = await deleteMatch(matchId);
+    if (success) {
+      setMatches(prev => prev.filter(match => match.id !== matchId));
+      setFilteredMatches(prev => prev.filter(match => match.id !== matchId));
+    } else {
+      alert('Failed to delete match');
+    }
   };
 
   return (
@@ -189,13 +233,26 @@ const MatchesPage = () => {  // 移除 currentUser prop
         <div className="matches-grid">
           {filteredMatches.length > 0 ? (
             filteredMatches.map((match) => (
-              <MatchCard
+              hasAdminAccess() ? (
+                <MatchCard
+                key={match.id}
+                match={match}
+                onAssignUmpire={assignUmpire}
+                onDelete={handleDeleteMatch}
+                showAssignUmpireButton={true}
+                showDeleteButton={true}
+                showPredecessors={true}
+                animating={animatingMatchId === match.id}
+              />
+              ) : (
+                <MatchCard
                 key={match.id}
                 match={match}
                 isClickable={true}
                 animating={animatingMatchId === match.id}
                 showPredecessors={true}
               />
+              )
             ))
           ) : (
             <div className="no-matches">

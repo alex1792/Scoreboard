@@ -38,7 +38,7 @@ It will return the match info to the frontend. Then, the frontend will show the 
 @jwt_required()
 def create_match():
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
 
@@ -72,7 +72,7 @@ It will return the match info to the frontend. Then, the frontend will show the 
 @jwt_required()
 def assign_umpire(match_id):
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
 
@@ -140,7 +140,7 @@ function to achieve the real-time scoreboard.
 @jwt_required()
 def update_score(match_id):
     try:
-        authorization = check_authorization("umpire")
+        authorization = check_authorization('umpire')
         if authorization:
             return authorization
 
@@ -178,7 +178,7 @@ used. It can be modified to clear all the match of a particular tournament.
 @jwt_required()
 def clear_all_matches():
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
             
@@ -200,7 +200,7 @@ def delete_match(match_id):
     # delete match by match_id
     try:
         # check authorization
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
         
@@ -220,7 +220,7 @@ This function is used to set the match to next game. For example, game 1 finishe
 @jwt_required()
 def next_game(match_id):
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('umpire')
         if authorization:
             return authorization
         
@@ -247,7 +247,7 @@ This function is used to end the match. It will summarize the score of the match
 @jwt_required()
 def end_match(match_id):
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('umpire')
         if authorization:
             return authorization
 

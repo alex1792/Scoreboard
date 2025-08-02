@@ -12,7 +12,7 @@ user_bp = Blueprint('user', __name__, url_prefix='/api/users')
 def get_users():
     """獲取用戶列表"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         
@@ -125,7 +125,7 @@ def update_current_user_profile():
 def update_user(user_id):
     """更新用戶資料 (管理員功能)"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         
@@ -171,7 +171,7 @@ def update_user(user_id):
 def delete_user(user_id):
     """刪除用戶 (管理員功能)"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         
@@ -196,7 +196,7 @@ def delete_user(user_id):
 def search_users():
     """搜尋用戶"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('guest')
         if authorization:
             return authorization
         
@@ -243,7 +243,7 @@ def search_users():
 def get_user_stats():
     """獲取用戶統計資料"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
         

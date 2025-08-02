@@ -22,7 +22,8 @@ class TournamentService:
                 'end_date': tournament.end_date.isoformat() if tournament.end_date else None,
                 'location': tournament.location,
                 'status': tournament.status,
-                'event_count': len(tournament.events)
+                'event_count': len(tournament.events),
+                'host_id': tournament.host_id
             }
             tournaments_data.append(tournament_data)
         
@@ -63,6 +64,7 @@ class TournamentService:
             'end_date': tournament.end_date.isoformat() if tournament.end_date else None,
             'location': tournament.location,
             'status': tournament.status,
+            'host_id': tournament.host_id,
             'events': events
         }
         

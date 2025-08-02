@@ -19,7 +19,7 @@ def allowed_file(filename):
 def upload_file():
     """上傳檔案"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
         
@@ -57,7 +57,7 @@ def upload_file():
 def download_file(filename):
     """下載檔案"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
         
@@ -77,7 +77,7 @@ def download_file(filename):
 def list_files():
     """列出所有檔案"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         
@@ -109,7 +109,7 @@ def list_files():
 def delete_file(filename):
     """刪除檔案"""
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         

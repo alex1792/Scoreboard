@@ -114,24 +114,6 @@ const MatchCard = ({
     );
   };
 
-  // 修正：局數勝負顯示邏輯
-  // const renderGamesWon = () => {
-  //   // 檢查是否有任何遊戲完成
-  //   const hasGameHistory = (match.game1_score1 > 0 || match.game1_score2 > 0) ||
-  //                         (match.game2_score1 > 0 || match.game2_score2 > 0) ||
-  //                         (match.game3_score1 > 0 || match.game3_score2 > 0);
-    
-  //   if (!hasGameHistory) {
-  //     return null;
-  //   }
-    
-  //   return (
-  //     <div className="games-won">
-  //       <span>Games: {match.player1_game_won || 0}-{match.player2_game_won || 0}</span>
-  //     </div>
-  //   );
-  // };
-
   // 調試信息
   console.log('MatchCard Debug:', {
     id: match.id,
@@ -237,11 +219,6 @@ const MatchCard = ({
         {showAssignUmpireButton && (
           <button className="set-umpire-btn" onClick={() => onAssignUmpire(match.id)}>
             Assign Umpire
-          </button>
-        )}
-        {showDeleteButton && (
-          <button className="delete-match-btn" onClick={() => onDelete(match.id)}>
-            Delete Match
           </button>
         )}
       </div>

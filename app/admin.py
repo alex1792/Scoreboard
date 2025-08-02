@@ -34,7 +34,7 @@ Role:
 @jwt_required()
 def update_user_role():
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
 
@@ -67,7 +67,7 @@ It will return all the users info to the frontend.
 @jwt_required()
 def get_all_users():
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         
@@ -88,7 +88,7 @@ It will return all the users info to the frontend.
 @jwt_required()
 def update_user_roles():
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('admin')
         if authorization:
             return authorization
         
@@ -126,7 +126,7 @@ schedule so that the host can upload the schedule without using the sign-up func
 @jwt_required()
 def upload_match_schedule():
     try:
-        authorization = check_authorization()
+        authorization = check_authorization('host')
         if authorization:
             return authorization
         
@@ -174,7 +174,7 @@ the number of consecutive players.
 @jwt_required()
 def generate_match_schedule():
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
         
@@ -221,7 +221,7 @@ the function can generate the matches based on the requirements.
 @jwt_required()
 def upload_participants():
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
 
@@ -280,11 +280,12 @@ def upload_participants():
 @jwt_required()
 def generate_schedule_for_tournament(tournament_id):
     """
-    從資料庫中的比賽記錄生成賽程表
-    完全基於資料庫，不需要檔案上傳
+    This function is used to generate the schedule for a tournament.
+    All the match records are stored in the database, so it won't need to upload any file.
+    Fully based on the database.
     """
     try:
-        auth = check_authorization()
+        auth = check_authorization('host')
         if auth:
             return auth
 
@@ -332,8 +333,6 @@ def generate_schedule_for_tournament(tournament_id):
             "status": "error",
             "message": f"Error generating schedule: {str(e)}"
         }), 500
-
-
 
 # ------------- WebSocket events for user role updates ----------------
 @socketio.on('connect', namespace='/user_role_update')

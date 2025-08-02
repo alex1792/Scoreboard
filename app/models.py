@@ -33,6 +33,7 @@ class Tournament(db.Model):
     location = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(20), default='Upcoming') # Upcomming, Ongoing, Completed
     events = db.relationship('Event', backref='tournament', lazy=True, cascade='all, delete-orphan')
+    host_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 class Event(db.Model):
     __tablename__ = 'events'
