@@ -181,3 +181,27 @@ def get_tournament_schedule(tournament_id):
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+"""
+This function is used to delete all matches of a specific tournament
+"""
+@tournament_bp.route('/<int:tournament_id>/delete_all_matches', methods=['POST'])
+@jwt_required()
+def delete_all_matches(tournament_id):
+    try:
+        # check authorization
+        try:
+            auth = check_authorization('host')
+            if auth:
+                return auth
+        except Exception as e:
+            return jsonify({"status": "error", "message": "Please Login to generate matches"}), 500
+
+
+        # delete matches in particular tournament
+        MatchService.delete_all_matches_by_tournament_id(tournament_id)
+
+        return jsonify({'status': 'success', 'message': f'All matches with tournament_id = {tournament_id} are deleted'}), 200
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

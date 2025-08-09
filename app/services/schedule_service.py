@@ -9,12 +9,27 @@ class TournamentScheduler:
     """use to generate schedule for a tournament"""
     def __init__(self, total_court):
         self.total_court = total_court
-        self.scheduled_matches = []
+        self.scheduled_matches = [] # store previous batch of match
         self.completed_matches = set()
         self.all_matches = []  # store all matches
 
     def schedule_tournament(self, matches, tournament_id):
-        """schedule the tournament, handle the incomplete batches and dependencies"""
+        """schedule the tournament, handle the incomplete batches and dependencies
+
+        ***** the core schedule concept is to avoid players have more than 1 games at same scheduling batch *****
+        ***** Under this coure concept, there might be matches that couldn't fit in the scheduleing batch   *****
+        ***** For example, A player signed up for both single and double event. You can not assign both     *****
+        ***** player A's single and double games at the same batch. Either pick singe or double match.       *****
+        
+        the pseudo algorithm is:
+            1. group the match by round
+            2. process the matches by round (ensure that round_1 matches are complete scheduled before processing the next round)
+                a. initialize the candidate matches for each round (eg: round_1_all_candidates, round_2_all_candidates, ...)
+                b. add matches in that round to the candidate matches in 2-a
+                c. process the round_n_all_candidates
+            3. handle with remaining matches
+        
+        """
         # ensure matches is a list
         if not isinstance(matches, (list, tuple)):
             matches = [matches]
@@ -56,12 +71,12 @@ class TournamentScheduler:
         self._fill_remaining_matches()
 
         if tournament_id:
-            # 獲取 tournament 的實際時間
+            # Get the exact time of tournament
             tournament = Tournament.query.get(tournament_id)
             if tournament:
-                # 使用 tournament 的開始時間作為比賽開始時間
+                # use tournament.start_date as start date.
                 start_time = tournament.start_date.strftime('%H:%M')
-                # 設置結束時間為開始時間後 9 小時（或根據需要調整）
+                # set end time be 9 hours of start_time (can be modified)
                 end_time = (tournament.start_date + timedelta(hours=9)).strftime('%H:%M')
                 
                 schedule_data = {
@@ -70,7 +85,7 @@ class TournamentScheduler:
                     'match_duration': 30
                 }
             else:
-                # 如果找不到 tournament，使用默認時間
+                # Use default time when the start_time is not found
                 schedule_data = {
                     'start_time': '09:00',
                     'end_time': '18:00',
@@ -80,7 +95,20 @@ class TournamentScheduler:
             self.create_schedule(tournament_id, schedule_data)
 
     def _group_by_round(self, matches):
-        """group the matches by round"""
+        """
+        group the matches by round
+        
+        for example:
+            elimination match - round 1, 2, 3, ... till final round
+            round robin - only first round
+        
+        this function is to group matches by round
+        matches_by_round = {
+            "1", [r1_match_1, r1_match_2, ..., r1_match_n],
+            "2", [r2_match1, r2_match_2, ..., r2_match_m],
+            ...
+            }
+        """
         matches_by_round = {}
         
         for match in matches:
@@ -102,7 +130,17 @@ class TournamentScheduler:
         return None
     
     def _schedule_batch(self, candidate_matches):
-        """schedule a batch of matches"""
+        """schedule a batch of matches
+        
+        using the candidate_matches to pick the matches that will be scheduled in the schedule batch.
+
+        For each match, calculate the weight based on the remaining match of both players using _calculate_weight()
+
+        For instance: if match_1 is Player A vs Player B (single match) or Player A / Player B vs Player C / Player D
+            1. find the remaining match of both Player A and B (Player C and D if match.category is doubles)
+            2. Consider the resting time of each player, the longer resting time, the higher priority it should be scheduled
+        
+        """
         selected_matches = []
         selected_players = set()
         
@@ -127,13 +165,19 @@ class TournamentScheduler:
         return selected_matches
 
     def _calculate_weight(self, match):
-        """calculate the weight of the match"""
+        """
+        calculate the weight of the match
+        
+        consider the following factors:
+            1. remaining matches for all players
+            2. resting time for all players
+        """
         weight = 0
         
-        # 1. remaining games
+        # 1. remaining games (if the player has more games to play, then the match should be scheduled first)
         weight += self._compute_weight_for_remaining_games(match)
         
-        # 2. resting time
+        # 2. resting time (if the player has been resting a lot, then he should have a higher priority to be scheduled)
         weight += self._compute_weight_for_resting_time(match)
         
         return weight
@@ -153,7 +197,14 @@ class TournamentScheduler:
         return weight
     
     def _get_match_players(self, match):
-        """get all players in the match"""
+        """
+        get all players in the match
+        
+        case 1: for single players, return two players
+        case 2: for double players, return fourn players
+
+        return a list of string 
+        """
         players = set()
         
         if match.event_type in ['MD', 'WD', 'XD']:
@@ -174,7 +225,12 @@ class TournamentScheduler:
         return players
     
     def _get_remaining_games_for_player(self, player_name):
-        """get the remaining games for the player"""
+        """
+        get the remaining games for the player
+        
+        for example: player A has 5 more games not been scheduled, the function will return 5
+        
+        """
         remaining = 0
         
         for match in self.all_matches:
@@ -186,7 +242,13 @@ class TournamentScheduler:
         return remaining
     
     def _compute_weight_for_resting_time(self, match):
-        """calculate the weight based on the resting time (based on batch)"""
+        """
+        calculate the weight based on the resting time (based on batch)
+        
+        this function will check all players in parameter 'match'
+        from previous batch, if player has played last batch, then the match should have lower priority to be scheduled
+        (make sure players have enough rest)
+        """
         penalty = 0
         
         # get the players of the current match
@@ -211,13 +273,28 @@ class TournamentScheduler:
         return players
 
     def _update_candidate_matches_for_round(self, candidate_matches, round_matches):
-        """update the candidate matches for the round"""
+        """
+        update the candidate matches for the round
+        
+
+        After putting some matches into curret_batch, need to update the remaining candidates
+        ensure that candidate_matches only contain unscheduled matches
+        """
         for match in round_matches:
             if match not in self.scheduled_matches and self._can_schedule_match(match):
                 candidate_matches.add(match)
 
     def _fill_remaining_matches(self):
-        """fill the remaining matches, minimize the number of affected players"""
+        """
+        fill the remaining matches, minimize the number of affected players
+        
+        since there are some cases that we can not fit all match into the schedule table
+        that satisfy the condition that players won't play back to back.
+
+        Under the circumstances, we have to minimize the number of affected players.
+        For each batch, there might be empty slots, the algo will schedule match into these slots.
+        Once the all slots are scheduled, we have to create new batch to fit the unscheduled matches.
+        """
         # get all the unscheduled matches
         scheduled_match_ids = {match.id for match in self.scheduled_matches}
         remaining_matches = [match for match in self.all_matches if match.id not in scheduled_match_ids]
@@ -336,7 +413,10 @@ class TournamentScheduler:
         return self.scheduled_matches[start_idx:end_idx]
 
     def _get_batch_players(self, batch_idx):
-        """get players in the specified batch"""
+        """get players in the specified batch
+        
+        return a set of player.name in specific batch
+        """
         batch_matches = self._get_batch_matches(batch_idx)
         players = set()
         
@@ -364,15 +444,15 @@ class TournamentScheduler:
                 group = Group.query.filter_by(id=match.group_id).first()
                 flight = group.name if group else ''
                 
-                # get player info - 修正處理 Winner of Match
+                # get player info
                 if match.event_type in ['MD', 'WD', 'XD']:
-                    # 雙打
+                    # double
                     team1_p1 = match.team1_player1_name or ''
                     team1_p2 = match.team1_player2_name or ''
                     team2_p1 = match.team2_player1_name or ''
                     team2_p2 = match.team2_player2_name or ''
                     
-                    # 處理 Winner of Match
+                    # handle Winner of Match
                     if 'Winner of Match' in team1_p1:
                         player1s = f"Winner of {team1_p1}"
                     else:
@@ -385,11 +465,11 @@ class TournamentScheduler:
                     
                     match_type = "Double"
                 else:
-                    # 單打
+                    # single atches
                     player1_name = match.player1_name or ''
                     player2_name = match.player2_name or ''
                     
-                    # 處理 Winner of Match
+                    # handle Winner of Match
                     if 'Winner of Match' in player1_name:
                         player1s = f"Winner of {player1_name}"
                     else:
@@ -402,7 +482,7 @@ class TournamentScheduler:
                     
                     match_type = "Single"
                 
-                # 檢查連續出場選手（只統計實際選手比賽，不統計晉級比賽）
+                # check consecutive players
                 consecutive_players = []
                 if not self._is_winner_match(match):
                     consecutive_players = self._get_consecutive_players_for_match(match, batch_idx)
@@ -553,7 +633,10 @@ class TournamentScheduler:
         return filename
 
     def _organize_matches_into_batches(self):
-        """將已安排的比賽重新組織成 batches"""
+        """
+        organized matches into batches
+        batches: a list of list [[batch1], [batch2], [batch3], ...]
+        """
         batches = []
         current_batch = []
         
@@ -564,18 +647,18 @@ class TournamentScheduler:
                 batches.append(current_batch)
                 current_batch = []
         
-        # 添加最後一個不完整的 batch
+        # handle with the last incomplete batch 
         if current_batch:
             batches.append(current_batch)
         
         return batches
 
     def _get_consecutive_players_for_match(self, match, current_batch_idx):
-        """獲取該比賽中連續出場的選手"""
+        """get the consecutive players in the match"""
         consecutive_players = []
         match_players = self._get_match_players(match)
         
-        # 檢查選手是否在前一個 batch 中出現過
+        # check if the player is in the previous batch
         if current_batch_idx > 1:
             previous_batch_players = self._get_players_from_batch(current_batch_idx - 1)
             for player in match_players:
@@ -585,7 +668,7 @@ class TournamentScheduler:
         return consecutive_players
 
     def _get_players_from_batch(self, batch_idx):
-        """獲取指定 batch 中的所有選手"""
+        """get all players in the specified batch"""
         players = set()
         batches = self._organize_matches_into_batches()
         
@@ -606,14 +689,14 @@ class TournamentScheduler:
         return True
 
     def _create_new_batches_for_remaining(self, remaining_matches):
-        """為剩餘比賽創建新的 batch，考慮依賴關係和選手衝突"""
+        """create new batches for the remaining matches, consider the dependency and player conflict"""
         if not remaining_matches:
             return
         
-        # 按輪次和比賽編號排序
+        # sort the remaining matches by round and match number
         remaining_matches.sort(key=lambda x: (x.round or 1, x.match_number or 1))
         
-        # 分組處理：按輪次分組
+        # group the matches by round
         matches_by_round = {}
         for match in remaining_matches:
             round_num = match.round or 1
@@ -621,20 +704,20 @@ class TournamentScheduler:
                 matches_by_round[round_num] = []
             matches_by_round[round_num].append(match)
         
-        # 按輪次順序處理
+        # process the matches by round
         for round_num in sorted(matches_by_round.keys()):
             round_matches = matches_by_round[round_num]
             self._process_round_matches(round_matches)
 
     def _process_round_matches(self, round_matches):
-        """處理單一輪次的比賽"""
+        """process the matches in a round"""
         current_batch = []
         current_batch_players = set()
         
-        # 計算權重並排序
+        # compute the weight and sort the matches
         weighted_matches = []
         for match in round_matches:
-            # 檢查比賽是否已經安排過
+            # Check if the match is scheduled
             if match not in self.scheduled_matches:
                 weight = self._calculate_weight(match)
                 weighted_matches.append((match, weight))
@@ -642,41 +725,41 @@ class TournamentScheduler:
         weighted_matches.sort(key=lambda x: x[1], reverse=True)
         
         for match, weight in weighted_matches:
-            # 再次檢查比賽是否已經安排過
+            #  check if the match is scheduled
             if match in self.scheduled_matches:
                 continue
         
-            # 檢查依賴關係
+            # check the dependency
             if not self._can_schedule_match(match):
                 continue
         
-            # 檢查選手衝突
+            # check player conflict
             match_players = self._get_match_players(match)
         
             if match_players & current_batch_players:
-                # 選手衝突，開始新的 batch
+                # player conflict, start a new batch
                 if current_batch:
                     self.scheduled_matches.extend(current_batch)
                     current_batch = []
                     current_batch_players = set()
         
-            # 檢查 batch 是否已滿
+            # check if the batch is full
             if len(current_batch) >= self.total_court:
-                # batch 已滿，開始新的 batch
+                # batch is full, start a new batch
                 self.scheduled_matches.extend(current_batch)
                 current_batch = []
                 current_batch_players = set()
         
-            # 加入當前 batch
+            # add the match to the current batch
             current_batch.append(match)
             current_batch_players.update(match_players)
         
-        # 處理最後一個不完整的 batch
+        # handle the last incomplete batch
         if current_batch:
             self.scheduled_matches.extend(current_batch)
     
     def _can_schedule_match(self, match):
-        """檢查比賽是否可以安排（修正 elimination dependency）"""
+        """check if the match can be scheduled (elimination dependency)"""
         # skip by matches
         if self._is_bye_match(match):
             return False
@@ -684,15 +767,15 @@ class TournamentScheduler:
         if not match.round or match.round == 1:
             return True
         
-        # 檢查前驅比賽是否存在
+        # check if the previous match exists
         prev_match1 = self._get_match_by_id(match.prev_match1_id)
         prev_match2 = self._get_match_by_id(match.prev_match2_id)
         
-        # 如果前驅比賽不存在，可能是第一輪的比賽
+        # if the previous match does not exist, it might be the first round match
         if not prev_match1 or not prev_match2:
             return True
         
-        # 檢查前驅比賽是否已安排
+        # check if the previous match is scheduled
         prev_match1_scheduled = prev_match1 in self.scheduled_matches
         prev_match2_scheduled = prev_match2 in self.scheduled_matches
         
@@ -721,73 +804,73 @@ class TournamentScheduler:
         return False
 
     def create_schedule(self, tournament_id, schedule_data):
-        """create the schedule in the database - 覆蓋現有賽程，只保留一個版本"""
+        """create the schedule in the database"""
         try:
             tournament = Tournament.query.filter_by(id=tournament_id).first()
             if not tournament:
                 raise ValueError(f"Tournament {tournament_id} not found")
             
-            # 刪除現有的賽程和相關項目
+            # Delete the previous match_schedule, and related objects
             existing_schedules = Schedule.query.filter_by(tournament_id=tournament_id).all()
             for existing_schedule in existing_schedules:
-                # 刪除相關的 schedule items
+                # Delete related schedule items
                 ScheduleItem.query.filter_by(schedule_id=existing_schedule.id).delete()
                 db.session.delete(existing_schedule)
             
             db.session.commit()
             
-            # 創建新賽程 - 使用固定的時間設定
+            # Create new schedue with fixed start_time
             schedule_dict = {
                 'tournament_id': tournament_id,
                 'start_date': tournament.start_date,
                 'end_date': tournament.end_date,
-                'start_time': datetime.strptime('09:00', '%H:%M').time(),  # 固定 9:00 開始
-                'end_time': datetime.strptime('18:00', '%H:%M').time(),    # 固定 18:00 結束
+                'start_time': datetime.strptime('09:00', '%H:%M').time(),  # start at 9:00
+                'end_time': datetime.strptime('18:00', '%H:%M').time(),    # end at 18:00
                 'total_courts': self.total_court,
-                'match_duration': 30,  # 固定 30 分鐘
+                'match_duration': 30,  # each match cost 30 mins
                 'total_matches': len(self.scheduled_matches),
                 'total_batches': len(self.scheduled_matches) // self.total_court + (1 if len(self.scheduled_matches) % self.total_court > 0 else 0),
                 'status': 'active'
             }
             
-            # 直接創建 Schedule 實例
+            # create schedule object
             schedule = Schedule(**schedule_dict)
             db.session.add(schedule)
-            db.session.flush()  # 獲取 schedule.id
+            db.session.flush()  # flush() to get schedule.id
             
-            # 創建 schedule items
+            # create schedule items
             current_date = schedule.start_date
             batch_number = 1
             order_in_batch = 0
             
-            # 計算每個 batch 的時間
+            # compute time for each batch
             batch_start_time = schedule.start_time  # 9:00
             batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 9:30
             batch_end_time = batch_end_time.time()
             
             for i, match in enumerate(self.scheduled_matches):
-                # 檢查是否需要新的批次
+                # check if need a new batch
                 if order_in_batch >= self.total_court:
                     batch_number += 1
                     order_in_batch = 0
                     
-                    # 計算下一個 batch 的時間
+                    # compute the time for next batch
                     batch_start_time = batch_end_time  # 9:30
                     batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 10:00
                     batch_end_time = batch_end_time.time()
                     
-                    # 檢查是否需要新的一天
-                    if batch_start_time >= schedule.end_time:  # 如果超過 18:00
+                    # check if the time exceed endtime, if so, need to process at the next day
+                    if batch_start_time >= schedule.end_time:  # if exceed  18:00
                         current_date += timedelta(days=1)
-                        batch_start_time = schedule.start_time  # 重設為 9:00
+                        batch_start_time = schedule.start_time  # set to 9:00
                         batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 9:30
                         batch_end_time = batch_end_time.time()
                 
-                # 防呆：如果超過賽事結束日期就不排了
+                # if current date exceed tournament.end_date
                 if current_date > schedule.end_date:
                     break
                 
-                # 準備 schedule_item_dict
+                # prepare for schedule_item_dict
                 schedule_item_dict = {
                     'schedule_id': schedule.id,
                     'match_id': match.id,
@@ -800,7 +883,7 @@ class TournamentScheduler:
                     'status': 'scheduled'
                 }
                 
-                # 創建 ScheduleItem 實例
+                # create ScheduleItem object
                 schedule_item = ScheduleItem(**schedule_item_dict)
                 db.session.add(schedule_item)
                 
@@ -814,7 +897,7 @@ class TournamentScheduler:
             raise e
 
     def _add_time(self, time, minutes):
-        """時間加法"""
+        """processing addition in time"""
         dt = datetime.combine(datetime.today(), time)
         new_dt = dt + timedelta(minutes=minutes)
         return new_dt.time()

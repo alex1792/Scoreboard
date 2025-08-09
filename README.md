@@ -574,3 +574,22 @@ Match.umpire_id → User.id (umpire id)
 - Emit to frontend
 - Fix creating match record bugs (not assigning prev_match_id to elimination match)
 ---
+
+### 2025/08/01
+- Add user role 'host' into the system
+- Different user.role have different permission
+- At homepage, different user.role can view different icons (admin can see more functions)
+- Optimized the authorization function. Passing the role parameter the function can return whether you have the permission
+- Integrate ManageMatchesPage with MatchesPage (admin and host can edit matches in the MatchesPage)
+- Modified Database Model, craating new column 'tournament.host_id'
+---
+
+### 2025/08/03
+- Write comments for services.py
+- fix admin at matchesPage can not click match card
+---
+
+### 2025/08/08
+- Add delete all match inside the matchesPage
+- Fix the delete match button. After delelte, do not navigate to the scoreboard page.
+---

@@ -268,30 +268,30 @@
 }
 
 /* 關閉按鈕 */
-.close-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 16px;
-    height: 16px;
-    background: #ff5656;
-    color: #424141;
-    border: none;
-    border-radius: 50%;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    transition: background 0.2s;
-    padding: 0;
-    line-height: 1;
+.match-card .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background: #ff5656;
+  color: #424141;
+  border: none;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s;
+  padding: 0;
+  line-height: 0; /* 消除字型本身的額外行高偏移 */
+  text-align: center;
 }
-
-.close-btn:hover {
-    background: #c30000;
+.match-card .close-btn:hover {
+  background: #c30000;
 }
 
 /* 晉級比賽信息 */

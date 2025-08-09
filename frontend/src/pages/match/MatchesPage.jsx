@@ -4,7 +4,7 @@ import { useMatchInfoListener } from '../../api/socketService';
 import { useFetchMatchInfoByTournament } from '../../api/api';
 import { useAuth } from '../../context/AuthContext'; 
 import MatchCard from '../../components/match/MatchCard';
-import { deleteMatch, assignUmpire } from '../../api/api';
+import { deleteMatch, assignUmpire, deleteAllMatch } from '../../api/api';
 import '../../styles/pages/match/matches.css';
 
 const MatchesPage = () => {  // 移除 currentUser prop
@@ -114,6 +114,30 @@ const MatchesPage = () => {  // 移除 currentUser prop
     setSelectedEvent('all');
     setSelectedGroup('all');
   };
+
+  // state
+  const [deletingAll, setDeletingAll] = useState(false);
+
+  // handler
+  const deleteAllMatches = async () => {
+    if (!hasAdminAccess()) return;
+    if (!window.confirm('Do you want to delete all matches in this tournament? This action cannot be undone.')) return;
+    try {
+      setDeletingAll(true);
+      const success = await deleteAllMatch(tournamentId);
+      if (success) {
+        setMatches([]);
+        setFilteredMatches([]);
+        resetFilters();
+        alert('All matches are deleted');
+      } else {
+        alert('Delete failed, please try again later');
+      }
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
 
   const getStatusColor = (status) => {
     const colorMap = {
@@ -228,6 +252,15 @@ const MatchesPage = () => {  // 移除 currentUser prop
           <button onClick={resetFilters} className="reset-filters-btn">
             Reset
           </button>
+          {hasAdminAccess() && (
+            <button
+              onClick={deleteAllMatches}
+              className="delete-all-matches-btn"
+              disabled={deletingAll || matches.length === 0}
+            >
+              {deletingAll ? 'Deleting…' : 'Delete All Matches'}
+            </button>
+          )}
         </div>
 
         <div className="matches-grid">
@@ -237,6 +270,7 @@ const MatchesPage = () => {  // 移除 currentUser prop
                 <MatchCard
                 key={match.id}
                 match={match}
+                isClickable={true}
                 onAssignUmpire={assignUmpire}
                 onDelete={handleDeleteMatch}
                 showAssignUmpireButton={true}

@@ -1,5 +1,6 @@
 from ..models import Match, User, Event, db, ScheduleItem
 from ..utils import get_match_data
+from flask_jwt_extended import jwt_required
 
 class MatchService:
     """
@@ -16,13 +17,13 @@ class MatchService:
     
     @staticmethod
     def get_all_matches():
-        """獲取所有比賽"""
+        """get all matches"""
         matches = Match.query.all()
         return [get_match_data(match) for match in matches]
 
     @staticmethod
     def get_match_by_id(match_id):
-        """根據ID獲取比賽"""
+        """get a match by match.id"""
         match = Match.query.get(match_id)
         if not match:
             return None
@@ -30,7 +31,7 @@ class MatchService:
 
     @staticmethod
     def create_match(match_data):
-        """創建新比賽"""
+        """create a new match"""
         new_match = Match(**match_data)
         db.session.add(new_match)
         db.session.commit()
@@ -38,7 +39,7 @@ class MatchService:
 
     @staticmethod
     def assign_umpire(match_id, umpire_id):
-        """分配裁判給比賽"""
+        """assign an umpire to a match"""
         match = Match.query.get(match_id)
         umpire = User.query.get(umpire_id)
         
@@ -53,7 +54,7 @@ class MatchService:
 
     @staticmethod
     def update_score(match_id, player, score):
-        """更新比賽分數"""
+        """update the score of a match"""
         match = Match.query.get(match_id)
         if not match:
             raise ValueError("Match not found")
@@ -68,19 +69,19 @@ class MatchService:
 
     @staticmethod
     def update_match_status(match_id, new_status):
-        """更新比賽狀態"""
+        """update the status of a match (Scheduled, Ongoing, Finished)"""
         match = Match.query.get(match_id)
         if not match:
             raise ValueError("Match not found")
 
-        # 先更新狀態
+        # update the status of the match
         match.status = new_status
         
-        # 如果狀態是 Finished，則確定勝者
+        # if the status is Finished, determine the winner
         if new_status == 'Finished':
             try:
                 winner_info = MatchService.determine_winner(match_id)
-                print(f"Winner determined: {winner_info}")  # 添加調試信息
+                print(f"Winner determined: {winner_info}")  # add debug info
             except ValueError as e:
                 raise ValueError(f"Cannot finish match: {str(e)}")
         
@@ -89,29 +90,40 @@ class MatchService:
 
     @staticmethod
     def clear_all_matches():
-        """清除所有比賽"""
+        """clear all matches"""
         Match.query.delete()
         db.session.commit()
 
     @staticmethod
     def delete_match(match_id):
-        """刪除特定比賽"""
+        """delete a specific match"""
         match = Match.query.get(match_id)
         if not match:
             raise ValueError("Match not found")
         
-        # 先刪除相關的 ScheduleItem
+        # delete the related ScheduleItem
         schedule_items = ScheduleItem.query.filter_by(match_id=match_id).all()
         for item in schedule_items:
             db.session.delete(item)
         
-        # 然後刪除 Match
+        # delete the match
         db.session.delete(match)
         db.session.commit()
 
     @staticmethod
+    def delete_all_matches_by_tournament_id(tournament_id):
+        matches = Match.query.filter_by(tournament_id=tournament_id).all()
+        for match in matches:
+            schedule_items = ScheduleItem.query.filter_by(match_id=match.id).all()
+            for item in schedule_items:
+                db.session.delete(item)
+            db.session.delete(match)
+        db.session.commit()
+    
+
+    @staticmethod
     def get_matches_by_umpire(umpire_id):
-        """獲取裁判負責的比賽"""
+        """get the matches that the umpire is responsible for"""
         match = Match.query.filter_by(umpire_id=umpire_id).first()
         if not match:
             return None
@@ -126,21 +138,21 @@ class MatchService:
 
     @staticmethod
     def get_raw_matches_by_tournament(tournament_id):
-        """獲取錦標賽的原始 Match 對象（未經 get_match_data 處理）"""
+        """get the raw matches of a tournament (not processed by get_match_data)"""
         matches = Match.query.filter_by(tournament_id=tournament_id).all()
         return matches if matches else []
 
     @staticmethod
     def update_match_winner(match_id, winner_name):
-        """更新比賽勝者並連鎖更新後續比賽"""
+        """update the winner of a match and chain update the next matches"""
         match = Match.query.get(match_id)
         if not match:
             return False
         
-        # 更新當前比賽的勝者
-        # ... 更新邏輯
+        # update the winner of the current match
+        # ... update logic
         
-        # 查找並更新後續比賽
+        # find and update the next matches
         next_matches = Match.query.filter(
             (Match.prev_match1_id == match_id) | 
             (Match.prev_match2_id == match_id)
@@ -152,9 +164,9 @@ class MatchService:
             elif next_match.player2_from_match == match_id:
                 next_match.player2_name = winner_name
             
-            # 如果兩個選手都確定了，可以開始這場比賽
+            # if both players are determined, start the match
             if next_match.player1_name and next_match.player2_name:
-                next_match.status = 'pending'
+                next_match.status = 'Scheduled'
         
         db.session.commit()
         return True
@@ -229,8 +241,6 @@ class MatchService:
         match.winner_name = winner_name
         match.loser_name = loser_name
         
-        # print(f"Before commit - winner1_id: {match.winner1_id}, winner2_id: {match.winner2_id}")
-        # print(f"Before commit - loser1_id: {match.loser1_id}, loser2_id: {match.loser2_id}")
         
         db.session.commit()
 
@@ -240,9 +250,6 @@ class MatchService:
             print(f"Updating next round match: {match.next_match_id}")
             MatchService.update_next_round_match(match_id)
 
-        
-        # print(f"After commit - winner1_id: {match.winner1_id}, winner2_id: {match.winner2_id}")
-        # print(f"After commit - loser1_id: {match.loser1_id}, loser2_id: {match.loser2_id}")
         
         return {'winner_name': winner_name, 'loser_name': loser_name}
         

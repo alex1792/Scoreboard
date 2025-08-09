@@ -148,14 +148,14 @@
 
 
 /* test for new template */
-/* .close-btn {
+.close-btn {
   position: absolute;
   top: 10px;
   right: 10px;
   width: 24px;
   height: 24px;
   background: #ff3434;
-  color: #fff;
+  color: #424141;
   border: none;
   border-radius: 50%;
   font-size: 1.1em;
@@ -167,9 +167,10 @@
   z-index: 2;
   transition: background 0.2s;
 }
-.close-btn:hover {
+/* .close-btn:hover {
   background: #c30000;
 } */
+
 .match-card {
   position: relative; /* 讓 close-btn 能定位在卡片右上角 */
 }
@@ -178,7 +179,7 @@
   position: relative;
 }
 
-.close-btn {
+/* .close-btn {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -188,7 +189,7 @@
   color: #424141;
   border: none;
   border-radius: 50%;
-  font-size: 12px; /* 建議用 px，確保字型大小 */
+  font-size: 12px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
@@ -197,12 +198,12 @@
   z-index: 10;
   transition: background 0.2s;
   padding: 0;
-  line-height: 1; /* 關鍵，確保 X 不會上下偏移 */
+  line-height: 1;
 }
 
 .close-btn:hover {
   background: #c30000;
-}
+} */
 
 .match-category {
   margin-right: 36px; /* 預留空間給 close-btn，避免重疊 */
@@ -576,7 +577,8 @@
   cursor: not-allowed;
 }
 
-.reset-filters-btn {
+.reset-filters-btn,
+.delete-all-matches-btn {
   background: #6c757d;
   color: white;
   border: none;
@@ -587,8 +589,38 @@
   transition: background-color 0.2s;
 }
 
-.reset-filters-btn:hover {
+.reset-filters-btn:hover,
+.delete-all-matches-btn:hover {
   background: #5a6268;
+}
+
+/* 統一按鈕視覺尺寸，避免因為文字長度導致寬度不同 */
+.reset-filters-btn,
+.delete-all-matches-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* width: 180px;           統一寬度 */
+  height: 25px;
+  white-space: nowrap;    /* 避免換行造成高度不一致 */
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* 把刪除按鈕推到右側 */
+.filters-container .delete-all-matches-btn {
+  margin-left: auto;
+}
+
+@media (min-width: 769px) {
+  .filters-container { flex-wrap: nowrap; }
+}
+
+@media (max-width: 768px) {
+  .reset-filters-btn,
+  .delete-all-matches-btn {
+    width: 100%;
+  }
 }
 
 /* 無比賽顯示 */
@@ -645,3 +677,5 @@
 .match-predecessors small {
   font-style: italic;
 }
+
+

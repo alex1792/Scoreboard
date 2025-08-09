@@ -138,7 +138,7 @@ const MatchCard = ({
         <button
           className="close-btn"
           aria-label="Close"
-          onClick={() => onDelete(match.id)}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(match.id); }}
           type="button"
         >
           &times;

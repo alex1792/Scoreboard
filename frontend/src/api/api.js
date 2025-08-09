@@ -123,6 +123,31 @@ export async function deleteMatch(matchId) {
     }
 };
 
+export async function deleteAllMatch(tournamentId) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(
+            `http://localhost:5001/api/tournaments/${tournamentId}/delete_all_matches`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if(!response.ok) {
+            console.log('Failed to delete all match...');
+            return false;
+        }
+
+        return true;
+    } catch(err) {
+        console.error('Fetch Error:', err);
+        return false;
+    }
+}
+
 // ================================================================================
 // ================================================================================
 // ========================= Create Match  ========================================
