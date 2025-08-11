@@ -30,6 +30,9 @@ class Tournament(db.Model):
     description = db.Column(db.Text)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
+    start_time = db.Column(db.String(5), nullable=True, default='09:00')
+    end_time = db.Column(db.String(5), nullable=True, default='18:00')
+    match_duration = db.Column(db.Integer, nullable=True, default=30)
     location = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(20), default='Upcoming') # Upcomming, Ongoing, Completed
     events = db.relationship('Event', backref='tournament', lazy=True, cascade='all, delete-orphan')

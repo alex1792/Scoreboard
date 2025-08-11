@@ -90,6 +90,17 @@ class TournamentService:
             
             if 'end_date' in tournament_info and tournament_info['end_date']:
                 tournament_info['end_date'] = datetime.fromisoformat(tournament_info['end_date'])
+
+            # # convert time strings to time objects
+            # if 'start_time' in tournament_info and tournament_info['start_time']:
+            #     tournament_info['start_time'] = datetime.strptime(tournament_info['start_time'], '%H:%M').time()
+            
+            # if 'end_time' in tournament_info and tournament_info['end_time']:
+            #     tournament_info['end_time'] = datetime.strptime(tournament_info['end_time'], '%H:%M').time()
+            
+            # # convert match_duration to integer
+            # if 'match_duration' in tournament_info:
+            #     tournament_info['match_duration'] = int(tournament_info['match_duration'])
             
             # Create tournament
             tournament = Tournament(**tournament_info)

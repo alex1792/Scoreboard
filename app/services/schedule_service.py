@@ -74,15 +74,14 @@ class TournamentScheduler:
             # Get the exact time of tournament
             tournament = Tournament.query.get(tournament_id)
             if tournament:
-                # use tournament.start_date as start date.
-                start_time = tournament.start_date.strftime('%H:%M')
-                # set end time be 9 hours of start_time (can be modified)
-                end_time = (tournament.start_date + timedelta(hours=9)).strftime('%H:%M')
+                start_time = tournament.start_time if tournament.start_time else '09:00'
+                end_time = tournament.end_time if tournament.end_time else '18:00'
+                match_duration = tournament.match_duration if tournament.match_duration else 30
                 
                 schedule_data = {
                     'start_time': start_time,
                     'end_time': end_time, 
-                    'match_duration': 30
+                    'match_duration': match_duration,
                 }
             else:
                 # Use default time when the start_time is not found
@@ -91,7 +90,7 @@ class TournamentScheduler:
                     'end_time': '18:00',
                     'match_duration': 30
                 }
-            
+            print(f"schedule_data: {schedule_data}")
             self.create_schedule(tournament_id, schedule_data)
 
     def _group_by_round(self, matches):
@@ -818,16 +817,25 @@ class TournamentScheduler:
                 db.session.delete(existing_schedule)
             
             db.session.commit()
+
+            # get start_time, end_time, match_duration from schedule_data
+            start_time_str = schedule_data.get('start_time', '09:00')
+            end_time_str = schedule_data.get('end_time', '18:00')
+            match_duration = schedule_data.get('match_duration', 30)
+            
+            # convert time string to time object
+            start_time = datetime.strptime(start_time_str, '%H:%M').time()
+            end_time = datetime.strptime(end_time_str, '%H:%M').time()
             
             # Create new schedue with fixed start_time
             schedule_dict = {
                 'tournament_id': tournament_id,
                 'start_date': tournament.start_date,
                 'end_date': tournament.end_date,
-                'start_time': datetime.strptime('09:00', '%H:%M').time(),  # start at 9:00
-                'end_time': datetime.strptime('18:00', '%H:%M').time(),    # end at 18:00
+                'start_time': start_time,
+                'end_time': end_time,
                 'total_courts': self.total_court,
-                'match_duration': 30,  # each match cost 30 mins
+                'match_duration': match_duration,  
                 'total_matches': len(self.scheduled_matches),
                 'total_batches': len(self.scheduled_matches) // self.total_court + (1 if len(self.scheduled_matches) % self.total_court > 0 else 0),
                 'status': 'active'

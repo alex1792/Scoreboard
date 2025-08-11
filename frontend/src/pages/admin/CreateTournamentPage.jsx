@@ -11,6 +11,9 @@ const TournamentCreatePage = () => {
         end_date: '',
         location: '',
         description: '',
+        start_time: '09:00',
+        end_time: '18:00',
+        match_duration: 30,
     });
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [groups, setGroups] = useState({});
@@ -183,10 +186,31 @@ const TournamentCreatePage = () => {
                 }
             }
         }
+
+        // Add this validation in handleSubmit function
+        if (!tournamentData.start_time || !tournamentData.end_time || !tournamentData.match_duration) {
+            alert('Please fill in all time settings');
+            return;
+        }
+
+        if (tournamentData.start_time >= tournamentData.end_time) {
+            alert('Start time must be before end time');
+            return;
+        }
+
+        if (tournamentData.match_duration < 15 || tournamentData.match_duration > 120) {
+            alert('Match duration must be between 15 and 120 minutes');
+            return;
+        }
         
-        // 準備提交資料
+        // 準備提交資料 - 合併 scheduleSettings 到 tournamentData
         const submitData = {
-            tournament: tournamentData,
+            tournament: {
+                ...tournamentData,
+                start_time: tournamentData.start_time,
+                end_time: tournamentData.end_time,
+                match_duration: parseInt(tournamentData.match_duration)
+            },
             events: selectedEvents.map(eventName => ({
                 name: eventName,
                 groups: groups[eventName].map(group => ({
@@ -265,6 +289,41 @@ const TournamentCreatePage = () => {
                             placeholder="Enter tournament description (Shift + Enter for new line)"
                             rows={4}
                             className="description-textarea"
+                        />
+                    </div>
+                </div>
+
+                {/* Schedule Settings */}
+                <div className="section">
+                    <h2>Schedule Settings</h2>
+                    <div className="form-group">
+                        <label>Start Time:</label>
+                        <input
+                            type="time"
+                            name="start_time"
+                            value={tournamentData.start_time}
+                            onChange={handleTournamentChange}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>End Time:</label>
+                        <input
+                            type="time"
+                            name="end_time"
+                            value={tournamentData.end_time}
+                            onChange={handleTournamentChange}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Match Duration (minutes):</label>
+                        <input
+                            type="number"
+                            name="match_duration"
+                            value={tournamentData.match_duration}
+                            onChange={handleTournamentChange}
+                            min="15"
+                            max="120"
+                            step="5"
                         />
                     </div>
                 </div>
