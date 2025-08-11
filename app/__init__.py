@@ -7,7 +7,10 @@ import os
 import secrets
 
 def create_app():
-    app = Flask(__name__)
+    # app = Flask(__name__)
+    app = Flask(__name__, 
+                static_folder='../frontend/build/static',  # 指向 build 的 static 資料夾
+                template_folder='../frontend/build')       # 指向 build 資料夾
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}) # 因為前端運行在localhost:3000, 後端運行在localhost:5001, 屬於跨域請求, 必須使用CORS
     
     # socketio.init_app(app)
