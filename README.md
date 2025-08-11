@@ -593,3 +593,8 @@ Match.umpire_id → User.id (umpire id)
 - Add delete all match inside the matchesPage
 - Fix the delete match button. After delelte, do not navigate to the scoreboard page.
 ---
+
+### 2025/08/11
+- Add schedule setting in CreateTournamentPage
+- Update the SchedulePage
+---
