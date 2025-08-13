@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchInfoToBackend } from '../../api/api';
 import '../../styles/pages/admin/CreateTournamentPage.css';
+import { API_URLS } from '../../config/urls';
 
 const TournamentCreatePage = () => {
     const navigate = useNavigate();
@@ -224,7 +225,7 @@ const TournamentCreatePage = () => {
         
         try {
             // 這裡調用 API 來創建 tournament
-            const response = await fetchInfoToBackend('http://localhost:5001/api/tournaments/create_tournament', submitData);
+            const response = await fetchInfoToBackend(API_URLS.CREATE_TOURNAMENT, submitData);
             console.log('Response:', response);
             alert('Tournament created successfully!');
             navigate('/tournaments');

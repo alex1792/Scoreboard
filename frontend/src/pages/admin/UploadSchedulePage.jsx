@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { uploadFile } from '../../api/api';
+import { API_URLS } from '../../config/urls';
 
 const UploadSchedule = () => {
     const [file, setFile] = useState(null);
@@ -19,7 +20,7 @@ const UploadSchedule = () => {
         formData.append('file', file);
 
         // console.log('Uplaoding file:', file);
-        uploadFile('http://localhost:5001/api/admin/upload_match_schedule', formData);
+        uploadFile(API_URLS.UPLOAD_MATCH_SCHEDULE, formData);
     };
 
     return (

@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import MatchCard from '../../components/match/MatchCard';
 import { deleteMatch, assignUmpire, deleteAllMatch } from '../../api/api';
 import '../../styles/pages/match/matches.css';
+import { getTournamentUrl } from '../../config/urls';
 
 const MatchesPage = () => {  // 移除 currentUser prop
   const { currentUser } = useAuth();  // 使用 useAuth hook
@@ -48,7 +49,7 @@ const MatchesPage = () => {  // 移除 currentUser prop
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}`);
+        const response = await fetch(`${getTournamentUrl(tournamentId)}`);
         if (response.ok) {
           const data = await response.json();
           setTournament(data.data);

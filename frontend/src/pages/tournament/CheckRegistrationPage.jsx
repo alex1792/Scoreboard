@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import '../../styles/pages/tournament/CheckRegistrationPage.css';
 import { fetchInfoToBackend, updateRegistrationStatus } from '../../api/api';
+import { getRegistrationStatusUrl, getTournamentDetailsUrl, getTournamentGenerateMatchesUrl } from '../../config/urls';
 
 function CheckRegistrationPage() {
   const { tournamentId } = useParams();
@@ -62,7 +63,7 @@ function CheckRegistrationPage() {
   const fetchRegistrations = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost:5001/api/registrations/tournament/${tournamentId}/registrations`, {
+      const response = await fetch(`${getRegistrationsByTournamentUrl(tournamentId)}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -86,7 +87,7 @@ function CheckRegistrationPage() {
 
   const fetchTournamentDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}`);
+      const response = await fetch(`${getTournamentUrl(tournamentId)}`);
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -148,7 +149,7 @@ function CheckRegistrationPage() {
     setGenerating(true);
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}/generate_matches`, {
+      const response = await fetch(`${getTournamentGenerateMatchesUrl(tournamentId)}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

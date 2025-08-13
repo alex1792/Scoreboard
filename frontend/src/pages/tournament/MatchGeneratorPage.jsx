@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { uploadAndDownload } from '../../api/api';
 import '../../styles/pages/tournament/MatchGenerator.css';
+import { API_URLS } from '../../config/urls';
 
 const MatchGenerator = () => {
     const [file, setFile] = useState(null);
@@ -95,7 +96,7 @@ const MatchGenerator = () => {
         
         formData.append('rules', rulesString);
 
-        uploadAndDownload('http://localhost:5001/api/admin/upload_participants', formData, 'all_matches.xlsx');
+        uploadAndDownload(API_URLS.UPLOAD_PARTICIPANTS, formData, 'all_matches.xlsx');
     };
 
     const getEnabledCount = () => Object.values(matchRules).filter(rule => rule.enabled).length;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchInfoFromBackend, fetchInfoToBackend } from '../../api/api';
 import '../../styles/pages/tournament/SignUpTournamentPage.css';
+import { getTournamentUrl } from '../../config/urls';
 
 const SignUpTournamentPage = () => {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ const SignUpTournamentPage = () => {
         const fetchTournament = async () => {
             try {
                 console.log('Fetching tournament details for ID:', tournamentId);
-                const data = await fetchInfoFromBackend(`http://localhost:5001/api/tournaments/${tournamentId}`);
+                const data = await fetchInfoFromBackend(`${getTournamentUrl(tournamentId)}`);
                 console.log('Tournament data:', data);
                 
                 if (data.status === 'success') {
@@ -165,7 +166,7 @@ const SignUpTournamentPage = () => {
 
         try {
             console.log('Submitting:', submissionData);
-            const response = await fetchInfoToBackend(`http://localhost:5001/api/registrations/tournaments/${tournament.id}/registrations`, submissionData);
+            const response = await fetchInfoToBackend(`${signUpTournamentUrl(tournament.id())}`, submissionData);
             console.log('Response:', response);
             if (response.status === 'success') {
                 alert('Registration successful!');

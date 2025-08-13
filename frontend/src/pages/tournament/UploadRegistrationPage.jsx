@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { uploadRegistrationFile, fetchInfoFromBackend } from '../../api/api';
 import '../../styles/pages/tournament/UploadRegistrationPage.css';
+import { getTournamentUrl } from '../../config/urls';
 
 const UploadRegistrationPage = () => {
   const { tournamentId } = useParams();
@@ -16,7 +17,7 @@ const UploadRegistrationPage = () => {
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const data = await fetchInfoFromBackend(`http://localhost:5001/api/tournaments/${tournamentId}`);
+        const data = await fetchInfoFromBackend(`${getTournamentUrl(tournamentId)}`);
         if (data.status === 'success') {
           setTournament(data.data);
         }

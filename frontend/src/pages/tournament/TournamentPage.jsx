@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { fetchInfoFromBackend } from '../../api/api';
 import '../../styles/pages/tournament/TournamentPage.css';
+import { API_URLS } from '../../config/urls';
 
 const TournamentPage = () => {
   const [tournaments, setTournaments] = useState([]);
@@ -16,7 +17,7 @@ const TournamentPage = () => {
       try {
         console.log('=== Starting to fetch tournaments ===');
         
-        const data = await fetchInfoFromBackend('http://localhost:5001/api/tournaments');
+        const data = await fetchInfoFromBackend(API_URLS.ALL_TOURNAMENTS);
         
         console.log('=== Response received ===');
         console.log('Full response:', data);

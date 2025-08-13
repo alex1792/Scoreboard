@@ -21,9 +21,6 @@ const UploadSchedule = () => {
             formData.append('file', file);
             formData.append('total_court', totalCourt);
 
-            // console.log('Uplaoding file:', file);
-            // uploadFile('http://localhost:5001/api/admin/upload_round_robin', formData);
-
             const blob = await generateRoundRobin(formData);
             downloadBlob(blob, 'round_robin_schedule.xlsx');
             alert('Schedule generated successfully!');

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import io from 'socket.io-client';
 import '../../styles/pages/match/scoreboard.css';
+import { getMatchUrl, getMatchScoreUrl, getMatchNextGameUrl, getMatchEndMatchUrl } from '../../config/urls';
 
 const Scoreboard = () => {
   const { currentUser } = useAuth();
@@ -24,7 +25,7 @@ const Scoreboard = () => {
 
   // 1. Fetch match data from backend API
   useEffect(() => {
-    fetch(`http://localhost:5001/api/matches/${matchId}`)
+    fetch(`${getMatchUrl(matchId)}`)
       .then(res => res.json())
       .then(result => {
         if (result.status === 'success') {
@@ -132,7 +133,7 @@ const Scoreboard = () => {
 
     try {
       const requestInfo = {
-        url: `http://localhost:5001/api/matches/${Number(matchId)}/score`,
+        url: `${getMatchScoreUrl(Number(matchId))}`,
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -177,7 +178,7 @@ const Scoreboard = () => {
     console.log('當前 gamesWon:', gamesWon); // 新增調試
 
     try {
-      const res = await fetch(`http://localhost:5001/api/matches/${Number(matchId)}/next_game`, {
+      const res = await fetch(`${getMatchNextGameUrl(Number(matchId))}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -213,7 +214,7 @@ const Scoreboard = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5001/api/matches/${Number(matchId)}/end_match`, {
+      const res = await fetch(`${getMatchEndMatchUrl(Number(matchId))}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -264,7 +265,7 @@ const Scoreboard = () => {
         newStatus = 'Scheduled';
       }
 
-      const res = await fetch(`http://localhost:5001/api/matches/${matchId}/score`, {
+      const res = await fetch(`${getMatchScoreUrl(Number(matchId))}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
