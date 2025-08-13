@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/auth/LoginForm.css';
+import { API_URLS } from '../../config/urls';
 
 function LoginForm() {
   const [username, setUsername] = useState('');
@@ -20,7 +21,7 @@ function LoginForm() {
     try {
       console.log('Attempting login with:', { username, password });
       
-      const response = await fetch('http://localhost:5001/api/auth/login', {
+      const response = await fetch(API_URLS.LOGIN, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

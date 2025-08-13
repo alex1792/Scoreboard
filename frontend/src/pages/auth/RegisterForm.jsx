@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/auth/RegisterForm.css';
+import { API_URLS } from '../../config/urls';
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ function RegisterForm() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:5001/api/auth/register', {
+      const response = await fetch(API_URLS.REGISTER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

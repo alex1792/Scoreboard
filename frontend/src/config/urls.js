@@ -1,8 +1,8 @@
 // for local test use
-const DEV_BASE_URL = 'http://localhost:5001';
+export const DEV_BASE_URL = 'http://localhost:5001';
 
 // when you are hosting, make sure you use the PROD_BASE_URL
-const PROD_BASE_URL = 'https://alex1792.pythonanywhere.com';
+export const PROD_BASE_URL = 'https://alex1792.pythonanywhere.com';
 
 const BASE_URL = process.env.NODE_ENV === 'production' ? PROD_BASE_URL : DEV_BASE_URL;
 

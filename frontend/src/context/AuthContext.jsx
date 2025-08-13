@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { API_URLS } from '../config/urls';
 
 export const AuthContext = createContext();
 
@@ -20,8 +21,7 @@ export function AuthProvider({ children }) {
 
   const validateToken = async (token) => {
     try {
-      // 呼叫後端 API 驗證 token
-      const response = await fetch('http://localhost:5001/api/auth/validate', {
+      const response = await fetch(API_URLS.VALIDATE, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -32,7 +32,6 @@ export function AuthProvider({ children }) {
         setCurrentUser(userData);
         setIsAuthenticated(true);
       } else {
-        // token 無效，清除
         localStorage.removeItem('access_token');
         setIsAuthenticated(false);
         setCurrentUser(null);
