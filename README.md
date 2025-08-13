@@ -598,3 +598,8 @@ Match.umpire_id → User.id (umpire id)
 - Add schedule setting in CreateTournamentPage
 - Update the SchedulePage
 ---
+
+### 2025/08/12
+- Modularize API
+- Set the urls be environmental variables(only need to modify once when deploy)
+---

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { API_URLS, getMatchUrl, getTournamentUrl, getRegistrationUrl, getUserUrl, getFileUrl, getScoreboardUrl } from '../config/urls';
 
 // ================================================================================
 // ================================================================================
@@ -8,7 +9,8 @@ import { useEffect } from 'react';
 
 export function useFetchMatchInfo(setMatches) {
     useEffect(() => {
-        fetch('http://localhost:5001/api/matches')
+        // 'http://localhost:5001/api/matches'
+        fetch(API_URLS.ALL_MATCHES)
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
@@ -22,7 +24,8 @@ export function useFetchMatchInfo(setMatches) {
 
 export function useFetchMatchInfoByTournament(setMatches, tournamentId) {
     useEffect(() => {
-        fetch(`http://localhost:5001/api/tournaments/${tournamentId}/matches`)
+        // `http://localhost:5001/api/tournaments/${tournamentId}/matches`
+        fetch(`${getTournamentUrl(tournamentId)}/matches`)
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
@@ -42,8 +45,8 @@ export function useFetchMatchInfoByTournament(setMatches, tournamentId) {
 export function useFetchUmpireMatchId(currentUser, setMyMatchId) {
     useEffect(() => {
     if (currentUser?.role === 'umpire') {
-      // console.log('currentUser.id: ', currentUser.id);
-      fetch(`http://localhost:5001/api/matches/umpire/${currentUser.id}`)
+    // `http://localhost:5001/api/matches/umpire/${currentUser.id}`
+      fetch(`${API_URLS.GET_MATCH_BY_UMPIRE}/${currentUser.id}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === 'success' && result.data?.id) {
@@ -66,8 +69,9 @@ export async function assignUmpire(matchId) {
 
     try {
         const token = localStorage.getItem('access_token');
+        // `http://localhost:5001/api/matches/${matchId}/umpire`
         const response = await fetch(
-            `http://localhost:5001/api/matches/${matchId}/umpire`,
+            `${getMatchUrl(matchId)}/umpire`,
             {
                 method: 'POST',
                 headers: { 
@@ -99,7 +103,8 @@ export async function deleteMatch(matchId) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            `http://localhost:5001/api/matches/${matchId}`,
+            // `http://localhost:5001/api/matches/${matchId}`
+            `${getMatchUrl(matchId)}`,
             {
                 method: 'DELETE',
                 headers: { 
@@ -127,12 +132,13 @@ export async function deleteAllMatch(tournamentId) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            `http://localhost:5001/api/tournaments/${tournamentId}/delete_all_matches`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+            // `http://localhost:5001/api/tournaments/${tournamentId}/delete_all_matches`
+            `${getTournamentUrl(tournamentId)}/delete_all_matches`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
             }
         });
 
@@ -157,14 +163,17 @@ export async function deleteAllMatch(tournamentId) {
 export async function createMatch(matchData) {
     try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://localhost:5001/api/matches/create_match', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(matchData)
-        });
+        const response = await fetch(
+            // 'http://localhost:5001/api/matches/create_match'
+            `${API_URLS.CREATE_MATCH}`, 
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(matchData)
+            });
 
         if(!response.ok) {
             throw new Error('Create match failed');
@@ -184,17 +193,20 @@ export async function createMatch(matchData) {
 // ================================================================================
 export const updateUserRole = async (userId, newRole) => {
   try {
-    const response = await fetch(`http://localhost:5001/api/admin/users`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        new_role: newRole
-      })
-    });
+    const response = await fetch(
+        // `http://localhost:5001/api/admin/users`
+        `${API_URLS.ALL_USERS}`,
+        {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                new_role: newRole
+            })
+        });
 
     if (!response.ok) {
       throw new Error('Failed to update user role');
@@ -245,13 +257,16 @@ export async function uploadFile(url, formData) {
 export async function generateRoundRobin(formData) {
     try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://localhost:5001/api/admin/upload_all_matches', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
+        const response = await fetch(
+            // `http://localhost:5001/api/admin/upload_all_matches`
+            `${API_URLS.UPLOAD_ALL_MATCHES}`, 
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
 
         if (response.ok) {
             const contentType = response.headers.get('content-type');
@@ -323,11 +338,14 @@ export async function uploadAndDownload(url, formData, filename = 'download.xlsx
 export async function fetchUsers() {
     try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://localhost:5001/api/admin/users', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await fetch(
+            // `http://localhost:5001/api/admin/users`
+            `${API_URLS.ALL_USERS}`, 
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
         const data = await response.json();
         
@@ -392,14 +410,17 @@ export async function fetchInfoFromBackend(url) {
 export async function uploadRegistrationFile(formData, tournamentId) {
   try {
     const token = localStorage.getItem('access_token');
-    const response = await fetch(`http://localhost:5001/api/registrations/tournament/${tournamentId}/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-        // 不要加 'Content-Type': 'multipart/form-data'，fetch 會自動處理
-      },
-      body: formData
-    });
+    const response = await fetch(
+        // `http://localhost:5001/api/registrations/tournament/${tournamentId}/upload`
+        `${API_URLS.UPLOAD_REGISTRATION_FILE}`,
+        {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+                // 不要加 'Content-Type': 'multipart/form-data'，fetch 會自動處理
+            },
+            body: formData
+        });
 
     // 解析回傳的 JSON
     return await response.json();
@@ -418,16 +439,19 @@ export async function uploadRegistrationFile(formData, tournamentId) {
 export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6) {
     try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch(`http://localhost:5001/api/admin/${tournamentId}/generate_schedule_for_tournament`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                total_court: totalCourt
-            })
-        });
+        const response = await fetch(
+            // `http://localhost:5001/api/admin/${tournamentId}/generate_schedule_for_tournament`,
+            `${API_URLS.GENERATE_SCHEDULE_FOR_TOURNAMENT}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    total_court: totalCourt
+                })
+            });
 
         if (response.ok) {
             const contentType = response.headers.get('content-type');
@@ -456,18 +480,19 @@ export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6)
 // ================================================================================
 export async function  getTournamentSchedule(tournamentId) {
     try {
-        console.log('Fetching schedule for tournament:', tournamentId);
-        const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}/schedule`);
+        // console.log('Fetching schedule for tournament:', tournamentId);
+        // `http://localhost:5001/api/tournaments/${tournamentId}/schedule`
+        const response = await fetch(`${getTournamentUrl(tournamentId)}/schedule`);
         
-        console.log('Response status:', response.status);
+        // console.log('Response status:', response.status);
         
         if(response.ok) {
             const data = await response.json();
-            console.log('Raw response data:', data);
+            // console.log('Raw response data:', data);
             return data;
         } else {
             const errorData = await response.json();
-            console.log('Error response:', errorData);
+            // console.log('Error response:', errorData);
             throw new Error(errorData.message || 'Failed to fetch tournament schedule');
         }
     } catch (err) {
@@ -486,14 +511,17 @@ export async function  getTournamentSchedule(tournamentId) {
 export const  updateRegistrationStatus = async (registrationId, newStatus) => {
     try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch(`http://localhost:5001/api/registrations/${registrationId}/status`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
+        const response = await fetch(
+            // `http://localhost:5001/api/registrations/${registrationId}/status`
+            `${API_URLS.UPDATE_REGISTRATION_STATUS}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
 
         if(response.ok) {
             return await response.json();
