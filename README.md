@@ -603,3 +603,8 @@ Match.umpire_id → User.id (umpire id)
 - Modularize API
 - Set the urls be environmental variables(only need to modify once when deploy)
 ---
+
+### 2025/08/13
+- Deploy at pythonanywhere.com
+- Modified the URLs (from localhost to real domian)
+---
