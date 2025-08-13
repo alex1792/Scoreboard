@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { API_URLS, getMatchUrl, getTournamentUrl, getRegistrationUrl, getUserUrl, getFileUrl, getScoreboardUrl } from '../config/urls';
+import { API_URLS, getMatchUrl, getTournamentUrl, getMatchByUmpireUrl, uploadRegistrationFileUrl, generateScheduleForTournamentUrl, getRegistrationStatusUrl } from '../config/urls';
 
 // ================================================================================
 // ================================================================================
@@ -46,7 +46,7 @@ export function useFetchUmpireMatchId(currentUser, setMyMatchId) {
     useEffect(() => {
     if (currentUser?.role === 'umpire') {
     // `http://localhost:5001/api/matches/umpire/${currentUser.id}`
-      fetch(`${API_URLS.GET_MATCH_BY_UMPIRE}/${currentUser.id}`)
+      fetch(`${getMatchByUmpireUrl(currentUser.id)}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === 'success' && result.data?.id) {
@@ -412,7 +412,7 @@ export async function uploadRegistrationFile(formData, tournamentId) {
     const token = localStorage.getItem('access_token');
     const response = await fetch(
         // `http://localhost:5001/api/registrations/tournament/${tournamentId}/upload`
-        `${API_URLS.UPLOAD_REGISTRATION_FILE}`,
+        `${uploadRegistrationFileUrl(tournamentId)}`,
         {
             method: 'POST',
             headers: {
@@ -441,7 +441,7 @@ export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6)
         const token = localStorage.getItem('access_token');
         const response = await fetch(
             // `http://localhost:5001/api/admin/${tournamentId}/generate_schedule_for_tournament`,
-            `${API_URLS.GENERATE_SCHEDULE_FOR_TOURNAMENT}`,
+            `${generateScheduleForTournamentUrl(tournamentId)}`,
             {
                 method: 'POST',
                 headers: {
@@ -513,7 +513,7 @@ export const  updateRegistrationStatus = async (registrationId, newStatus) => {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
             // `http://localhost:5001/api/registrations/${registrationId}/status`
-            `${API_URLS.UPDATE_REGISTRATION_STATUS}`,
+            `${getRegistrationStatusUrl(registrationId)}`,
             {
                 method: 'PUT',
                 headers: {

@@ -21,8 +21,6 @@ export const API_URLS = {
     ALL_TOURNAMENTS: `${BASE_URL}/api/tournaments`,
     CREATE_TOURNAMENT: `${BASE_URL}/api/tournaments/create_tournament`,
 
-    // registration_bp,
-    UPDATE_REGISTRATION_STATUS: `${BASE_URL}/api/registrations/<int:registration_id>/status`,
 
     // match_bp,
     ALL_MATCHES: `${BASE_URL}/api/matches`,
@@ -88,6 +86,7 @@ export const deleteFileUrl = (filename) => `${BASE_URL}/api/files/${filename}`;
 export const getRegistrationsByTournamentUrl = (tournamentId) => `${BASE_URL}/api/registrations/tournament/${tournamentId}/registrations`;
 export const signUpTournamentUrl = (tournamentId) => `${BASE_URL}/api/registrations/tournaments/${tournamentId}/registrations`;
 export const uploadRegistrationFileUrl = (tournamentId) => `${BASE_URL}/api/registrations/tournament/${tournamentId}/upload`;
+export const updateRegistrationStatusUrl = (registrationId) => `${BASE_URL}/api/registrations/${registrationId}/status`;
 
 // 新增：Admin 相關函數
 export const generateScheduleForTournamentUrl = (tournamentId) => `${BASE_URL}/api/admin/${tournamentId}/generate_schedule_for_tournament`;
@@ -98,4 +97,6 @@ export const getMatchByUmpireUrl = (umpireId) => `${BASE_URL}/api/matches/umpire
 
 // 新增：Tournament 相關函數
 export const getTournamentDetailsUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}`;
+
+
        
