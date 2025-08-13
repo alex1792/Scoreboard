@@ -1,9 +1,11 @@
 # Scoreboard
+[Tournament Software Website](https://alex1792.pythonanywhere.com)
 ---
 
 ## Feature Demo
 Some features and functions I developed so far. Check the link below to see how it works.
-[Tournament Software](https://www.youtube.com/playlist?list=PLqC7Br1667IWQhBWm3f_S0-OXqkR5kZiD)
+[Tournament Software Demo Playlist](https://www.youtube.com/playlist?list=PLqC7Br1667IWQhBWm3f_S0-OXqkR5kZiD)
+
 
 ## Project Overview
 
