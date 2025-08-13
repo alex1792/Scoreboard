@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchInfoFromBackend, fetchInfoToBackend } from '../../api/api';
 import '../../styles/pages/tournament/SignUpTournamentPage.css';
-import { getTournamentUrl } from '../../config/urls';
+import { getTournamentUrl, signUpTournamentUrl } from '../../config/urls';
 
 const SignUpTournamentPage = () => {
     const navigate = useNavigate();

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import '../../styles/pages/tournament/CheckRegistrationPage.css';
 import { fetchInfoToBackend, updateRegistrationStatus } from '../../api/api';
-import { getRegistrationStatusUrl, getTournamentDetailsUrl, getTournamentGenerateMatchesUrl } from '../../config/urls';
+import { getRegistrationsByTournamentUrl, getTournamentUrl, getTournamentGenerateMatchesUrl } from '../../config/urls';
 
 function CheckRegistrationPage() {
   const { tournamentId } = useParams();
