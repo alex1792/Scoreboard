@@ -9,9 +9,9 @@
 /coverage
 
 # production
-# /build
+build/
+node_modules/
 
-# misc
 .DS_Store
 .env.local
 .env.development.local
