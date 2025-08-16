@@ -1,0 +1,148 @@
+/* 從 TournamentPage.css 中提取相關樣式 */
+.tournament-card-wrapper {
+  position: relative;
+}
+
+.tournament-card {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.tournament-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.tournament-card .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #ff4757;
+  color: white;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.tournament-card .close-btn:hover {
+  background: #ff3742;
+}
+
+.tournament-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.tournament-id {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.tournament-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.3;
+}
+
+.tournament-info {
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.info-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #333;
+  font-weight: 400;
+}
+
+.tournament-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tournament-actions a {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.signup-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.signup-btn:hover {
+  background: #45a049;
+}
+
+.view-schedule-btn {
+  background: #2196F3;
+  color: white;
+}
+
+.view-schedule-btn:hover {
+  background: #1976D2;
+}
+
+.view-matches-btn {
+  background: #FF9800;
+  color: white;
+}
+
+.view-matches-btn:hover {
+  background: #F57C00;
+}
+
+.view-registrations-btn {
+  background: #9C27B0;
+  color: white;
+}
+
+.view-registrations-btn:hover {
+  background: #7B1FA2;
+}
+
+.tournament-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.tournament-card-link:hover {
+  text-decoration: none;
+}

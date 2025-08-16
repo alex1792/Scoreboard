@@ -1,9 +1,13 @@
 # Scoreboard
+
 [Tournament Software Website](https://alex1792.pythonanywhere.com)
 ---
 
+
 ## Feature Demo
+
 Some features and functions I developed so far. Check the link below to see how it works.
+
 [Tournament Software Demo Playlist](https://www.youtube.com/playlist?list=PLqC7Br1667IWQhBWm3f_S0-OXqkR5kZiD)
 
 
@@ -609,4 +613,10 @@ Match.umpire_id → User.id (umpire id)
 ### 2025/08/13
 - Deploy at pythonanywhere.com
 - Modified the URLs (from localhost to real domian)
+---
+
+### 2025/08/16
+- Modularize the Tournament Card
+- Add delete tournament button on Tournament Card
+- Only admin can delete every tournament, host can delete it's own tournament
 ---

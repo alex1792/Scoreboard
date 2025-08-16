@@ -35,7 +35,11 @@ class Tournament(db.Model):
     match_duration = db.Column(db.Integer, nullable=True, default=30)
     location = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(20), default='Upcoming') # Upcomming, Ongoing, Completed
+    
+    # relationship with cascade(only need to delete the tournament, all the related object will be deleted)
     events = db.relationship('Event', backref='tournament', lazy=True, cascade='all, delete-orphan')
+    matches = db.relationship('Match', backref='tournament', lazy=True, cascade='all, delete-orphan')
+    registrations = db.relationship('Registration', backref='tournament', lazy=True, cascade='all, delete-orphan')
     host_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 class Event(db.Model):
@@ -44,7 +48,11 @@ class Event(db.Model):
     name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(10), nullable=False) # MS, WS, MD, WD, XD
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
+    
+    # cascade relationships
     groups = db.relationship('Group', backref='event', lazy=True, cascade='all, delete-orphan')
+    matches = db.relationship('Match', backref='event', lazy=True, cascade='all, delete-orphan')
+    registrations = db.relationship('Registration', backref='event', lazy=True, cascade='all, delete-orphan')
 
 class Group(db.Model):
     __tablename__ = 'groups'
@@ -52,6 +60,10 @@ class Group(db.Model):
     name = db.Column(db.String(100), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
     format_id = db.Column(db.Integer, db.ForeignKey('formats.id'), nullable=False)
+    
+    # cascade relationships
+    matches = db.relationship('Match', backref='group', lazy=True, cascade='all, delete-orphan')
+    registrations = db.relationship('Registration', backref='group', lazy=True, cascade='all, delete-orphan')
 
 class Format(db.Model):
     __tablename__ = 'formats'
@@ -146,6 +158,9 @@ class Match(db.Model):
     status = db.Column(db.String(20), default='pending')
     umpire_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
+    # 移除這行，因為已經在 ScheduleItem 中定義了
+    # schedule_items = db.relationship('ScheduleItem', backref='match', lazy=True, cascade='all, delete-orphan')
+
 class Registration(db.Model):
     __tablename__ = 'registrations'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -166,10 +181,8 @@ class Registration(db.Model):
     partner_last_name = db.Column(db.String(100), nullable=True)  # if partner does not exist in the database, use this field to store the partner's name
     partner_email = db.Column(db.String(100), nullable=True)
 
-    tournament = db.relationship('Tournament', backref='registrations')
+    # remove duplicate relationships, only keep non-cascade relationships
     user = db.relationship('User', foreign_keys=[user_id], backref='registrations')
-    event = db.relationship('Event', backref='registrations')
-    group = db.relationship('Group', backref='registrations')
     partner = db.relationship('User', foreign_keys=[partner_id], backref='partner_registrations')
 
     @classmethod

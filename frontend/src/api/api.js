@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { API_URLS, getMatchUrl, getTournamentUrl, getMatchByUmpireUrl, uploadRegistrationFileUrl, generateScheduleForTournamentUrl, getRegistrationStatusUrl } from '../config/urls';
+import { API_URLS, getMatchUrl, getTournamentUrl, getMatchByUmpireUrl, uploadRegistrationFileUrl, generateScheduleForTournamentUrl, getRegistrationStatusUrl, getDeleteTournamentUrl } from '../config/urls';
 
 // ================================================================================
 // ================================================================================
@@ -534,3 +534,34 @@ export const  updateRegistrationStatus = async (registrationId, newStatus) => {
         throw err;
     }
 }
+
+// ================================================================================
+// ================================================================================
+// ======================== Delete Particular Tournament ==========================
+// ================================================================================
+// ================================================================================
+export async function deleteTournament(tournamentId) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(
+            `${getDeleteTournamentUrl(tournamentId)}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if(response.ok) {
+            return await response.json();
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete tournament');
+        }
+    } catch (err) {
+        console.error('Error deleting tournament:', err);
+        throw err;
+    }
+};

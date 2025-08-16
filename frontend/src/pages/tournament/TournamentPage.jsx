@@ -1,7 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { fetchInfoFromBackend } from '../../api/api';
+import { fetchInfoFromBackend, deleteTournament } from '../../api/api';
+import TournamentCard from '../../components/tournament/TournamentCard';
 import '../../styles/pages/tournament/TournamentPage.css';
 import { API_URLS } from '../../config/urls';
 
@@ -55,9 +56,64 @@ const TournamentPage = () => {
     }
   };
 
-  // 檢查用戶是否有管理權限
-  const hasAdminAccess = () => {
+  // 檢查用戶是否有刪除權限
+  const hasDeletePermission = (tournament) => {
+    if (!currentUser) return false;
+    
+    // Admin 可以刪除任何 tournament
+    if (currentUser.role === 'admin') return true;
+    
+    // Host 只能刪除自己創建的 tournament
+    if (currentUser.role === 'host' && tournament.host_id === currentUser.id) return true;
+    
+    return false;
+  };
+
+  // 檢查用戶是否有查看報名信息的權限（與刪除權限邏輯相同）
+  const hasViewRegistrationsPermission = (tournament) => {
+    if (!currentUser) return false;
+    
+    // Admin 可以查看任何 tournament 的報名信息
+    if (currentUser.role === 'admin') return true;
+    
+    // Host 只能查看自己創建的 tournament 的報名信息
+    if (currentUser.role === 'host' && tournament.host_id === currentUser.id) return true;
+    
+    return false;
+  };
+
+  // 檢查用戶是否有一般管理權限（用於其他管理功能）
+  const hasGeneralAdminAccess = () => {
     return currentUser && (currentUser.role === 'admin' || currentUser.role === 'host' || currentUser.role === 'organizer');
+  };
+
+  // 處理刪除 tournament
+  const handleDeleteTournament = async (tournamentId) => {
+    try {
+      console.log('Deleting tournament:', tournamentId);
+      
+      // 顯示確認對話框
+      const confirmed = window.confirm('Are you sure you want to delete this tournament? This action cannot be undone.');
+      if (!confirmed) {
+        return;
+      }
+
+      const response = await deleteTournament(tournamentId);
+      
+      if (response?.status === 'success') {
+        console.log('Tournament deleted successfully');
+        // 從本地狀態中移除被刪除的 tournament
+        setTournaments(prevTournaments => 
+          prevTournaments.filter(tournament => tournament.id !== tournamentId)
+        );
+      } else {
+        console.error('Failed to delete tournament:', response?.message);
+        alert('Failed to delete tournament: ' + (response?.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error deleting tournament:', error);
+      alert('Error deleting tournament: ' + error.message);
+    }
   };
 
   // 添加格式化 description 的函數
@@ -91,8 +147,21 @@ const TournamentPage = () => {
     );
   }
 
+  // 通用的權限檢查函數
+  const hasTournamentPermission = (tournament, action) => {
+    if (!currentUser) return false;
+    
+    // Admin 可以做任何操作
+    if (currentUser.role === 'admin') return true;
+    
+    // Host 只能對自己創建的 tournament 進行操作
+    if (currentUser.role === 'host' && tournament.host_id === currentUser.id) return true;
+    
+    return false;
+  };
+
   return (
-    <div className="tournament-page">  {/* 添加這個 wrapper */}
+    <div className="tournament-page">
       <div className="container">
         <h1 className="page-title">Tournaments</h1>
         
@@ -109,89 +178,15 @@ const TournamentPage = () => {
             ) : (
               <div className="tournaments-grid">
                 {tournaments.map((tournament) => (
-                  <div key={tournament.id} className="tournament-card-wrapper">
-                    <div className="tournament-card">
-                      <div className="tournament-header">
-                        <div className="tournament-id">#{tournament.id}</div>
-                      </div>
-                      
-                      <div className="tournament-name">
-                        {tournament.name}
-                      </div>
-
-                      <div className="tournament-info">
-                        <div className="info-item">
-                          <span className="info-label">Start Date:</span>
-                          <span className="info-value">{formatDate(tournament.start_date)}</span>
-                        </div>
-                        <div className="info-item">
-                          <span className="info-label">End Date:</span>
-                          <span className="info-value">{formatDate(tournament.end_date)}</span>
-                        </div>
-                        <div className="info-item">
-                          <span className="info-label">Status:</span>
-                          <span className="info-value">{tournament.status || 'TBD'}</span>
-                        </div>
-                        
-                        <div className="info-item">
-                          <span className="info-label">Location:</span>
-                          <span className="info-value">{tournament.location || 'TBD'}</span>
-                        </div>
-                        
-                        {tournament.registration_deadline && (
-                          <div className="info-item">
-                            <span className="info-label">Registration Deadline:</span>
-                            <span className="info-value">{formatDate(tournament.registration_deadline)}</span>
-                          </div>
-                        )}
-
-                        {/* {tournament.description && (
-                            <div className="info-item description-item">
-                                <span className="info-label">Description:</span>
-                                <span className="info-value description-value">
-                                    {formatDescription(tournament.description)}
-                                </span>
-                            </div>
-                        )} */}
-                      </div>
-
-                      <div className="tournament-actions">
-                        {/* <Link 
-                          to={`/tournaments/${tournament.id}`}
-                          className="view-details-btn"
-                        >
-                          ℹ View Details
-                        </Link> */}
-                        <Link 
-                          to={`/tournaments/${tournament.id}/signup`}
-                          className="signup-btn"
-                        >
-                          ✍🏻 Sign Up
-                        </Link>
-                        <Link 
-                          to={`/tournaments/${tournament.id}/schedule`}
-                          className="view-schedule-btn"
-                        >
-                          🗓️ View Schedule
-                        </Link>
-                        <Link 
-                          to={`/tournaments/${tournament.id}/matches`}
-                          className="view-matches-btn"
-                        >
-                          🔍 View Matches
-                        </Link>
-                        {/* 只有管理員才能看到查看報名信息的按鈕 */}
-                        {hasAdminAccess() && (
-                          <Link 
-                            to={`/tournaments/${tournament.id}/check-registration`}
-                            className="view-registrations-btn"
-                          >
-                            👥 View Registrations
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <TournamentCard
+                    key={tournament.id}
+                    tournament={tournament}
+                    onDelete={handleDeleteTournament}
+                    showDeleteButton={hasTournamentPermission(tournament, 'delete')}
+                    showAdminActions={true}
+                    formatDate={formatDate}
+                    hasAdminAccess={() => hasTournamentPermission(tournament, 'view_registrations')}
+                  />
                 ))}
               </div>
             )}

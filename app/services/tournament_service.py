@@ -1,3 +1,4 @@
+from sqlalchemy import false
 from ..models import Tournament, Event, Group, Format, db, Registration, Match, Schedule
 from datetime import datetime
 import random
@@ -155,6 +156,23 @@ class TournamentService:
             print(f"Error in create_tournament: {e}")
             raise e
 
+    @staticmethod
+    def delete_tournament(tournament_id):
+        """delete a tournament according to tournament_id"""
+        try:
+            tournament = Tournament.query.get(tournament_id)
+            if not tournament:
+                raise ValueError(f"Tournament with ID {tournament_id} not found")
+            
+            db.session.delete(tournament)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error in delete_tournament: {e}")
+            raise e
+            return False
+                
     @staticmethod
     def generate_matches_by_registration(tournament_id):
         """

@@ -98,5 +98,8 @@ export const getMatchByUmpireUrl = (umpireId) => `${BASE_URL}/api/matches/umpire
 // 新增：Tournament 相關函數
 export const getTournamentDetailsUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}`;
 
+// delete tournament
+export const getDeleteTournamentUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}/delete_tournament`;
+
 
        

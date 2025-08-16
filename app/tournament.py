@@ -205,3 +205,20 @@ def delete_all_matches(tournament_id):
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@tournament_bp.route('/<int:tournament_id>/delete_tournament', methods=['POST'])
+@jwt_required()
+def delete_tournament(tournament_id):
+    try:
+        auth = check_authorization('host')
+        if auth:
+            return auth
+        
+        ret = TournamentService.delete_tournament(tournament_id)
+        if not ret:
+            return jsonify({'status': 'error', 'message': f'Tournament with tournament_id = {tournament_id} is not found'}), 404
+        return jsonify({'status': 'success', 'message': f'Tournament with tournament_id = {tournament_id} is deleted'}), 200
+    
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Please Login to delete a tournament"}), 500
+    
