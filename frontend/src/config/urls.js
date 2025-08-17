@@ -4,7 +4,8 @@ export const DEV_BASE_URL = 'http://localhost:5001';
 // when you are hosting, make sure you use the PROD_BASE_URL
 export const PROD_BASE_URL = 'https://itsyuhungkung.sc-heduling.com';
 
-const BASE_URL = process.env.NODE_ENV === 'production' ? PROD_BASE_URL : DEV_BASE_URL;
+// const BASE_URL = process.env.NODE_ENV === 'production' ? PROD_BASE_URL : DEV_BASE_URL;
+const BASE_URL = PROD_BASE_URL;
 
 export const API_URLS = {
     // home_bp,
