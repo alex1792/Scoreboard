@@ -11,10 +11,26 @@ def create_app():
     app = Flask(__name__, 
                 static_folder='../frontend/build/static',  # 指向 build 的 static 資料夾
                 template_folder='../frontend/build')       # 指向 build 資料夾
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}) # 因為前端運行在localhost:3000, 後端運行在localhost:5001, 屬於跨域請求, 必須使用CORS
     
-    # socketio.init_app(app)
-    socketio.init_app(app, cors_allowed_origins="*")
+    # 修復 CORS 配置 - 允許生產環境域名
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:3000",
+                "https://itsyuhungkung.sc-heduling.com",
+                "http://itsyuhungkung.sc-heduling.com"
+            ]
+        }
+    })
+    
+    # 修復 SocketIO CORS 配置
+    socketio.init_app(app, 
+                     cors_allowed_origins=[
+                         "http://localhost:3000",
+                         "https://itsyuhungkung.sc-heduling.com",
+                         "http://itsyuhungkung.sc-heduling.com"
+                     ],
+                     async_mode='eventlet')
     
     # 自動產生 secret key（如果沒設定環境變數）
     secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)

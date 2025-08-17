@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import io from 'socket.io-client';
-import { PROD_BASE_URL } from '../config/urls';
+import { PROD_BASE_URL, DEV_BASE_URL } from '../config/urls';
 
 // ================================================================================
 // ================================================================================
@@ -14,15 +14,16 @@ export function useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchI
             socketRef.current.disconnect();
         }
 
-        // establish new connection
+        // 修復 WebSocket URL 配置
         const socketUrl = process.env.NODE_ENV === 'production' 
-            ? `${PROD_BASE_URL}/scoreboard`
-            : 'http://localhost:5001/scoreboard';
+            ? `${PROD_BASE_URL}`  // 移除 /scoreboard，使用根路徑
+            : `${DEV_BASE_URL}`;  // 移除 /scoreboard，使用根路徑
 
         socketRef.current = io(socketUrl, {
             transports: ['websocket'],
             reconnection: true,
-            reconnectionDelay: 3000
+            reconnectionDelay: 3000,
+            path: '/socket.io/'  // 明確指定 Socket.IO 路徑
         });
 
         socketRef.current.on('connect', () => {

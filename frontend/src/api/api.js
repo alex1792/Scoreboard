@@ -390,6 +390,7 @@ export async function fetchInfoToBackend(url, data) {
 };
 
 export async function fetchInfoFromBackend(url) {
+    console.log('Fetching info from backend:', url);
     try {
         // const token = localStorage.getItem('access_token');
         const response = await fetch(url, { method: 'GET' });

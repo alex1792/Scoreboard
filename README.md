@@ -620,3 +620,7 @@ Match.umpire_id → User.id (umpire id)
 - Add delete tournament button on Tournament Card
 - Only admin can delete every tournament, host can delete it's own tournament
 ---
+
+### 2025/08/17
+- Add role permission, easier to maintain the page permission
+---

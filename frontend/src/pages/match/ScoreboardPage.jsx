@@ -60,10 +60,16 @@ const Scoreboard = () => {
         socketRef.current.disconnect();
       }
 
-      socketRef.current = io('http://127.0.0.1:5001/scoreboard', {
+      // 修復 WebSocket URL
+      const socketUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://itsyuhungkung.sc-heduling.com'
+          : 'http://localhost:5001';
+
+      socketRef.current = io(socketUrl, {
         transports: ['websocket'],
         reconnection: true,
         reconnectionDelay: 3000,
+        path: '/socket.io/'
       });
 
       socketRef.current.on('connect', () => {

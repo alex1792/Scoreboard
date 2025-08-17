@@ -2,7 +2,7 @@
 export const DEV_BASE_URL = 'http://localhost:5001';
 
 // when you are hosting, make sure you use the PROD_BASE_URL
-export const PROD_BASE_URL = 'https://alex1792.pythonanywhere.com';
+export const PROD_BASE_URL = 'https://itsyuhungkung.sc-heduling.com';
 
 const BASE_URL = process.env.NODE_ENV === 'production' ? PROD_BASE_URL : DEV_BASE_URL;
 
