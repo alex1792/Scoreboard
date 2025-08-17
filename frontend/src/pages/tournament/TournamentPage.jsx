@@ -18,6 +18,7 @@ const TournamentPage = () => {
       try {
         console.log('=== Starting to fetch tournaments ===');
         
+        console.log('API_URLS.ALL_TOURNAMENTS:', API_URLS.ALL_TOURNAMENTS);
         const data = await fetchInfoFromBackend(API_URLS.ALL_TOURNAMENTS);
         
         console.log('=== Response received ===');

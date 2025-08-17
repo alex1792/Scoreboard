@@ -89,11 +89,16 @@ Scoreboard
 <script>console.log('jinja match_id:', "{{ match_id }}");</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-    // 連接到後端 Socket.IO 伺服器（假設後端運行在 5001 端口）
-    const socket = io('http://127.0.0.1:5001/scoreboard', {
-        transports: ['websocket'],  // 強制使用 WebSocket
+    // 動態設置 WebSocket URL
+    const socketUrl = window.location.protocol === 'https:' 
+        ? 'https://itsyuhungkung.sc-heduling.com'
+        : 'http://localhost:5001';
+    
+    const socket = io(socketUrl, {
+        transports: ['websocket'],
         reconnection: true,
-        reconnectionDelay: 3000
+        reconnectionDelay: 3000,
+        path: '/socket.io/'
     });
 
     // 獲取當前比賽的 match_id（從模板變量注入）
