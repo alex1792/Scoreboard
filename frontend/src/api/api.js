@@ -9,7 +9,6 @@ import { API_URLS, getMatchUrl, getTournamentUrl, getMatchByUmpireUrl, uploadReg
 
 export function useFetchMatchInfo(setMatches) {
     useEffect(() => {
-        // 'http://localhost:5001/api/matches'
         fetch(API_URLS.ALL_MATCHES)
             .then(res => res.json())
             .then(data => {
@@ -24,7 +23,6 @@ export function useFetchMatchInfo(setMatches) {
 
 export function useFetchMatchInfoByTournament(setMatches, tournamentId) {
     useEffect(() => {
-        // `http://localhost:5001/api/tournaments/${tournamentId}/matches`
         fetch(`${getTournamentUrl(tournamentId)}/matches`)
         .then(res => res.json())
         .then(data => {
@@ -45,7 +43,6 @@ export function useFetchMatchInfoByTournament(setMatches, tournamentId) {
 export function useFetchUmpireMatchId(currentUser, setMyMatchId) {
     useEffect(() => {
     if (currentUser?.role === 'umpire') {
-    // `http://localhost:5001/api/matches/umpire/${currentUser.id}`
       fetch(`${getMatchByUmpireUrl(currentUser.id)}`)
         .then(res => res.json())
         .then(result => {
@@ -69,7 +66,6 @@ export async function assignUmpire(matchId) {
 
     try {
         const token = localStorage.getItem('access_token');
-        // `http://localhost:5001/api/matches/${matchId}/umpire`
         const response = await fetch(
             `${getMatchUrl(matchId)}/umpire`,
             {
@@ -103,7 +99,6 @@ export async function deleteMatch(matchId) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // `http://localhost:5001/api/matches/${matchId}`
             `${getMatchUrl(matchId)}`,
             {
                 method: 'DELETE',
@@ -132,7 +127,6 @@ export async function deleteAllMatch(tournamentId) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // `http://localhost:5001/api/tournaments/${tournamentId}/delete_all_matches`
             `${getTournamentUrl(tournamentId)}/delete_all_matches`,
             {
                 method: 'POST',
@@ -164,7 +158,6 @@ export async function createMatch(matchData) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // 'http://localhost:5001/api/matches/create_match'
             `${API_URLS.CREATE_MATCH}`, 
             {
                 method: 'POST',
@@ -194,7 +187,6 @@ export async function createMatch(matchData) {
 export const updateUserRole = async (userId, newRole) => {
   try {
     const response = await fetch(
-        // `http://localhost:5001/api/admin/users`
         `${API_URLS.ALL_USERS}`,
         {
             method: 'PUT',
@@ -258,7 +250,6 @@ export async function generateRoundRobin(formData) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // `http://localhost:5001/api/admin/upload_all_matches`
             `${API_URLS.UPLOAD_ALL_MATCHES}`, 
             {
                 method: 'POST',
@@ -339,7 +330,6 @@ export async function fetchUsers() {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // `http://localhost:5001/api/admin/users`
             `${API_URLS.ALL_USERS}`, 
             {
                 headers: {
@@ -412,7 +402,6 @@ export async function uploadRegistrationFile(formData, tournamentId) {
   try {
     const token = localStorage.getItem('access_token');
     const response = await fetch(
-        // `http://localhost:5001/api/registrations/tournament/${tournamentId}/upload`
         `${uploadRegistrationFileUrl(tournamentId)}`,
         {
             method: 'POST',
@@ -441,7 +430,6 @@ export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6)
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // `http://localhost:5001/api/admin/${tournamentId}/generate_schedule_for_tournament`,
             `${generateScheduleForTournamentUrl(tournamentId)}`,
             {
                 method: 'POST',
@@ -481,8 +469,6 @@ export async function generateScheduleFromDatabase(tournamentId, totalCourt = 6)
 // ================================================================================
 export async function  getTournamentSchedule(tournamentId) {
     try {
-        // console.log('Fetching schedule for tournament:', tournamentId);
-        // `http://localhost:5001/api/tournaments/${tournamentId}/schedule`
         const response = await fetch(`${getTournamentUrl(tournamentId)}/schedule`);
         
         // console.log('Response status:', response.status);
@@ -513,7 +499,6 @@ export const  updateRegistrationStatus = async (registrationId, newStatus) => {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            // `http://localhost:5001/api/registrations/${registrationId}/status`
             `${getRegistrationStatusUrl(registrationId)}`,
             {
                 method: 'PUT',
