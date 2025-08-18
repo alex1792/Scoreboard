@@ -10,18 +10,16 @@ login_manager = LoginManager()
 
 # 修復 SocketIO 配置
 socketio = SocketIO(
-    cors_allowed_origins=[
-        "http://localhost:3000",
-        "https://itsyuhungkung.sc-heduling.com",
-        "http://itsyuhungkung.sc-heduling.com"
-    ],
+    cors_allowed_origins="*",  # 允許所有來源，或者指定具體域名
     async_mode='eventlet',
     logger=True,
     engineio_logger=True
 )
 
 def init_socketio(app):
-    socketio.init_app(app)  # 綁定到 Flask app
+    socketio.init_app(app, 
+                     cors_allowed_origins="*",
+                     async_mode='eventlet')
 
 # JWT
 jwt = JWTManager()

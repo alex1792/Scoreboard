@@ -622,4 +622,34 @@ Match.umpire_id → User.id (umpire id)
 
 ### 2025/08/17
 - Add role permission, easier to maintain the page permission
+- Issue_1: frontend communicate with backend is using localhost:5001, not https://
+- Issue_2: when backend api can only use http, not https, add a meta at the frontend/public/index.html
+---
+
+### 2025/08/18
+- Solve Issue_1 spotted on Aug 17, create a new file /frontend/.env.production
+- modified urls.js --> const BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? PROD_BASE_URL : DEV_BASE_URL);
+- Then execute npm run build. This will correctly use domain url, not localhost
+```
+frontend/
+├── .env.production          # new file
+├── package.json
+├── src/
+│   └── config/
+│       └── urls.js         # modified file
+└── ...
+```
+```
+# 1. make sure pwd is in frontend
+cd frontend
+
+# 2. set env variables
+export REACT_APP_API_URL=https://itsyuhungkung.sc-heduling.com
+
+# 3. build
+npm run build
+
+# 4. run frontend
+serve -s build -l 3000
+```
 ---

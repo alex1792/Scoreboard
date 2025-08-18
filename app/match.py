@@ -282,3 +282,23 @@ def handle_scoreboard_connect():
 def handle_scoreboard_disconnect():
     print("[WebSocket] Client disconnected from /scoreboard namespace")
 # ----------------------------------------------------------------------
+
+@match_bp.route('/test-socket', methods=['POST'])
+def test_socket():
+    try:
+        test_data = {
+            'id': 1,
+            'player1_name': 'Test Player 1',
+            'player2_name': 'Test Player 2',
+            'player1_score': 10,
+            'player2_score': 5
+        }
+        
+        print(f"[TEST] 發送測試事件: {test_data}")
+        socketio.emit('match_update', test_data, namespace='/scoreboard')
+        print(f"[TEST] 測試事件發送完成")
+        
+        return jsonify({"status": "success", "message": "Test event sent"})
+    except Exception as e:
+        print(f"[TEST] 發送失敗: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500

@@ -1,16 +1,15 @@
 from flask import Flask
 from flask_cors import CORS
 from datetime import timedelta
-from .extensions import db, socketio, jwt  # 移除 login_manager
+from .extensions import db, socketio, jwt
 from . import models
 import os
 import secrets
 
 def create_app():
-    # app = Flask(__name__)
     app = Flask(__name__, 
-                static_folder='../frontend/build/static',  # 指向 build 的 static 資料夾
-                template_folder='../frontend/build')       # 指向 build 資料夾
+                static_folder='../frontend/build/static',
+                template_folder='../frontend/build')
     
     # 修復 CORS 配置 - 允許生產環境域名
     CORS(app, resources={
@@ -23,15 +22,6 @@ def create_app():
         }
     })
     
-    # 修復 SocketIO CORS 配置
-    socketio.init_app(app, 
-                     cors_allowed_origins=[
-                         "http://localhost:3000",
-                         "https://itsyuhungkung.sc-heduling.com",
-                         "http://itsyuhungkung.sc-heduling.com"
-                     ],
-                     async_mode='eventlet')
-    
     # 自動產生 secret key（如果沒設定環境變數）
     secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
     jwt_secret_key = os.environ.get('JWT_SECRET_KEY') or secrets.token_hex(32)
@@ -40,7 +30,7 @@ def create_app():
     app.config.update(
         SQLALCHEMY_DATABASE_URI='sqlite:///../database.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SECRET_KEY=secret_key,  # 生產環境請用環境變數
+        SECRET_KEY=secret_key,
         JWT_SECRET_KEY=jwt_secret_key,
         JWT_ACCESS_TOKEN_EXPIRES=timedelta(days=7)
     )
@@ -48,7 +38,10 @@ def create_app():
     # 初始化擴充套件
     db.init_app(app)
     jwt.init_app(app)
-    socketio.init_app(app, async_mode='eventlet', cors_allowed_origins="*")
+    
+    # 使用 extensions.py 中的 init_socketio 函數
+    from .extensions import init_socketio
+    init_socketio(app)
     
     # 建立資料庫表格
     with app.app_context():

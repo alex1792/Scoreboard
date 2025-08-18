@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import io from 'socket.io-client';
+import { useMatchInfoListener } from '../../api/socketService'; // 添加這行
 import '../../styles/pages/match/scoreboard.css';
 import { getMatchUrl, getMatchScoreUrl, getMatchNextGameUrl, getMatchEndMatchUrl } from '../../config/urls';
+import { io } from 'socket.io-client'; // 新增這行
 
 const Scoreboard = () => {
   const { currentUser } = useAuth();
@@ -36,7 +37,7 @@ const Scoreboard = () => {
           setMatchStatus(result.data.status);
           setUmpireId(result.data.umpire_id);
           
-          // 新增：處理三局制數據 - 確保所有字段都有默認值
+          // 新增：處理三局制數據
           setCurrentGame(result.data.current_game || 1);
           setGamesWon({
             player1: result.data.player1_game_won || 0,
@@ -48,84 +49,47 @@ const Scoreboard = () => {
       });
   }, [matchId]);
 
-  // 2. socket.io listener for score updates
+  // 2. 專門的WebSocket監聽器
   useEffect(() => {
-    let isConnecting = false;
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
 
-    const connectSocket = () => {
-      if (isConnecting) return;
-      isConnecting = true;
+    const socketUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://itsyuhungkung.sc-heduling.com'
+        : 'http://localhost:5001';
 
-      if (socketRef.current) {
-        socketRef.current.disconnect();
+    socketRef.current = io(`${socketUrl}/scoreboard`, {
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionDelay: 3000,
+      path: '/socket.io/'
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('Scoreboard WebSocket connected');
+    });
+
+    socketRef.current.on('match_update', (data) => {
+      console.log('Scoreboard received update:', data);
+      
+      // 檢查是否是當前比賽的更新
+      if (data.id === Number(matchId)) {
+        setScore1(data.score1);
+        setScore2(data.score2);
+        setMatchStatus(data.status);
+        setCurrentGame(data.current_game || 1);
+        setGamesWon({
+          player1: data.player1_game_won || 0,
+          player2: data.player2_game_won || 0
+        });
       }
-
-      // 修復 WebSocket URL
-      const socketUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://itsyuhungkung.sc-heduling.com'
-          : 'http://localhost:5001';
-
-      socketRef.current = io(socketUrl, {
-        transports: ['websocket'],
-        reconnection: true,
-        reconnectionDelay: 3000,
-        path: '/socket.io/'
-      });
-
-      socketRef.current.on('connect', () => {
-        console.log('Socket connected');
-        isConnecting = false;
-      });
-
-      // 添加 match_update 事件監聽器
-      socketRef.current.on('match_update', (data) => {
-        console.log('Received match update:', data); // 添加這行來調試
-        console.log('收到分數更新:', data);
-        console.log('Current matchId:', matchId); // 新增調試
-        console.log('Data id:', data.id); // 新增調試
-        
-        // 檢查是否是當前比賽的更新
-        if (data.id === Number(matchId)) {
-          console.log('更新當前比賽分數:', data);
-          console.log('更新前的 gamesWon:', gamesWon); // 新增調試
-          
-          setScore1(data.score1);
-          setScore2(data.score2);
-          setMatchStatus(data.status);
-          
-          // 新增：更新三局制相關數據
-          const newCurrentGame = data.current_game || 1;
-          const newGamesWon = {
-            player1: data.player1_game_won || 0,
-            player2: data.player2_game_won || 0
-          };
-          
-          console.log('新的 current_game:', newCurrentGame); // 新增調試
-          console.log('新的 gamesWon:', newGamesWon); // 新增調試
-          
-          setCurrentGame(newCurrentGame);
-          setGamesWon(newGamesWon);
-          
-          console.log('更新後的 gamesWon:', newGamesWon); // 新增調試
-        } else {
-          console.log('不是當前比賽的更新，忽略'); // 新增調試
-        }
-      });
-
-      socketRef.current.on('connect_error', () => {
-        console.log('Connection failed, retrying...');
-        isConnecting = false;
-      });
-    };
-
-    connectSocket();
+    });
 
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
-        socketRef.current = null;
       }
-      isConnecting = false;
     };
   }, [matchId]);
 
