@@ -1,144 +1,442 @@
-# Scoreboard
+# Tournament Management System
 
-[Tournament Software Website](https://alex1792.pythonanywhere.com)
----
+A comprehensive tournament management system with real-time scoring, user management, and tournament scheduling capabilities.
 
+## 🌟 Live Demo
 
-## Feature Demo
+- **Website**: [Tournament Software](https://itsyuhungkung.sc-heduling.com)
+- **Demo Videos**: [Tournament Software Demo Playlist](https://www.youtube.com/playlist?list=PLqC7Br1667IWQhBWm3f_S0-OXqkR5kZiD)
 
-Some features and functions I developed so far. Check the link below to see how it works.
+## Features
 
-[Tournament Software Demo Playlist](https://www.youtube.com/playlist?list=PLqC7Br1667IWQhBWm3f_S0-OXqkR5kZiD)
+### Core Functionality
+- **Real-time Score Updates**: Instant score synchronization across all users
+- **Multi-match Management**: Handle multiple concurrent matches
+- **Role-based Access Control**: Admin, Host, Umpire, and User roles
+- **Tournament Management**: Create, manage, and schedule tournaments
+- **User Registration System**: Internal and external registration support
 
+### Advanced Features
+- **Match Scheduling**: Intelligent scheduling with consecutive player detection
+- **Excel Integration**: Upload tournament schedules and registration data
+- **Real-time Communication**: WebSocket-based live updates
+- **Responsive Design**: Modern UI with React frontend
+- **Tournament Types**: Support for single/double matches across different categories
 
-## Project Overview
+## 🛠 Tech Stack
 
-- Provides real-time scoring, viewing, and management of games
-- Umpire can instantly update scores; all users can view the latest results
-- Admin can assign umpires and manage matches and users
+### Backend
+- **Framework**: Flask (Python)
+- **Database**: SQLite with SQLAlchemy ORM
+- **Authentication**: Flask-JWT-Extended
+- **Real-time**: Flask-SocketIO
+- **File Processing**: Pandas, OpenPyXL
+- **CORS**: Flask-CORS
 
-## Key Features
+### Frontend
+- **Framework**: React.js 19.1.0
+- **Routing**: React Router DOM 7.6.1
+- **Authentication**: React Auth Kit 3.1.3
+- **Real-time**: Socket.IO Client 4.8.1
+- **Styling**: CSS3 with responsive design
 
-- User login and registration
-- Real-time score update and viewing
-- Multi-match management and umpire assignment
-- Role-based access control (Admin / Umpire / User)
-- Match status management (Scheduled / Ongoing / Finished)
+## 📁 Project Structure
 
-## Tech Stack
-
-- **Backend:** Python Flask, SQLAlchemy, SQLite
-- **Frontend:** React.js
-- **Version Control:** Git
-
-## Highlights
-
-- Clear architecture with robust permission control
-- Supports multiple matches and collaborative management
-- Ongoing database and feature enhancement
-
----
-
-## introduction
-Homepage: Homepage with register and login function. When logged in, user can see more function. Guest can only access scoreboard.
-Scoreboard: Scoreboard page, where umpire can update score, guests can check the score.
-
-ideas (not implemented yet): Stack all the score adjustment history, implementing the recovery function to re-do the score update.
-
-ideas for current version adjustment：
-  1. check each score info(Scoreboard) via check_all_match page 
-  2. create multiple matches, umpire. manage each match with assigning particular umpire to adjust the game.
-  3. better javascript, css
-  4. each match-card links individual scoreboard, now only links to the same scoreboard
 
 ## Project Structure
 ```
-- Scoreboard:
-  - app:
-    - __init__.py         # Initializes the app module
-    - auth.py             # Handles authentication-related logic
-    - blueprints.py       # Manages Flask blueprints
-    - extensions.py       # Extensions used in the project (e.g., Flask extensions)
-    - form.py             # Defines forms for user input
-    - match_generator.py  # match generator
-    - models.py           # Database-related utilities and models
-    - routes.py           # Defines application routes
-    - scheduler.py        # match scheduler
-  - frontend/src/
-    ├── components/
-    │   └── layout/
-    │       └── BaseLayout.jsx
-    ├── pages/
-    │   ├── auth/
-    │   │   ├── LoginPage.jsx
-    │   │   ├── RegisterPage.jsx
-    │   │   ├── LoginForm.jsx
-    │   │   ├── RegisterForm.jsx
-    │   │   └── index.js
-    │   ├── admin/
-    │   │   ├── CreateTournamentPage.jsx
-    │   │   ├── ManageMatchPage.jsx
-    │   │   ├── UsersPage.jsx
-    │   │   ├── AssignUmpirePage.jsx
-    │   │   ├── UploadSchedulePage.jsx
-    │   │   ├── CreateMatchPage.jsx
-    │   │   ├── ChangesUserRolePage.jsx
-    │   │   ├── SchedulerPage.jsx
-    │   │   └── index.js
-    │   ├── tournament/
-    │   │   ├── TournamentPage.jsx
-    │   │   ├── SignUpTournamentPage.jsx
-    │   │   ├── MatchGeneratorPage.jsx
-    │   │   └── index.js
-    │   ├── match/
-    │   │   ├── MatchesPage.jsx
-    │   │   ├── ScoreboardPage.jsx
-    │   │   ├── UmpirePage.jsx
-    │   │   └── index.js
-    │   ├── HomePage.jsx
-    │   └── index.js
-    ├── services/
-    │   ├── api.js
-    │   └── socketService.js
-    ├── context/
-    │   └── AuthContext.jsx
-    ├── styles/
-    │   ├── pages/
-    │   │   ├── auth/
-    │   │   ├── admin/
-    │   │   ├── tournament/
-    │   │   └── match/
-    │   ├── global.css
-    │   ├── index.css
-    │   └── App.css
-    ├── utils/
-    │   └── MatchCard.html
-    ├── assets/
-    │   └── logo.svg
-    ├── App.js
-    ├── index.js
-    └── reportWebVitals.js
-  - config.py             # Configuration file for the project
-  - database.db           # SQLite database file
-  - requirements.txt      # List of dependencies for the project
-  - run.py 
-  
-
+scoreboard/
+├── app/              # Flask backend application
+│ ├── services/       # Business logic layer
+│ │ ├── match_service.py  
+│ │ ├── tournament_service.py
+│ │ ├── user_service.py
+│ │ └── schedule_service.py
+│ ├── static/         # Static assets
+│ ├── templates/      # HTML templates
+│ ├── models.py       # Database models
+│ ├── routes.py       # API routes
+│ └── extensions.py   # Flask extensions
+├── frontend/         # React frontend application
+│ ├── src/
+│ │ ├── components/   # Reusable components
+│ │ ├── pages/        # Page components
+│ │ │ ├── admin/      # Admin pages
+│ │ │ ├── auth/       # Authentication pages
+│ │ │ ├── match/      # Match management pages
+│ │ │ └── tournament/ # Tournament pages
+│ │ ├── context/      # React context
+│ │ ├── api/          # API services
+│ │ └── styles/       # CSS stylesheets
+│ └── public/         # Public assets
+├── config.py         # Configuration settings
+├── requirements.txt  # Python dependencies
+├── run.py            # Application entry point
+└── README.md         # This file
 ```
 
-## activate and deactivate virtual environment
-### Backend (Flask)
+
+## 🏗 Architecture
+
+The system follows a **layered architecture** with clear separation of concerns:
 ```
-. .venv/bin/activate  
-deactivate
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React)                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ Tournament  │  │   Match     │  │    Auth     │          │
+│  │   Page      │  │   Page      │  │    Page     │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ HTTP Request
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Blueprint Layer                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ tournament  │  │    match    │  │    auth     │          │
+│  │   .py       │  │    .py      │  │    .py      │          │
+│  │ (Routing)   │  │ (Routing)   │  │ (Routing)   │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ✅ only deel with routing                                  │
+│  ✅ receive HTTP request                                    │
+│  ✅ call Service layer                                      │
+│  ✅ return HTTP response                                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ call Service
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Service Layer                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ tournament  │  │    match    │  │    user     │          │
+│  │ _service.py │  │ _service.py │  │ _service.py │          │
+│  │ (Business)  │  │ (Business)  │  │ (Business)  │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ✅ handle service logic and algorithm                      │
+│  ✅ data transform and format                               │
+│  ✅ complex algorithm                                       │
+│  ✅ call Model layer                                        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ Database manipulation
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Model Layer                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ Tournament  │  │    Match    │  │    User     │          │
+│  │   Model     │  │   Model     │  │   Model     │          │
+│  │ (Database)  │  │ (Database)  │  │ (Database)  │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ✅ Database structure definition                           │
+│  ✅ Basic CRUD manipulation                                 │
+│  ✅ Relationship definition                                 │
+└─────────────────────────────────────────────────────────────┘
 ```
----
-### frontend (React)
+- Advantages of new Architecture
+1. Single Task Rule
+-- Blueprint: handle only routing
+-- Service: handle only logic and algorithm
+-- Model: handle only Database
+2. Reuseable
+-- Same service can be used by different blueprint
+3. Easier to test
+4. Easier to maintain
+
+- This is the MVC(Model-View-Controller) architecture
 ```
-. .venv/bin/activate
+┌─────────────────────────────────────────────────────────────┐
+│                    My Architecture                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │    Model    │  │    View     │  │ Controller  │          │
+│  │ (Database)  │  │ (Frontend)  │  │ (Blueprint) │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                             │
+│  ┌─────────────┐                                            │
+│  │   Service   │  ← additional service layer                │
+│  │   Layer     │                                            │
+│  └─────────────┘                                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+
+### Layer Responsibilities
+- **Blueprint Layer**: Handle HTTP routing and request/response
+- **Service Layer**: Business logic, algorithms, and data transformation
+- **Model Layer**: Database operations and data structure definition
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- npm or yarn
+
+### Install Node.js and npm
+
+#### macOS (using Homebrew)
+```bash
+# Install Homebrew if you haven't already
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Node.js (includes npm)
+brew install node
+
+# Verify installation
+node --version
+npm --version
+```
+
+#### Windows
+```bash
+# Download and install from official website
+# https://nodejs.org/en/download/
+
+# Or using Chocolatey
+choco install nodejs
+
+# Verify installation
+node --version
+npm --version
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+# Using apt
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Or using snap
+sudo snap install node --classic
+
+# Verify installation
+node --version
+npm --version
+```
+
+#### Using Node Version Manager (nvm) - Recommended
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Restart terminal or run
+source ~/.bashrc
+
+# Install Node.js
+nvm install 18
+nvm use 18
+
+# Verify installation
+node --version
+npm --version
+```
+
+### Backend Setup
+```bash
+# Clone the repository
+git clone <repository-url>
+cd scoreboard
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Initialize database
+python run.py
+```
+
+### Frontend Setup
+```bash
+# Navigate to frontend directory
 cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
 npm start
 ```
+
+### Production Deployment
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Set environment variables
+export REACT_APP_API_URL=https://your-domain.com
+
+# Serve frontend
+serve -s build -l 3000
+```
+
+## 👥 User Roles & Permissions
+
+### Admin
+- Full system access
+- User management
+- Tournament creation and deletion
+- Match management
+- Umpire assignment
+
+### Host
+- Create and manage own tournaments
+- Upload registration files
+- Generate match schedules
+- Manage tournament matches
+
+### Umpire
+- Update match scores
+- View assigned matches
+- Real-time score management
+
+### User
+- View tournaments and matches
+- Register for tournaments
+- View real-time scores
+
+## 📊 Database Schema
+
+### Key Tables
+- **Users**: User accounts and roles
+- **Tournaments**: Tournament information and settings
+- **Matches**: Match details, scores, and status
+- **Events**: Tournament categories (MS, WS, MD, WD, XD)
+- **Groups**: Tournament groups/flights
+- **Registrations**: Tournament registrations
+
+### Relationships
+```sql
+Match.event_id → Event.id
+Match.group_id → Group.id
+Match.umpire_id → User.id
+Tournament.host_id → User.id
+```
+
+## 📋 Excel File Format
+
+The system supports Excel file uploads for tournament schedules and registrations:
+
+| Excel Column | Database Field | Description |
+|-------------|----------------|-------------|
+| Round | - | Batch number |
+| Court | - | Court number |
+| Match_Type | match.event_type | Single/Double |
+| Category | event.category | MS, WS, MD, WD, XD |
+| Group | group.name | Group name |
+| Player1/Team1 | match.player1_name | Player/Team 1 |
+| Player2/Team2 | match.player2_name | Player/Team 2 |
+| Status | match.status | Scheduled/Completed/Cancelled |
+| Score1 | match.player1_score | Player 1 score |
+| Score2 | match.player2_score | Player 2 score |
+| Umpire | match.umpire_id | Umpire ID |
+
+## Configuration
+
+### Environment Variables
+```bash
+# Frontend (.env.production)
+REACT_APP_API_URL=https://your-api-domain.com
+
+# Backend
+DATABASE_URL=sqlite:///database.db
+JWT_SECRET_KEY=your-secret-key
+```
+
+### API Endpoints
+- **Authentication**: `/auth/login`, `/auth/register`
+- **Tournaments**: `/tournaments`, `/tournaments/<id>`
+- **Matches**: `/matches`, `/matches/<id>`
+- **Users**: `/users`, `/users/<id>`
+- **Schedules**: `/schedules`, `/schedules/<id>`
+
+## 🎯 Key Features in Detail
+
+### Real-time Score Updates
+- WebSocket-based live score synchronization
+- Instant updates across all connected clients
+- Support for multiple concurrent matches
+
+### Tournament Management
+- Create tournaments with custom settings
+- Upload registration files (Excel/CSV)
+- Generate match schedules automatically
+- Track tournament progress and results
+
+### Match Scheduling
+- Intelligent scheduling algorithm
+- Consecutive player detection
+- Court assignment optimization
+- Support for elimination and round-robin formats
+
+### User Management
+- Role-based access control
+- User registration and authentication
+- Profile management
+- Permission-based feature access
+
+## 🐛 Troubleshooting
+
+### Common Issues
+1. **WebSocket Connection**: Ensure Socket.IO server is running
+2. **Database Issues**: Check database file permissions
+3. **CORS Errors**: Verify CORS configuration in backend
+4. **Build Errors**: Clear node_modules and reinstall dependencies
+
+### Development Tips
+- Use `npm start:dev` for development without HTTPS
+- Check browser console for frontend errors
+- Monitor Flask debug output for backend issues
+- Use database browser tools to inspect SQLite database
+
+## 📈 Future Enhancements
+
+### Planned Features
+- [ ] Advanced tournament brackets
+- [ ] Player statistics and rankings
+- [ ] Mobile app development
+- [ ] Multi-language support
+- [ ] Advanced reporting and analytics
+- [ ] Integration with external tournament systems
+
+### Technical Improvements
+- [ ] Database migration system
+- [ ] Automated testing suite
+- [ ] Performance optimization
+- [ ] Enhanced security features
+- [ ] API documentation with Swagger
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👨‍ Author
+
+- **Yu Hung Kung** -  Initial development and Current maintainer
+
+## �� Acknowledgments
+
+- Flask community for the excellent web framework
+- React team for the powerful frontend library
+- Socket.IO for real-time communication capabilities
+- All contributors and testers
+
+---
+
+**Note**: This system is actively maintained and updated. For the latest features and bug fixes, please check the repository regularly.
 
 ## Developing Diary
 ### 2025/04/02
@@ -647,9 +945,12 @@ cd frontend
 export REACT_APP_API_URL=https://itsyuhungkung.sc-heduling.com
 
 # 3. build
+npm install
 npm run build
 
 # 4. run frontend
 serve -s build -l 3000
 ```
+- cloudflare dashboard need to set three subdomain, socket.io, api, frontend
+- socket.io and api using the domain with port 5001, frontend using port 3000
 ---
