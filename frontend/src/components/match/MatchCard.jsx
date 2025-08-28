@@ -58,7 +58,7 @@ const MatchCard = ({
 
   const { player1Winner, player2Winner } = getWinnerInfo();
 
-  // 修改分數顯示邏輯
+  // 修改分數顯示邏輯 - 修復狀態判斷
   const getScoreDisplay = () => {
     if (match.status === 'Finished') {
       // 比賽結束時顯示總局數勝負
@@ -67,11 +67,18 @@ const MatchCard = ({
         score2: match.player2_game_won || 0,
         showGames: true
       };
-    } else {
+    } else if (match.status === 'Ongoing') {
       // 比賽進行中顯示當前局分數
       return {
         score1: match.score1 || 0,
         score2: match.score2 || 0,
+        showGames: false
+      };
+    } else {
+      // 其他狀態（Pending 等）不顯示分數
+      return {
+        score1: 0,
+        score2: 0,
         showGames: false
       };
     }
@@ -81,6 +88,7 @@ const MatchCard = ({
 
   // 檢查是否為 BYE match
   const isByeMatch = match.player1 === 'BYE' || match.player2 === 'BYE';
+  // 修復：只有 Ongoing 和 Finished 狀態才顯示分數
   const shouldShowScore = (match.status === 'Ongoing' || match.status === 'Finished') && !isByeMatch;
 
   // 修正：遊戲歷史顯示邏輯

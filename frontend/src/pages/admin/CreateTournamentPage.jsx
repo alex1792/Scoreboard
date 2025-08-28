@@ -27,6 +27,9 @@ const TournamentCreatePage = () => {
         { value: 'round_robin', label: 'Round Robin' },
     ];
 
+    // 新增：默認 format 設置
+    const defaultFormat = 'elimination'; // 您可以改為 'round_robin' 如果您偏好循環賽
+
     // 處理基本資料變更
     const handleTournamentChange = (e) => {
         const { name, value } = e.target;
@@ -102,7 +105,7 @@ const TournamentCreatePage = () => {
         }));
     };
 
-    // 新增 Group
+    // 新增 Group - 修改版本，自動設置默認 format
     const handleAddGroup = (eventName) => {
         const groupName = newGroupNames[eventName]?.trim();
         if (!groupName) {
@@ -120,6 +123,12 @@ const TournamentCreatePage = () => {
         setGroups(prev => ({
             ...prev,
             [eventName]: [...(prev[eventName] || []), newGroup]
+        }));
+        
+        // 自動設置默認 format
+        setGroupFormats(prev => ({
+            ...prev,
+            [groupId]: defaultFormat
         }));
         
         // 清空該 event 的 group name
@@ -346,7 +355,7 @@ const TournamentCreatePage = () => {
                     </div>
                 </div>
 
-                {/* Groups 配置 */}
+                {/* Groups 配置 - 修改版本 */}
                 {selectedEvents.length > 0 && (
                     <div className="section">
                         <h2>Configure Groups</h2>
@@ -371,17 +380,16 @@ const TournamentCreatePage = () => {
                                     </button>
                                 </div>
                                 
-                                {/* 顯示 Groups */}
+                                {/* 顯示 Groups - 修改版本 */}
                                 <div className="groups-list">
                                     {groups[eventName]?.map(group => (
                                         <div key={group.id} className="group-item">
                                             <span className="group-name">{group.name}</span>
                                             <select
-                                                value={groupFormats[group.id] || ''}
+                                                value={groupFormats[group.id] || defaultFormat}
                                                 onChange={(e) => handleFormatChange(group.id, e.target.value)}
                                                 className="format-select"
                                             >
-                                                <option value="">Select Format</option>
                                                 {formatOptions.map(option => (
                                                     <option key={option.value} value={option.value}>
                                                         {option.label}

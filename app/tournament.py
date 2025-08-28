@@ -1,5 +1,5 @@
 from flask import jsonify, Blueprint
-from .models import Tournament, Format, Event, Group, Match
+from .models import Tournament, Format, Event, Group, Match, User
 from .models import db
 from .utils import check_authorization
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -221,4 +221,207 @@ def delete_tournament(tournament_id):
     
     except Exception as e:
         return jsonify({"status": "error", "message": "Please Login to delete a tournament"}), 500
+
+@tournament_bp.route('/<int:tournament_id>/bracket', methods=['GET'])
+def get_tournament_bracket(tournament_id):
+    print('get_tournament_bracket')
+    try:
+        matches = Match.query.filter_by(tournament_id=tournament_id).all()
+        
+        print(f"Total matches found: {len(matches)}")
+        for match in matches:
+            print(f"Processing match {match.id}: Round {match.round}, Match {match.match_number}")
+        
+        match_data = []
+        for match in matches:
+            # 獲取格式信息
+            event = Event.query.get(match.event_id)
+            group = Group.query.get(match.group_id)
+            format_info = Format.query.get(group.format_id) if group else None
+            
+            # 處理玩家名稱 - 支持單打和雙打
+            player1_name = 'TBD'
+            player2_name = 'TBD'
+            
+            # 如果是雙打比賽（MD, WD, XD），組合隊友名稱
+            if match.event_type in ['MD', 'WD', 'XD']:
+                # 檢查是否有雙打隊友信息
+                if match.team1_player1_name and match.team1_player2_name:
+                    player1_name = f"{match.team1_player1_name} / {match.team1_player2_name}"
+                elif match.player1_name:
+                    player1_name = match.player1_name
+                else:
+                    player1_name = 'TBD'
+                
+                if match.team2_player1_name and match.team2_player2_name:
+                    player2_name = f"{match.team2_player1_name} / {match.team2_player2_name}"
+                elif match.player2_name:
+                    player2_name = match.player2_name
+                else:
+                    player2_name = 'TBD'
+            else:
+                # 單打比賽
+                player1_name = match.player1_name or 'TBD'
+                player2_name = match.player2_name or 'TBD'
+            
+            # 處理勝者名稱
+            winner_name = match.winner_name
+            if not winner_name and match.status == 'Finished':
+                # 如果沒有 winner_name 但有勝者 ID，嘗試構建勝者名稱
+                if match.event_type in ['MD', 'WD', 'XD']:
+                    if match.winner1_id and match.winner2_id:
+                        winner1 = User.query.get(match.winner1_id)
+                        winner2 = User.query.get(match.winner2_id)
+                        if winner1 and winner2:
+                            winner_name = f"{winner1.get_full_name()} / {winner2.get_full_name()}"
+                else:
+                    if match.winner1_id:
+                        winner1 = User.query.get(match.winner1_id)
+                        if winner1:
+                            winner_name = winner1.get_full_name()
+            
+            # 計算比賽在 bracket 中的位置
+            print(f"Calculating position for match {match.id} (Round {match.round}, Match {match.match_number})")
+            bracket_position = calculate_bracket_position(match)
+            
+            connections = get_connection_info(match)
+
+            match_data.append({
+                'id': match.id,
+                'event_id': match.event_id,
+                'group_id': match.group_id,
+                'category': event.name if event else '',
+                'group': group.name if group else '',
+                'format_type': format_info.type if format_info else 'elimination',
+                'round': match.round,
+                'match_number': match.match_number,
+                'player1': player1_name,
+                'player2': player2_name,
+                'winner': winner_name,
+                'status': match.status,
+                'score1': match.player1_score,
+                'score2': match.player2_score,
+                # 添加缺失的字段
+                'player1_game_won': match.player1_game_won,
+                'player2_game_won': match.player2_game_won,
+                'game1_score1': match.game1_score1,
+                'game1_score2': match.game1_score2,
+                'game2_score1': match.game2_score1,
+                'game2_score2': match.game2_score2,
+                'game3_score1': match.game3_score1,
+                'game3_score2': match.game3_score2,
+                'current_game': match.current_game,
+                'umpire_id': match.umpire_id,
+                'next_match_id': match.next_match_id,
+                'prev_match1_id': match.prev_match1_id,
+                'prev_match2_id': match.prev_match2_id,
+                'event_type': match.event_type,
+                'bracket_position': bracket_position,
+                'connections': connections
+            })
+        
+        print(f"Found {len(match_data)} matches for tournament {tournament_id}")
+        return jsonify({
+            'status': 'success',
+            'matches': match_data
+        })
+        
+    except Exception as e:
+        print(f"Error in get_tournament_bracket: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+def calculate_bracket_position(match):
+    """計算比賽在 bracket 中的位置 - 金字塔形樹狀圖"""
+    if not match.round or not match.match_number:
+        return 0
+    
+    # 縮短間距常量
+    MATCH_HEIGHT = 120  # match box 高度
+    MATCH_SPACING = 120  # match box 之間的間距
+    TOTAL_MATCH_SPACE = MATCH_HEIGHT + MATCH_SPACING  # 總間距 = 240px
+    
+    if match.round == 1:
+        # 第一輪：均勻分布
+        match_index = match.match_number - 1
+        return match_index * TOTAL_MATCH_SPACE
+    elif match.round == 2:
+        # 第二輪：位於第一輪兩個比賽的中間
+        match_index = match.match_number - 1
+        prev_match1_index = match_index * 2
+        prev_match2_index = prev_match1_index + 1
+        
+        prev_match1_position = prev_match1_index * TOTAL_MATCH_SPACE
+        prev_match2_position = prev_match2_index * TOTAL_MATCH_SPACE
+        
+        return (prev_match1_position + prev_match2_position) / 2
+    elif match.round == 3:
+        # 第三輪：位於第二輪兩個比賽的中間
+        # 第二輪的位置是 120px 和 600px
+        return (120 + 600) / 2  # = 360px
+    
+    return 0
+
+def get_connection_info(match):
+    """獲取比賽的連接線信息"""
+    if not match.round or not match.match_number:
+        return None
+    
+    # 獲取下一輪的比賽
+    next_round_matches = Match.query.filter_by(
+        tournament_id=match.tournament_id,
+        event_id=match.event_id,
+        group_id=match.group_id,
+        round=match.round + 1
+    ).order_by(Match.match_number).all()
+    
+    # 如果沒有下一輪，就沒有連接線
+    if not next_round_matches:
+        return None
+    
+    # 計算這個比賽會連接到下一輪的哪個比賽
+    next_match_number = (match.match_number - 1) // 2 + 1
+    
+    # 找到對應的下一輪比賽
+    next_match = None
+    for nm in next_round_matches:
+        if nm.match_number == next_match_number:
+            next_match = nm
+            break
+    
+    if not next_match:
+        return None
+    
+    # 檢查下一輪的這個比賽是否只有一個前輪比賽指向它
+    prev_round_matches = Match.query.filter_by(
+        tournament_id=match.tournament_id,
+        event_id=match.event_id,
+        group_id=match.group_id,
+        round=match.round
+    ).order_by(Match.match_number).all()
+    
+    # 計算指向這個下一輪比賽的前輪比賽數量
+    pointing_matches = []
+    for pm in prev_round_matches:
+        pm_next_match_number = (pm.match_number - 1) // 2 + 1
+        if pm_next_match_number == next_match_number:
+            pointing_matches.append(pm)
+    
+    # 如果只有一個前輪比賽指向這個下一輪比賽，使用 'center' 位置
+    if len(pointing_matches) == 1:
+        position = 'center'
+    else:
+        # 否則使用 top/bottom 區分
+        position = 'top' if match.match_number % 2 == 1 else 'bottom'
+    
+    # 添加調試信息
+    print(f"Match {match.id} (Round {match.round}, Match {match.match_number}) -> Next Match {next_match.id} (Round {next_match.round}, Match {next_match.match_number}) with position {position}")
+    
+    return [{
+        'match_id': next_match.id,
+        'position': position
+    }]
+
     

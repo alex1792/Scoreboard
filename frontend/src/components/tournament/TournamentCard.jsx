@@ -104,12 +104,6 @@ const TournamentCard = ({
         </div>
 
         <div className="tournament-actions">
-          {/* <Link 
-            to={`/tournaments/${tournament.id}`}
-            className="view-details-btn"
-          >
-            ℹ View Details
-          </Link> */}
           <Link 
             to={`/tournaments/${tournament.id}/signup`}
             className="signup-btn"
@@ -127,6 +121,12 @@ const TournamentCard = ({
             className="view-matches-btn"
           >
             🔍 View Matches
+          </Link>
+          <Link 
+            to={`/tournaments/${tournament.id}/bracket`}
+            className="view-bracket-btn"
+          >
+            🏆 View Bracket
           </Link>
           {/* 只有管理員才能看到查看報名信息的按鈕 */}
           {showAdminActions && hasAdminAccess && hasAdminAccess() && (

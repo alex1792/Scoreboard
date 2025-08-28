@@ -4,6 +4,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from collections import Counter
+from .tournament_service import TournamentService
 
 class TournamentScheduler:
     """use to generate schedule for a tournament"""
@@ -898,6 +899,15 @@ class TournamentScheduler:
                 order_in_batch += 1
             
             db.session.commit()
+
+            # process the bye matches after schedule
+            try:
+                TournamentService.process_bye_matches_after_schedule(tournament_id)
+            except Exception as e:
+                print(f"Error processing bye matches after schedule: {e}")
+                db.session.rollback()
+                raise e
+
             return schedule.id
             
         except Exception as e:

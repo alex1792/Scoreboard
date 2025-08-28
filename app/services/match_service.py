@@ -304,7 +304,7 @@ class MatchService:
         if not match:
             return ValueError("Match not found")
 
-        # save the score
+        # save the score of the current game
         if match.current_game == 1:
             match.game1_score1 = match.player1_score
             match.game1_score2 = match.player2_score
@@ -315,15 +315,23 @@ class MatchService:
             match.game3_score1 = match.player1_score
             match.game3_score2 = match.player2_score
             
-        # update player1_game_won and player2_game_won
-        if match.player1_score > match.player2_score:
-            match.player1_game_won += 1
-        elif match.player1_score < match.player2_score:
-            match.player2_game_won += 1
-        elif match.player1_score == 0 and match.player2_score == 0:
-            pass
-        else:
-            return ValueError("Game is a draw")
+        # 移除重複的勝負計算，因為 next_game 已經計算過了
+        # 只有在最後一局還沒有計算過時才計算
+        if match.current_game > 0:
+            # 檢查最後一局是否已經計算過勝負
+            last_game_score1 = getattr(match, f'game{match.current_game}_score1', 0)
+            last_game_score2 = getattr(match, f'game{match.current_game}_score2', 0)
+            
+            # 如果最後一局的分數還沒有保存，說明還沒有計算過勝負
+            if last_game_score1 == 0 and last_game_score2 == 0:
+                if match.player1_score > match.player2_score:
+                    match.player1_game_won += 1
+                elif match.player1_score < match.player2_score:
+                    match.player2_game_won += 1
+                elif match.player1_score == 0 and match.player2_score == 0:
+                    pass
+                else:
+                    return ValueError("Game is a draw")
         
         # set match.status to finished
         match.status = 'Finished'

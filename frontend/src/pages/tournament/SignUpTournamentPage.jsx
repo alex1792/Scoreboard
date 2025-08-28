@@ -166,7 +166,7 @@ const SignUpTournamentPage = () => {
 
         try {
             console.log('Submitting:', submissionData);
-            const response = await fetchInfoToBackend(`${signUpTournamentUrl(tournament.id())}`, submissionData);
+            const response = await fetchInfoToBackend(`${signUpTournamentUrl(tournament.id)}`, submissionData);
             console.log('Response:', response);
             if (response.status === 'success') {
                 alert('Registration successful!');

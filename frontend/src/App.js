@@ -21,6 +21,7 @@ import CheckRegistrationPage from './pages/tournament/CheckRegistrationPage';
 import UploadRegistrationPage from './pages/tournament/UploadRegistrationPage';
 import GenerateSchedulePage from './pages/admin/GenerateSchedulePage';
 import SchedulePage from './pages/tournament/SchedulePage';
+import TournamentBracketPage from './pages/tournament/TournamentBracketPage';
 import { AuthProvider } from './context/AuthContext';
 import { PrivateRoute, AdminRoute, UmpireRoute, HostRoute, HostOrUmpireRoute } from './components/PrivateRoute';
 
@@ -49,6 +50,7 @@ function App() {
             <Route path="tournaments/:tournamentId/check-registration" element={<CheckRegistrationPage />} />
             <Route path="tournaments/:tournamentId/upload-registration" element={<UploadRegistrationPage />} />
             <Route path="tournaments/:tournamentId/schedule" element={<SchedulePage />} />
+            <Route path="tournaments/:tournamentId/bracket" element={<TournamentBracketPage />} />
             
             {/* Admin Features */}
             <Route path="/admin/set-umpire" element={<AdminRoute><AssignUmpirePage /></AdminRoute>} />

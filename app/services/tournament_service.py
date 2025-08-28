@@ -518,6 +518,10 @@ class TournamentService:
         num_byes = total_slots - len(players_data)
         print(f"Total slots: {total_slots}, Byes: {num_byes}")
         
+        # 確保第一輪有正確數量的比賽
+        first_round_matches = total_slots // 2
+        print(f"First round should have {first_round_matches} matches")
+        
         # randomly assign bye to players in the first round if needed
         players_copy = players_data.copy()
         random.shuffle(players_copy)
@@ -531,10 +535,26 @@ class TournamentService:
         current_round = []
         match_number = 1
         
-        # First Round
+        # First Round - 確保生成正確數量的比賽
         idx = 0
-        while idx < len(players_copy):
-            if idx == len(players_copy) - 1:
+        while len(current_round) < first_round_matches:
+            if idx >= len(players_copy):
+                # 如果玩家不夠，添加 BYE vs BYE 比賽
+                match_data = {
+                    'event_id': event.id,
+                    'group_id': group.id,
+                    'event_type': event.category,
+                    'player1_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
+                    'player2_data': {'user_id': None, 'user_name': 'BYE', 'partner_name': None},
+                    'round': round_number,
+                    'match_number': match_number,
+                    'prev_match1_id': None,
+                    'prev_match2_id': None,
+                    'player1_from_match': None,
+                    'player2_from_match': None
+                }
+                print(f"Created BYE vs BYE match")
+            elif idx == len(players_copy) - 1:
                 # last player, his opponent is BYE
                 match_data = {
                     'event_id': event.id,
@@ -591,6 +611,7 @@ class TournamentService:
         
         print(f"First round matches: {len(current_round)}")
         
+        # 繼續生成後續輪次...
         # next rounds - need to save the previous round matches
         while len(current_round) > 1:
             round_number += 1
@@ -815,3 +836,137 @@ class TournamentService:
             db.session.rollback()
             print(f"Error creating match record: {e}")
             return None
+
+    @staticmethod
+    def process_bye_matches_after_schedule(tournament_id):
+        """
+        after creating schedule, we need to process the bye matches
+        and update the next match's players
+        """
+        try:
+            # get all elimination matches
+            elimination_matches = Match.query.join(Event).join(Group).join(Format).filter(
+                Match.tournament_id == tournament_id,
+                Format.type == 'elimination'
+            ).order_by(Match.round, Match.match_number).all()
+            
+            print(f"Processing BYE matches for tournament {tournament_id}")
+            print(f"Found {len(elimination_matches)} elimination matches")
+            
+            # group by round
+            matches_by_round = {}
+            for match in elimination_matches:
+                round_num = match.round or 1
+                if round_num not in matches_by_round:
+                    matches_by_round[round_num] = []
+                matches_by_round[round_num].append(match)
+            
+            # start from the first round
+            for round_num in sorted(matches_by_round.keys()):
+                print(f"Processing Round {round_num}")
+                round_matches = matches_by_round[round_num]
+                
+                for match in round_matches:
+                    # check if the match is a bye match
+                    if TournamentService._is_bye_match(match):
+                        print(f"Found BYE match: {match.id}")
+                        
+                        # determine which one is the bye, which one is the actual player
+                        bye_player, actual_player = TournamentService._identify_bye_and_actual_player(match)
+                        
+                        if actual_player:
+                            # automatically set the winner
+                            TournamentService._set_bye_match_winner(match, actual_player)
+                            
+                            # update the next match
+                            TournamentService._update_next_match_after_bye(match, actual_player)
+                            
+                            print(f"BYE match {match.id} processed: {actual_player} advances")
+            
+            db.session.commit()
+            print("BYE matches processing completed")
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error processing BYE matches: {e}")
+            raise e
+
+    @staticmethod
+    def _is_bye_match(match):
+        """check if the match is a bye match"""
+        return (
+            match.player1_name == 'BYE' or match.player2_name == 'BYE' or
+            match.team1_player1_name == 'BYE' or match.team1_player2_name == 'BYE' or
+            match.team2_player1_name == 'BYE' or match.team2_player2_name == 'BYE'
+        )
+
+    @staticmethod
+    def _identify_bye_and_actual_player(match):
+        """identify the bye and actual player"""
+        if match.event_type in ['MD', 'WD', 'XD']:
+            # doubles match
+            if match.team1_player1_name == 'BYE' or match.team1_player2_name == 'BYE':
+                # Team 1 has BYE, Team 2 advances
+                if match.team2_player1_name and match.team2_player2_name:
+                    return 'BYE', f"{match.team2_player1_name} / {match.team2_player2_name}"
+            elif match.team2_player1_name == 'BYE' or match.team2_player2_name == 'BYE':
+                # Team 2 has BYE, Team 1 advances
+                if match.team1_player1_name and match.team1_player2_name:
+                    return 'BYE', f"{match.team1_player1_name} / {match.team1_player2_name}"
+        else:
+            # singles match
+            if match.player1_name == 'BYE':
+                return 'BYE', match.player2_name
+            elif match.player2_name == 'BYE':
+                return 'BYE', match.player1_name
+        
+        return None, None
+
+    @staticmethod
+    def _set_bye_match_winner(match, actual_player):
+        """set the winner of the bye match"""
+        if match.event_type in ['MD', 'WD', 'XD']:
+            # doubles match
+            names = actual_player.split(' / ')
+            if len(names) == 2:
+                match.winner_name = actual_player
+                match.status = 'Finished'
+                # here we can set winner1_id and winner2_id if needed
+        else:
+            # singles match
+            match.winner_name = actual_player
+            match.status = 'Finished'
+            # here we can set winner1_id if needed
+
+    @staticmethod
+    def _update_next_match_after_bye(match, actual_player):
+        """update the next match after the bye match"""
+        if not match.next_match_id:
+            return
+        
+        next_match = Match.query.get(match.next_match_id)
+        if not next_match:
+            return
+        
+        print(f"Updating next match {next_match.id} after BYE")
+        
+        # determine which position the bye match corresponds to in next_match
+        if next_match.prev_match1_id == match.id:
+            # update player1 position
+            if next_match.event_type in ['MD', 'WD', 'XD']:
+                names = actual_player.split(' / ')
+                if len(names) == 2:
+                    next_match.team1_player1_name = names[0].strip()
+                    next_match.team1_player2_name = names[1].strip()
+            else:
+                next_match.player1_name = actual_player
+        elif next_match.prev_match2_id == match.id:
+            # update player2 position
+            if next_match.event_type in ['MD', 'WD', 'XD']:
+                names = actual_player.split(' / ')
+                if len(names) == 2:
+                    next_match.team2_player1_name = names[0].strip()
+                    next_match.team2_player2_name = names[1].strip()
+            else:
+                next_match.player2_name = actual_player

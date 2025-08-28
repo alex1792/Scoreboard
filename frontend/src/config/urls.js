@@ -102,5 +102,6 @@ export const getTournamentDetailsUrl = (tournamentId) => `${BASE_URL}/api/tourna
 // delete tournament
 export const getDeleteTournamentUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}/delete_tournament`;
 
-
+// get tournament bracket url
+export const getTournamentBracketUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}/bracket`;
        

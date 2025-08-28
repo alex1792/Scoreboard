@@ -16,26 +16,26 @@ const TournamentPage = () => {
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
-        console.log('=== Starting to fetch tournaments ===');
+        // console.log('=== Starting to fetch tournaments ===');
         
-        console.log('API_URLS.ALL_TOURNAMENTS:', API_URLS.ALL_TOURNAMENTS);
+        // console.log('API_URLS.ALL_TOURNAMENTS:', API_URLS.ALL_TOURNAMENTS);
         const data = await fetchInfoFromBackend(API_URLS.ALL_TOURNAMENTS);
         
-        console.log('=== Response received ===');
-        console.log('Full response:', data);
+        // console.log('=== Response received ===');
+        // console.log('Full response:', data);
         
         if (data?.status === 'success') {
-          console.log('Fetched tournaments:', data.data);
+          // console.log('Fetched tournaments:', data.data);
           setTournaments(data.data);
         } else {
-          console.error('API returned error:', data?.message || 'Unknown error');
+          // console.error('API returned error:', data?.message || 'Unknown error');
           setError(data?.message || 'Unknown error');
         }
       } catch (err) {
-        console.error('Fetch error:', err);
+        // console.error('Fetch error:', err);
         setError(err.message || 'Network error');
       } finally {
-        console.log('Fetch completed, setting loading to false');
+        // console.log('Fetch completed, setting loading to false');
         setLoading(false);
       }
     };
@@ -91,7 +91,7 @@ const TournamentPage = () => {
   // 處理刪除 tournament
   const handleDeleteTournament = async (tournamentId) => {
     try {
-      console.log('Deleting tournament:', tournamentId);
+      // console.log('Deleting tournament:', tournamentId);
       
       // 顯示確認對話框
       const confirmed = window.confirm('Are you sure you want to delete this tournament? This action cannot be undone.');
@@ -102,7 +102,7 @@ const TournamentPage = () => {
       const response = await deleteTournament(tournamentId);
       
       if (response?.status === 'success') {
-        console.log('Tournament deleted successfully');
+        // console.log('Tournament deleted successfully');
         // 從本地狀態中移除被刪除的 tournament
         setTournaments(prevTournaments => 
           prevTournaments.filter(tournament => tournament.id !== tournamentId)

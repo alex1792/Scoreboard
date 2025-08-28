@@ -27,7 +27,7 @@ A comprehensive tournament management system with real-time scoring, user manage
 
 ### Backend
 - **Framework**: Flask (Python)
-- **Database**: SQLite with SQLAlchemy ORM
+- **Database**: SQLite with SQLAlchemy ORM(Object-Relational Mapping)
 - **Authentication**: Flask-JWT-Extended
 - **Real-time**: Flask-SocketIO
 - **File Processing**: Pandas, OpenPyXL
@@ -35,7 +35,7 @@ A comprehensive tournament management system with real-time scoring, user manage
 
 ### Frontend
 - **Framework**: React.js 19.1.0
-- **Routing**: React Router DOM 7.6.1
+- **Routing**: React Router DOM 7.6.1 (Document Object Model)
 - **Authentication**: React Auth Kit 3.1.3
 - **Real-time**: Socket.IO Client 4.8.1
 - **Styling**: CSS3 with responsive design
@@ -132,6 +132,7 @@ The system follows a **layered architecture** with clear separation of concerns:
 │                                                             │
 │  ✅ Database structure definition                           │
 │  ✅ Basic CRUD manipulation                                 │
+|    (create, read, update, delete)                           |
 │  ✅ Relationship definition                                 │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -953,4 +954,15 @@ serve -s build -l 3000
 ```
 - cloudflare dashboard need to set three subdomain, socket.io, api, frontend
 - socket.io and api using the domain with port 5001, frontend using port 3000
+---
+
+### 2025/08/24
+- solve sign-up tournament problem
+- ideas: show the brackets of elimination matches (like a path, who's in which round)
+- ideas: summarize the stats down below the brackets page
+---
+
+### 2025/08/28
+- Implemented Elimination bracket and round robin ranking board
+- Websocket update in the bracket page
 ---
