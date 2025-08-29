@@ -375,12 +375,12 @@ const TournamentBracketPage = () => {
           
           if (match.score1 > match.score2) {
             playerStats[player1].wins++;
-            playerStats[player1].points += 3; // 勝3分
-            playerStats[player2].losses++;
+            playerStats[player1].points += 1; // winning, get 1 point
+            playerStats[player2].losses += 0;
           } else if (match.score2 > match.score1) {
             playerStats[player2].wins++;
-            playerStats[player2].points += 3; // 勝3分
-            playerStats[player1].losses++;
+            playerStats[player2].points += 1; // winning, get 1 point
+            playerStats[player1].losses += 0;
           } else {
             // 平局
             playerStats[player1].points += 1;
@@ -409,10 +409,10 @@ const TournamentBracketPage = () => {
               <tr>
                 <th>Rank</th>
                 <th>Player</th>
-                <th>W</th>
-                <th>L</th>
-                <th>MP</th>
-                <th>Pts</th>
+                <th>Win</th>
+                <th>Loss</th>
+                <th>Matches Played</th>
+                <th>Points</th>
               </tr>
             </thead>
             <tbody>
