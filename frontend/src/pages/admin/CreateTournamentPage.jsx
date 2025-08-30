@@ -230,12 +230,12 @@ const TournamentCreatePage = () => {
             }))
         };
         
-        console.log('Submitting:', submitData);
+        // console.log('Submitting:', submitData);
         
         try {
             // 這裡調用 API 來創建 tournament
             const response = await fetchInfoToBackend(API_URLS.CREATE_TOURNAMENT, submitData);
-            console.log('Response:', response);
+            // console.log('Response:', response);
             alert('Tournament created successfully!');
             navigate('/tournaments');
         } catch (error) {

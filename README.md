@@ -966,3 +966,9 @@ serve -s build -l 3000
 - Implemented Elimination bracket and round robin ranking board
 - Websocket update in the bracket page
 ---
+
+### 2025/08/29
+- fix the update match status logic
+- cascade update the match info if restart the elimination match
+- cascade socketio emit match update
+---

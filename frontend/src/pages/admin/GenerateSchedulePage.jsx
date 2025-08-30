@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { generateScheduleFromDatabase, downloadBlob } from '../../api/api';
+import { useNavigate } from 'react-router-dom';
 
 const GenerateSchedulePage = () => {
     const { tournamentId } = useParams();
+    const navigate = useNavigate();
     const [totalCourt, setTotalCourt] = useState(6);
     const [isGenerating, setIsGenerating] = useState(false);
     const [message, setMessage] = useState('');
@@ -24,6 +26,7 @@ const GenerateSchedulePage = () => {
             setMessageType('error');
         } finally {
             setIsGenerating(false);
+            navigate(`/tournaments/${tournamentId}/schedule`);
         }
     };
 

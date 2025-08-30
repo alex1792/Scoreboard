@@ -14,6 +14,10 @@ const TournamentBracketPage = () => {
   const [error, setError] = useState(null);
   const [animatingMatchId, setAnimatingMatchId] = useState(null);
   
+  // 添加分類狀態
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedGroup, setSelectedGroup] = useState('all');
+  
   // WebSocket 連接引用
   const socketRef = useRef(null);
 
@@ -111,12 +115,45 @@ const TournamentBracketPage = () => {
     }
   };
 
-  // 分組比賽數據
+  // 獲取所有可用的分類和組別
+  const getAvailableCategories = () => {
+    const categories = new Set();
+    const groups = new Set();
+    
+    matches.forEach(match => {
+      const eventName = match.event_name || match.category;
+      const groupName = match.group_name || match.group;
+      
+      if (eventName) categories.add(eventName);
+      if (groupName) groups.add(groupName);
+    });
+    
+    return {
+      categories: Array.from(categories).sort(),
+      groups: Array.from(groups).sort()
+    };
+  };
+
+  // 過濾比賽數據
+  const getFilteredMatches = () => {
+    return matches.filter(match => {
+      const eventName = match.event_name || match.category;
+      const groupName = match.group_name || match.group;
+      
+      const categoryMatch = selectedCategory === 'all' || eventName === selectedCategory;
+      const groupMatch = selectedGroup === 'all' || groupName === selectedGroup;
+      
+      return categoryMatch && groupMatch;
+    });
+  };
+
+  // 分組比賽數據 - 使用過濾後的數據
   const groupMatchesByFormat = () => {
+    const filteredMatches = getFilteredMatches();
     const eliminationMatches = {};
     const roundRobinMatches = {};
 
-    matches.forEach(match => {
+    filteredMatches.forEach(match => {
       const eventName = match.event_name || match.category;
       const groupName = match.group_name || match.group;
       const formatType = match.format_type || match.format;
@@ -376,11 +413,11 @@ const TournamentBracketPage = () => {
           if (match.score1 > match.score2) {
             playerStats[player1].wins++;
             playerStats[player1].points += 1; // winning, get 1 point
-            playerStats[player2].losses += 0;
+            playerStats[player2].losses += 1;
           } else if (match.score2 > match.score1) {
             playerStats[player2].wins++;
             playerStats[player2].points += 1; // winning, get 1 point
-            playerStats[player1].losses += 0;
+            playerStats[player1].losses += 1;
           } else {
             // 平局
             playerStats[player1].points += 1;
@@ -449,12 +486,86 @@ const TournamentBracketPage = () => {
     );
   };
 
+  // 渲染分類導航
+  const renderCategoryNavigation = () => {
+    const { categories, groups } = getAvailableCategories();
+    
+    return (
+      <div className="category-navigation">
+        <div className="filter-section">
+          <div className="filter-group">
+            <label htmlFor="category-select">Event:</label>
+            <select 
+              id="category-select"
+              value={selectedCategory} 
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="category-select"
+            >
+              <option value="all">All Events</option>
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label htmlFor="group-select">Group:</label>
+            <select 
+              id="group-select"
+              value={selectedGroup} 
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              className="group-select"
+            >
+              <option value="all">All Groups</option>
+              {groups.map(group => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        <div className="filter-info">
+          <span className="filter-summary">
+            Showing: {selectedCategory === 'all' ? 'All Events' : selectedCategory} - {selectedGroup === 'all' ? 'All Groups' : selectedGroup}
+          </span>
+          <span className="match-count">
+            ({getFilteredMatches().length} matches)
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   // 渲染頁面內容
   const renderContent = () => {
     const { eliminationMatches, roundRobinMatches } = groupMatchesByFormat();
+    const filteredMatches = getFilteredMatches();
 
     return (
       <div className="bracket-content">
+        {/* 分類導航 */}
+        {renderCategoryNavigation()}
+        
+        {/* 沒有比賽時的提示 */}
+        {filteredMatches.length === 0 && (
+          <div className="no-matches-filtered">
+            <p>No matches found for the selected filters.</p>
+            <button 
+              onClick={() => {
+                setSelectedCategory('all');
+                setSelectedGroup('all');
+              }}
+              className="clear-filters-btn"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
+
         {/* 淘汰賽部分 */}
         {Object.keys(eliminationMatches).length > 0 && (
           <div className="elimination-section">
@@ -478,7 +589,8 @@ const TournamentBracketPage = () => {
         )}
 
         {Object.keys(eliminationMatches).length === 0 && 
-         Object.keys(roundRobinMatches).length === 0 && (
+         Object.keys(roundRobinMatches).length === 0 && 
+         filteredMatches.length > 0 && (
           <div className="no-matches">
             <p>No matches found for this tournament.</p>
           </div>

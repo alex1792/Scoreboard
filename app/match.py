@@ -153,7 +153,17 @@ def update_score(match_id):
             match_data = MatchService.update_score(match_id, player, score)
         elif action_type == 'change_status':
             new_status = data.get('new_status')
-            match_data = MatchService.update_match_status(match_id, new_status)
+            result = MatchService.update_match_status(match_id, new_status)
+            
+            # 發送當前比賽的更新
+            socketio.emit('match_update', result['match_data'], namespace='/scoreboard')
+            
+            # 如果有下一輪比賽的更新，也發送
+            if result['next_match_data']:
+                socketio.emit('match_update', result['next_match_data'], namespace='/scoreboard')
+                print(f"Emitted update for next match {result['next_match_data']['id']}")
+            
+            return jsonify({"status": "success", "data": result['match_data']})
         else:
             return jsonify({"status": "error", "message": "Invalid action type"}), 400
 

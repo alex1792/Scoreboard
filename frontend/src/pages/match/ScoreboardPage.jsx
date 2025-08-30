@@ -260,6 +260,74 @@ const Scoreboard = () => {
     }
   };
 
+  // 新增：處理 Finished 狀態的選項
+  const handleFinishedStatusChange = async (newStatus) => {
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      alert('not logged in or token is lost, please login again');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${getMatchScoreUrl(Number(matchId))}`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action_type: 'change_status',
+          new_status: newStatus
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        alert(`狀態更新失敗: ${data.message || res.status}`);
+      } else {
+        console.log('Status update request sent successfully');
+      }
+    } catch (err) {
+      console.error('狀態更新錯誤：', err);
+      alert('網路錯誤，請稍後再試');
+    }
+  };
+
+  // 修改：渲染 Finished 狀態的選項
+  const renderFinishedOptions = () => {
+    if (matchStatus === 'Finished' && canEditScore) {
+      return (
+        <div className="finished-options">
+          <div className="finished-options-header">
+            <h4>Match Finished</h4>
+          </div>
+          <div className="finished-options-buttons">
+            <button 
+              className="control-btn btn-restart"
+              onClick={() => handleFinishedStatusChange('Scheduled')}
+              title="Restart Match (Reset All)"
+            >
+              🔄 Restart Match
+              <span className="button-description">Reset all scores and start over</span>
+            </button>
+            
+            <button 
+              className="control-btn btn-undo"
+              onClick={() => handleFinishedStatusChange('Ongoing')}
+              title="Undo End Match (Keep Scores)"
+            >
+              ↩️ Undo End Match
+              <span className="button-description">Keep current scores and continue</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   // 調試信息
   console.log('Debug info:', {
     currentUser,
@@ -399,19 +467,11 @@ const Scoreboard = () => {
                     ⏹
                   </button>
                 )}
-
-                {/* Restart Match 按鈕 - 只在比賽結束時顯示 */}
-                {matchStatus === 'Finished' && (
-                  <button 
-                    className="control-btn btn-restart"
-                    onClick={handleStatusToggle}
-                    title="Restart Match"
-                  >
-                    ↩︎
-                  </button>
-                )}
               </div>
             </div>
+
+            {/* 新增：Finished 狀態的選項 */}
+            {renderFinishedOptions()}
           </div>
         )}
 

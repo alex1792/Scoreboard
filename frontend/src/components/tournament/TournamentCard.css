@@ -129,6 +129,16 @@
   background: #F57C00;
 }
 
+/* 添加 bracket 按鈕樣式 */
+.view-bracket-btn {
+  background: #E91E63;  /* 粉紅色，適合冠軍/獎盃主題 */
+  color: white;
+}
+
+.view-bracket-btn:hover {
+  background: #C2185B;
+}
+
 .view-registrations-btn {
   background: #9C27B0;
   color: white;

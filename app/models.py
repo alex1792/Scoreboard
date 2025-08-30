@@ -40,6 +40,7 @@ class Tournament(db.Model):
     events = db.relationship('Event', backref='tournament', lazy=True, cascade='all, delete-orphan')
     matches = db.relationship('Match', backref='tournament', lazy=True, cascade='all, delete-orphan')
     registrations = db.relationship('Registration', backref='tournament', lazy=True, cascade='all, delete-orphan')
+    schedules = db.relationship('Schedule', backref='tournament', lazy=True, cascade='all, delete-orphan')
     host_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 class Event(db.Model):
@@ -214,8 +215,8 @@ class Schedule(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     generated_at = db.Column(db.DateTime, nullable=True)
     
-    # 明確指定外鍵
-    tournament = db.relationship('Tournament', foreign_keys=[tournament_id], backref='schedules')
+    # 修改關係定義，添加 cascade
+    # tournament = db.relationship('Tournament', foreign_keys=[tournament_id], backref='schedules', cascade='all, delete-orphan')
     schedule_items = db.relationship('ScheduleItem', backref='schedule', cascade='all, delete-orphan')
 
 class ScheduleItem(db.Model):

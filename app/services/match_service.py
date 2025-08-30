@@ -74,10 +74,79 @@ class MatchService:
         if not match:
             raise ValueError("Match not found")
 
-        # update the status of the match
+        old_status = match.status
+        next_match_data = None  # 追蹤下一輪比賽的數據
+        
+        # 如果從 Scheduled 變為 Ongoing，重置分數
+        if old_status == 'Scheduled' and new_status == 'Ongoing':
+            match.player1_score = 0
+            match.player2_score = 0
+            match.current_game = 1
+            match.player1_game_won = 0
+            match.player2_game_won = 0
+            # 重置各局分數
+            match.game1_score1 = 0
+            match.game1_score2 = 0
+            match.game2_score1 = 0
+            match.game2_score2 = 0
+            match.game3_score1 = 0
+            match.game3_score2 = 0
+        
+        # 如果從 Ongoing 變為 Finished，需要計算當前局的勝負
+        elif old_status == 'Ongoing' and new_status == 'Finished':
+            # 先計算當前局的勝負
+            MatchService._calculate_current_game_winner(match)
+            # 再保存當前局的分數
+            MatchService._save_current_game_score(match)
+        
+        # 情況1: Finished -> Scheduled (重新開始比賽)
+        elif old_status == 'Finished' and new_status == 'Scheduled':
+            # 完全重置比賽狀態
+            match.player1_score = 0
+            match.player2_score = 0
+            match.current_game = 1
+            match.player1_game_won = 0
+            match.player2_game_won = 0
+            # 重置各局分數
+            match.game1_score1 = 0
+            match.game1_score2 = 0
+            match.game2_score1 = 0
+            match.game2_score2 = 0
+            match.game3_score1 = 0
+            match.game3_score2 = 0
+            # 清除勝者信息
+            match.winner1_id = None
+            match.winner2_id = None
+            match.loser1_id = None
+            match.loser2_id = None
+            match.winner_name = None
+            match.loser_name = None
+            
+            # 重要：需要撤銷對下一輪比賽的更新
+            if match.next_match_id:
+                next_match_data = MatchService._undo_next_round_update(match_id)
+        
+        # 情況2: Finished -> Ongoing (撤銷 end_match，保留分數)
+        elif old_status == 'Finished' and new_status == 'Ongoing':
+            # 保留當前分數和進度，但撤銷勝者判斷
+            # 撤銷最後一局的勝負計算
+            MatchService._undo_last_game_winner(match)
+            # 清除勝者信息
+            match.winner1_id = None
+            match.winner2_id = None
+            match.loser1_id = None
+            match.loser2_id = None
+            match.winner_name = None
+            match.loser_name = None
+            
+            # 重要：需要撤銷對下一輪比賽的更新
+            if match.next_match_id:
+                next_match_data = MatchService._undo_next_round_update(match_id)
+        
+        # 更新狀態
         match.status = new_status
         
-        # if the status is Finished, determine the winner
+        # 如果狀態是 Finished，確定最終勝者
         if new_status == 'Finished':
             try:
                 winner_info = MatchService.determine_winner(match_id)
@@ -86,7 +155,12 @@ class MatchService:
                 raise ValueError(f"Cannot finish match: {str(e)}")
         
         db.session.commit()
-        return get_match_data(match)
+        
+        # 返回當前比賽數據和下一輪比賽數據（如果有的話）
+        return {
+            'match_data': get_match_data(match),
+            'next_match_data': next_match_data
+        }
 
     @staticmethod
     def clear_all_matches():
@@ -120,7 +194,6 @@ class MatchService:
             db.session.delete(match)
         db.session.commit()
     
-
     @staticmethod
     def get_matches_by_umpire(umpire_id):
         """get the matches that the umpire is responsible for"""
@@ -254,6 +327,32 @@ class MatchService:
         return {'winner_name': winner_name, 'loser_name': loser_name}
         
     @staticmethod
+    def _save_current_game_score(match):
+        """保存當前局的分數"""
+        if match.current_game == 1:
+            match.game1_score1 = match.player1_score
+            match.game1_score2 = match.player2_score
+        elif match.current_game == 2:
+            match.game2_score1 = match.player1_score
+            match.game2_score2 = match.player2_score
+        elif match.current_game == 3:
+            match.game3_score1 = match.player1_score
+            match.game3_score2 = match.player2_score
+
+    @staticmethod
+    def _calculate_current_game_winner(match):
+        """計算當前局的勝負"""
+        # 直接根據當前的 player1_score 和 player2_score 計算勝負
+        if match.player1_score > match.player2_score:
+            match.player1_game_won += 1
+        elif match.player1_score < match.player2_score:
+            match.player2_game_won += 1
+        elif match.player1_score == 0 and match.player2_score == 0:
+            pass  # 雙方都是0分，不計算勝負
+        else:
+            raise ValueError("Game is a draw")
+
+    @staticmethod
     def next_game(match_id):
         """Set the match to next game"""
         match = Match.query.get(match_id)
@@ -263,35 +362,18 @@ class MatchService:
         if match.current_game >= 3:
             return ValueError("Can only support 3 games")
         
-        # save the score of the current game
-        if match.current_game == 1:
-            match.game1_score1 = match.player1_score
-            match.game1_score2 = match.player2_score
-            match.current_game += 1
-        elif match.current_game == 2:
-            match.game2_score1 = match.player1_score
-            match.game2_score2 = match.player2_score
-            match.current_game += 1
-        elif match.current_game == 3:
-            match.game3_score1 = match.player1_score
-            match.game3_score2 = match.player2_score
-            match.current_game += 1
+        # 1. 先計算當前局的勝負
+        MatchService._calculate_current_game_winner(match)
         
-        # check which player won the game
-        if match.player1_score > match.player2_score:
-            match.player1_game_won += 1
-        elif match.player1_score < match.player2_score:
-            match.player2_game_won += 1
-        else:
-            return ValueError("Game is a draw")
+        # 2. 再保存當前局的分數
+        MatchService._save_current_game_score(match)
         
-        # go to next game, reset the score and current game must be incremented
+        # 3. 重置分數並進入下一局
         match.player1_score = 0
         match.player2_score = 0
-        # match.current_game += 1
+        match.current_game += 1
         
         db.session.commit()
-
         return get_match_data(match)
 
     @staticmethod
@@ -304,43 +386,23 @@ class MatchService:
         if not match:
             return ValueError("Match not found")
 
-        # save the score of the current game
-        if match.current_game == 1:
-            match.game1_score1 = match.player1_score
-            match.game1_score2 = match.player2_score
-        elif match.current_game == 2:
-            match.game2_score1 = match.player1_score
-            match.game2_score2 = match.player2_score
-        elif match.current_game == 3:
-            match.game3_score1 = match.player1_score
-            match.game3_score2 = match.player2_score
-            
-        # 移除重複的勝負計算，因為 next_game 已經計算過了
-        # 只有在最後一局還沒有計算過時才計算
-        if match.current_game > 0:
-            # 檢查最後一局是否已經計算過勝負
-            last_game_score1 = getattr(match, f'game{match.current_game}_score1', 0)
-            last_game_score2 = getattr(match, f'game{match.current_game}_score2', 0)
-            
-            # 如果最後一局的分數還沒有保存，說明還沒有計算過勝負
-            if last_game_score1 == 0 and last_game_score2 == 0:
-                if match.player1_score > match.player2_score:
-                    match.player1_game_won += 1
-                elif match.player1_score < match.player2_score:
-                    match.player2_game_won += 1
-                elif match.player1_score == 0 and match.player2_score == 0:
-                    pass
-                else:
-                    return ValueError("Game is a draw")
+        # 1. 先計算當前局的勝負
+        MatchService._calculate_current_game_winner(match)
         
-        # set match.status to finished
+        # 2. 再保存當前局的分數
+        MatchService._save_current_game_score(match)
+        
+        # 3. 設置比賽狀態為完成
         match.status = 'Finished'
-
-        # determine the winner
+        
+        # 4. 確定最終勝者
         MatchService.determine_winner(match_id)
+        
+        # 5. 更新下一輪比賽（如果是淘汰賽）
+        if match.next_match_id:
+            MatchService.update_next_round_match(match_id)
 
         db.session.commit()
-
         return get_match_data(match)
 
     @staticmethod
@@ -404,3 +466,54 @@ class MatchService:
 
         
         return get_match_data(next_match)  
+
+    @staticmethod
+    def _undo_last_game_winner(match):
+        """撤銷最後一局的勝負計算"""
+        # 撤銷最後一局的 game_won 計算
+        if match.current_game == 1:
+            if match.game1_score1 > match.game1_score2:
+                match.player1_game_won -= 1
+            elif match.game1_score1 < match.game1_score2:
+                match.player2_game_won -= 1
+        elif match.current_game == 2:
+            if match.game2_score1 > match.game2_score2:
+                match.player1_game_won -= 1
+            elif match.game2_score1 < match.game2_score2:
+                match.player2_game_won -= 1
+        elif match.current_game == 3:
+            if match.game3_score1 > match.game3_score2:
+                match.player1_game_won -= 1
+            elif match.game3_score1 < match.game3_score2:
+                match.player2_game_won -= 1
+
+    @staticmethod
+    def _undo_next_round_update(match_id):
+        """撤銷對下一輪比賽的更新"""
+        match = Match.query.get(match_id)
+        if not match or not match.next_match_id:
+            return None  # 返回 None 表示沒有下一輪比賽需要更新
+        
+        next_match = Match.query.get(match.next_match_id)
+        if not next_match:
+            return None
+        
+        # 恢復下一輪比賽的原始參賽者信息
+        if next_match.prev_match1_id == match_id:
+            if match.event_type in ['MS', 'WS']:
+                next_match.player1_name = f"Winner of Match #{match_id}"
+            else:
+                next_match.team1_player1_name = f"Winner of Match #{match_id}"
+                next_match.team1_player2_name = None
+        elif next_match.prev_match2_id == match_id:
+            if match.event_type in ['MS', 'WS']:
+                next_match.player2_name = f"Winner of Match #{match_id}"
+            else:
+                next_match.team2_player1_name = f"Winner of Match #{match_id}"
+                next_match.team2_player2_name = None
+        
+        # 提交更改
+        db.session.commit()
+        
+        # 返回下一輪比賽的數據，讓 Controller 層處理 WebSocket 發送
+        return get_match_data(next_match) 
