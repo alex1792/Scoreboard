@@ -19,6 +19,7 @@ const BaseLayout = () => {
         <ul>
           <li><Link to="/">Score Board</Link></li>
           <li><Link to="/tournaments">Tournaments</Link></li>
+          <li><Link to="/about">About</Link></li>
           {isAuthenticated && currentUser && currentUser.username ? (
             <>
               <li><span>Welcome, {currentUser.username}</span></li>
@@ -26,7 +27,7 @@ const BaseLayout = () => {
                 <a href="#" onClick={handleLogout} className="nav-link">
                   Logout
                 </a>
-              </li>
+              </li> 
             </>
           ) : (
             <>

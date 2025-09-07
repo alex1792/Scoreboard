@@ -22,6 +22,7 @@ import UploadRegistrationPage from './pages/tournament/UploadRegistrationPage';
 import GenerateSchedulePage from './pages/admin/GenerateSchedulePage';
 import SchedulePage from './pages/tournament/SchedulePage';
 import TournamentBracketPage from './pages/tournament/TournamentBracketPage';
+import AboutPage from './pages/about/AboutPage';
 import { AuthProvider } from './context/AuthContext';
 import { PrivateRoute, AdminRoute, UmpireRoute, HostRoute, HostOrUmpireRoute } from './components/PrivateRoute';
 
@@ -67,6 +68,9 @@ function App() {
             <Route path="/admin/match-generator" element={<HostRoute><MatchGenerator /></HostRoute>} />
             <Route path="/admin/create-tournament" element={<HostRoute><CreateTournament /></HostRoute>} />
             <Route path="admin/create-match" element={<HostRoute><CreateMatch /></HostRoute>} />
+
+            {/* About */}
+            <Route path="/about" element={<AboutPage />} />
 
             {/* Home */}
             <Route path="/" element={<Home />} />

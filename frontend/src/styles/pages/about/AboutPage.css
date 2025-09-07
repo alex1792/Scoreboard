@@ -1,0 +1,328 @@
+.about-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding: 2rem 0;
+  }
+  
+  .about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #2c2c2c;
+  }
+  
+  .about-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 300;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+  }
+  
+  .about-subtitle {
+    font-size: 1.1rem;
+    color: #6b6b6b;
+    font-weight: 400;
+    margin: 0;
+  }
+  
+  .about-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  .about-section {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .about-section:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  .about-section h2 {
+    color: #2c2c2c;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 400;
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 0.75rem;
+  }
+  
+  /* Profile Card */
+  .profile-card {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: #f5f5f5;
+    border: 2px solid #e8e8e8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .avatar-text {
+    color: #6b6b6b;
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+  
+  .profile-info h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    color: #1a1a1a;
+    border: none;
+    padding: 0;
+    font-weight: 300;
+  }
+  
+  .profile-title {
+    font-size: 1.1rem;
+    color: #6b6b6b;
+    margin: 0 0 0.5rem 0;
+    font-weight: 400;
+  }
+  
+  .profile-location {
+    color: #8a8a8a;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 300;
+  }
+  
+  /* Project Description */
+  .project-description p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #4a4a4a;
+    margin-bottom: 1.2rem;
+    font-weight: 300;
+  }
+  
+  /* Skills Grid */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  
+  .skill-category h3 {
+    color: #4a4a4a;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+  
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  
+  .skill-tag {
+    background: #f8f8f8;
+    color: #4a4a4a;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 300;
+    border: 1px solid #e8e8e8;
+    transition: all 0.2s ease;
+  }
+  
+  .skill-tag:hover {
+    background: #f0f0f0;
+    border-color: #d0d0d0;
+  }
+  
+  /* Features Grid */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .feature-card {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    border-radius: 6px;
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+  }
+  
+  .feature-card:hover {
+    background: #f5f5f5;
+    border-color: #e8e8e8;
+  }
+  
+  .feature-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+  
+  .feature-card h3 {
+    color: #2c2c2c;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+  
+  .feature-card p {
+    color: #6b6b6b;
+    line-height: 1.5;
+    font-size: 0.9rem;
+    font-weight: 300;
+  }
+  
+  /* Contact Section */
+  .contact-info {
+    text-align: center;
+  }
+  
+  .contact-info p {
+    font-size: 1rem;
+    color: #4a4a4a;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+  
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: #ffffff;
+    color: #4a4a4a;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 300;
+    border: 1px solid #e8e8e8;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+  }
+  
+  .contact-link:hover {
+    background: #f8f8f8;
+    border-color: #d0d0d0;
+    color: #2c2c2c;
+    text-decoration: none;
+  }
+  
+  /* Back to Home */
+  .back-to-home {
+    text-align: center;
+    margin-top: 2rem;
+  }
+  
+  .back-button {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: #ffffff;
+    color: #4a4a4a;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 300;
+    border: 1px solid #e8e8e8;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+  }
+  
+  .back-button:hover {
+    background: #f8f8f8;
+    border-color: #d0d0d0;
+    color: #2c2c2c;
+    text-decoration: none;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .about-header h1 {
+      font-size: 2rem;
+    }
+    
+    .about-subtitle {
+      font-size: 1rem;
+    }
+    
+    .about-content {
+      padding: 0 1rem;
+    }
+    
+    .about-section {
+      padding: 1.5rem;
+    }
+    
+    .profile-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+    
+    .profile-info h2 {
+      font-size: 1.5rem;
+    }
+    
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .contact-links {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .about-page {
+      padding: 1rem 0;
+    }
+    
+    .about-header {
+      margin-bottom: 2rem;
+    }
+    
+    .about-header h1 {
+      font-size: 1.8rem;
+    }
+    
+    .about-section {
+      padding: 1rem;
+    }
+    
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .avatar-text {
+      font-size: 1.4rem;
+    }
+  }
