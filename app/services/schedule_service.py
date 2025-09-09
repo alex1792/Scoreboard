@@ -169,8 +169,8 @@ class TournamentScheduler:
         calculate the weight of the match
         
         consider the following factors:
-            1. remaining matches for all players
-            2. resting time for all players
+            1. remaining games (if the player has more games to play, then the match should be scheduled first)
+            2. resting time (if the player has been resting a lot, then he should have a higher priority to be scheduled)
         """
         weight = 0
         
@@ -330,15 +330,16 @@ class TournamentScheduler:
         # reorganize the scheduled matches into batches
         batches = self._organize_matches_into_batches()
         
-        for batch_idx, batch in enumerate(batches):
+        for batch_num, batch in batches.items():
             if len(batch) < self.total_court:
                 # this batch is not full, try to fill the matches
-                self._fill_batch_with_remaining(batch_idx, batch, remaining_matches)
+                self._fill_batch_with_remaining(batch_num, batch, remaining_matches)
 
     def _fill_batch_with_remaining(self, batch_idx, batch, remaining_matches):
         """fill the remaining matches in the specified batch"""
         batch_players = set()
-        for match in batch:
+        for match_info in batch:
+            match = match_info['match']
             match_players = self._get_match_players(match)
             batch_players.update(match_players)
         
@@ -428,228 +429,388 @@ class TournamentScheduler:
 
     def _write_schedule(self, filename):
         """write schedule to Excel file, including color markers and stats"""
-        rows = []
-        all_consecutive_players = []
-        
-        # reorganize scheduled_matches into batches
-        batches = self._organize_matches_into_batches()
-        
-        for batch_idx, batch in enumerate(batches, 1):
-            batch_rows = []
+        try:
+            print(f"Debug: Starting _write_schedule")
+            print(f"Debug: self.scheduled_matches length: {len(self.scheduled_matches) if hasattr(self, 'scheduled_matches') else 'No scheduled_matches'}")
+            print(f"Debug: self.all_matches length: {len(self.all_matches) if hasattr(self, 'all_matches') else 'No all_matches'}")
             
-            # add actual matches
-            for court_idx, match in enumerate(batch, 1):
-                # get match info (using Match object attributes)
-                category = match.event_type
-                group = Group.query.filter_by(id=match.group_id).first()
-                flight = group.name if group else ''
-                
-                # get player info
-                if match.event_type in ['MD', 'WD', 'XD']:
-                    # double
-                    team1_p1 = match.team1_player1_name or ''
-                    team1_p2 = match.team1_player2_name or ''
-                    team2_p1 = match.team2_player1_name or ''
-                    team2_p2 = match.team2_player2_name or ''
-                    
-                    # handle Winner of Match
-                    if 'Winner of Match' in team1_p1:
-                        player1s = f"Winner of {team1_p1}"
-                    else:
-                        player1s = f"{team1_p1} / {team1_p2}" if team1_p1 and team1_p2 else ''
-                    
-                    if 'Winner of Match' in team2_p1:
-                        player2s = f"Winner of {team2_p1}"
-                    else:
-                        player2s = f"{team2_p1} / {team2_p2}" if team2_p1 and team2_p2 else ''
-                    
-                    match_type = "Double"
-                else:
-                    # single atches
-                    player1_name = match.player1_name or ''
-                    player2_name = match.player2_name or ''
-                    
-                    # handle Winner of Match
-                    if 'Winner of Match' in player1_name:
-                        player1s = f"Winner of {player1_name}"
-                    else:
-                        player1s = player1_name
-                    
-                    if 'Winner of Match' in player2_name:
-                        player2s = f"Winner of {player2_name}"
-                    else:
-                        player2s = player2_name
-                    
-                    match_type = "Single"
-                
-                # check consecutive players
-                consecutive_players = []
-                if not self._is_winner_match(match):
-                    consecutive_players = self._get_consecutive_players_for_match(match, batch_idx)
-                    consecutive_str = ", ".join(consecutive_players) if consecutive_players else ""
-                    all_consecutive_players.extend(consecutive_players)
-                else:
-                    consecutive_str = ""
-                
-                batch_rows.append({
-                    'Batch': batch_idx,
-                    'Court': f"Court {court_idx}",
-                    'Match_Type': match_type,
-                    'Category': category,
-                    'Group': flight,
-                    'Player1/Team1': player1s,
-                    'Player2/Team2': player2s,
-                    'Consecutive_Players': consecutive_str,
-                    'Status': match.status or 'Scheduled',
-                    'Score1': match.player1_score or 0,
-                    'Score2': match.player2_score or 0,
-                    'Umpire': '',
-                    'Notes': ''
+            rows = []
+            all_consecutive_players = []
+            
+            # reorganize scheduled_matches into batches
+            batches = self._organize_matches_into_batches()
+            print(f"Debug: batches: {batches}")
+            
+            # 如果沒有已安排的比賽，創建一個狀態報告
+            if not batches:
+                print("Debug: No batches found, creating status report")
+                rows.append({
+                    'Match_ID': 'Schedule Status',
+                    'Batch': 'Report',
+                    'Court': 'Total Courts',
+                    'Date': 'Available',
+                    'Start_Time': 'Matches',
+                    'End_Time': 'Scheduled',
+                    'Match_Type': 'Unscheduled',
+                    'Category': 'Matches',
+                    'Group': 'Total',
+                    'Player1/Team1': 'Matches',
+                    'Player2/Team2': 'Found',
+                    'Consecutive_Players': 'In',
+                    'Status': 'Database',
+                    'Score1': 'Please',
+                    'Score2': 'Check',
+                    'Umpire': 'Database',
+                    'Notes': f'Total matches: {len(self.all_matches) if hasattr(self, "all_matches") else 0}, Scheduled: {len(self.scheduled_matches) if hasattr(self, "scheduled_matches") else 0}'
                 })
-            
-            # fill empty rows to reach the total_court number
-            for court_idx in range(len(batch) + 1, self.total_court + 1):
-                batch_rows.append({
-                    'Batch': batch_idx,
-                    'Court': f"Court {court_idx}",
-                    'Match_Type': '',
-                    'Category': '',
-                    'Group': '',
-                    'Player1/Team1': '',
-                    'Player2/Team2': '',
-                    'Consecutive_Players': '',
-                    'Status': '',
-                    'Score1': '',
-                    'Score2': '',
-                    'Umpire': '',
-                    'Notes': ''
-                })
-            
-            # add all rows of this batch to the total rows list
-            rows.extend(batch_rows)
+            else:
+                print(f"Debug: Processing {len(batches)} batches")
+                # 處理已安排的比賽
+                for batch_num, batch in batches.items():
+                    print(f"Debug: Processing batch {batch_num} with {len(batch)} matches")
+                    if batch_num == 'Unscheduled':
+                        continue
+                        
+                    batch_idx = batch_num
+                    batch_rows = []
+                    
+                    # add actual matches
+                    for court_idx, match_info in enumerate(batch, 1):
+                        print(f"Debug: Processing match {court_idx} in batch {batch_num}")
+                        # 現在 match_info 是字典 {'match': match, 'schedule_item': schedule_item}
+                        match = match_info['match']
+                        schedule_item = match_info['schedule_item']
+                        
+                        if schedule_item:
+                            print(f"Debug: Processing match {match.id} with schedule_item")
+                            # get match info (using Match object attributes)
+                            category = match.event_type
+                            group = Group.query.filter_by(id=match.group_id).first()
+                            flight = group.name if group else ''
+                            
+                            # get player info
+                            if match.event_type in ['MD', 'WD', 'XD']:
+                                # double
+                                team1_p1 = match.team1_player1_name or ''
+                                team1_p2 = match.team1_player2_name or ''
+                                team2_p1 = match.team2_player1_name or ''
+                                team2_p2 = match.team2_player2_name or ''
+                                
+                                # handle Winner of Match
+                                if 'Winner of Match' in team1_p1:
+                                    player1s = f"Winner of {team1_p1}"
+                                else:
+                                    player1s = f"{team1_p1} / {team1_p2}" if team1_p1 and team1_p2 else ''
+                                
+                                if 'Winner of Match' in team2_p1:
+                                    player2s = f"Winner of {team2_p1}"
+                                else:
+                                    player2s = f"{team2_p1} / {team2_p2}" if team2_p1 and team2_p2 else ''
+                                
+                                match_type = "Double"
+                            else:
+                                # single atches
+                                player1_name = match.player1_name or ''
+                                player2_name = match.player2_name or ''
+                                
+                                # handle Winner of Match
+                                if 'Winner of Match' in player1_name:
+                                    player1s = f"Winner of {player1_name}"
+                                else:
+                                    player1s = player1_name
+                                
+                                if 'Winner of Match' in player2_name:
+                                    player2s = f"Winner of {player2_name}"
+                                else:
+                                    player2s = player2_name
+                                
+                                match_type = "Single"
+                            
+                            # check consecutive players
+                            consecutive_players = []
+                            if not self._is_winner_match(match):
+                                consecutive_players = self._get_consecutive_players_for_match(match, batch_idx)
+                                consecutive_str = ", ".join(consecutive_players) if consecutive_players else ""
+                                all_consecutive_players.extend(consecutive_players)
+                            else:
+                                consecutive_str = ""
+                            
+                            batch_rows.append({
+                                'Match_ID': match.id,
+                                'Batch': batch_idx,
+                                'Court': f"Court {court_idx}",
+                                'Date': schedule_item.scheduled_date.strftime('%Y-%m-%d'),
+                                'Start_Time': schedule_item.scheduled_start_time.strftime('%H:%M'),
+                                'End_Time': schedule_item.scheduled_end_time.strftime('%H:%M'),
+                                'Match_Type': match_type,
+                                'Category': category,
+                                'Group': flight,
+                                'Player1/Team1': player1s,
+                                'Player2/Team2': player2s,
+                                'Consecutive_Players': consecutive_str,
+                                'Status': match.status or 'Scheduled',
+                                'Score1': match.player1_score or 0,
+                                'Score2': match.player2_score or 0,
+                                'Umpire': '',
+                                'Notes': ''
+                            })
+                        else:
+                            print(f"Debug: Match {match.id} has no schedule_item")
+                            batch_rows.append({
+                                'Match_ID': match.id,
+                                'Batch': batch_idx,
+                                'Court': f"Court {court_idx}",
+                                'Date': '',
+                                'Start_Time': '',
+                                'End_Time': '',
+                                'Match_Type': '',
+                                'Category': '',
+                                'Group': '',
+                                'Player1/Team1': '',
+                                'Player2/Team2': '',
+                                'Consecutive_Players': '',
+                                'Status': '',
+                                'Score1': '',
+                                'Score2': '',
+                                'Umpire': '',
+                                'Notes': ''
+                            })
+                    
+                    # fill empty rows to reach the total_court number
+                    for court_idx in range(len(batch) + 1, self.total_court + 1):
+                        batch_rows.append({
+                            'Match_ID': '',
+                            'Batch': batch_idx,
+                            'Court': f"Court {court_idx}",
+                            'Date': '',
+                            'Start_Time': '',
+                            'End_Time': '',
+                            'Match_Type': '',
+                            'Category': '',
+                            'Group': '',
+                            'Player1/Team1': '',
+                            'Player2/Team2': '',
+                            'Consecutive_Players': '',
+                            'Status': '',
+                            'Score1': '',
+                            'Score2': '',
+                            'Umpire': '',
+                            'Notes': ''
+                        })
+                    
+                    # add all rows of this batch to the total rows list
+                    rows.extend(batch_rows)
 
-        # calculate the stats of affected players
-        player_counts = Counter(all_consecutive_players)
-        total_affected_players = len(player_counts)
-        
-        # add stats info row
-        rows.append({})  # empty row
-        rows.append({
-            'Batch': 'Stats',
-            'Court': '',
-            'Match_Type': '',
-            'Category': '',
-            'Group': '',
-            'Player1/Team1': '',
-            'Player2/Team2': '',
-            'Consecutive_Players': '',
-            'Status': '',
-            'Score1': '',
-            'Score2': '',
-            'Umpire': '',
-            'Notes': ''
-        })
-        
-        # add the total count of affected players
-        rows.append({
-            'Batch': 'Total Affected Players',
-            'Court': '',
-            'Match_Type': '',
-            'Category': '',
-            'Group': '',
-            'Player1/Team1': '',
-            'Player2/Team2': '',
-            'Consecutive_Players': '',
-            'Status': '',
-            'Score1': '',
-            'Score2': '',
-            'Umpire': '',
-            'Notes': total_affected_players
-        })
-        
-        # add the count of each affected player
-        for player, count in player_counts.most_common():  # sorted by count (descending order)
+            # 處理未安排的比賽
+            if 'Unscheduled' in batches:
+                unscheduled_batch = batches['Unscheduled']
+                batch_rows = []
+                
+                for court_idx, match_info in enumerate(unscheduled_batch, 1):
+                    match = match_info['match']
+                    
+                    # 處理未安排的比賽
+                    batch_rows.append({
+                        'Match_ID': match.id,
+                        'Batch': 'Unscheduled',
+                        'Court': f"Court {court_idx}",
+                        'Date': 'TBD',
+                        'Start_Time': 'TBD',
+                        'End_Time': 'TBD',
+                        'Match_Type': 'Single' if match.event_type in ['MS', 'WS'] else 'Double',
+                        'Category': match.event_type,
+                        'Group': 'TBD',
+                        'Player1/Team1': match.player1_name or 'TBD',
+                        'Player2/Team2': match.player2_name or 'TBD',
+                        'Consecutive_Players': '',
+                        'Status': 'Unscheduled',
+                        'Score1': 0,
+                        'Score2': 0,
+                        'Umpire': '',
+                        'Notes': 'Not scheduled'
+                    })
+                
+                if batch_rows:
+                    rows.append({})  # empty row
+                    rows.append({
+                        'Match_ID': 'Unscheduled Matches',
+                        'Batch': '',
+                        'Court': '',
+                        'Date': '',
+                        'Start_Time': '',
+                        'End_Time': '',
+                        'Match_Type': '',
+                        'Category': '',
+                        'Group': '',
+                        'Player1/Team1': '',
+                        'Player2/Team2': '',
+                        'Consecutive_Players': '',
+                        'Status': '',
+                        'Score1': '',
+                        'Score2': '',
+                        'Umpire': '',
+                        'Notes': f'Total: {len(unscheduled_batch)} matches'
+                    })
+                    rows.extend(batch_rows)
+
+            # calculate the stats of affected players
+            player_counts = Counter(all_consecutive_players)
+            total_affected_players = len(player_counts)
+            
+            # add stats info row
+            rows.append({})  # empty row
             rows.append({
-                'Batch': '',
+                'Batch': 'Stats',
                 'Court': '',
                 'Match_Type': '',
                 'Category': '',
                 'Group': '',
-                'Player1/Team1': player,
+                'Player1/Team1': '',
                 'Player2/Team2': '',
                 'Consecutive_Players': '',
                 'Status': '',
                 'Score1': '',
                 'Score2': '',
                 'Umpire': '',
-                'Notes': f"Consecutive {count} times"
+                'Notes': ''
             })
-
-        # Write to Excel file
-        import pandas as pd
-        df = pd.DataFrame(rows)
-        df.to_excel(filename, index=False, sheet_name='MatchSchedule')
-
-        # Use openpyxl to add color markers
-        wb = load_workbook(filename)
-        ws = wb['MatchSchedule']
-        
-        # Yellow for marking consecutive players
-        yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-        
-        # Green for marking regular match rows
-        green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
-        
-        # Blue for marking stats info
-        blue_fill = PatternFill(start_color="87CEEB", end_color="87CEEB", fill_type="solid")
-        
-        # Red for marking affected players
-        red_fill = PatternFill(start_color="FFB6C1", end_color="FFB6C1", fill_type="solid")
-        
-        for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=ws.max_column), 2):
-            consecutive_cell = row[7]  # Consecutive_Players row
-            category_cell = row[3]     # Category row
-            batch_cell = row[0]        # Batch row
             
-            # Check if the row is a stats info row
-            if batch_cell.value == 'Stats':
-                for cell in row:
-                    cell.fill = blue_fill
-            elif batch_cell.value == 'Total Affected Players':
-                for cell in row:
-                    cell.fill = red_fill
-            elif batch_cell.value == '' and row[5].value and 'Consecutive' in str(row[11].value or ''):
-                # affected players detailed stats row
-                for cell in row:
-                    cell.fill = red_fill
-            elif consecutive_cell.value:  # consecutive players row
-                for cell in row:
-                    cell.fill = yellow_fill
-            elif category_cell.value:   # match row
-                for cell in row:
-                    cell.fill = green_fill
+            # add the total count of affected players
+            rows.append({
+                'Batch': 'Total Affected Players',
+                'Court': '',
+                'Match_Type': '',
+                'Category': '',
+                'Group': '',
+                'Player1/Team1': '',
+                'Player2/Team2': '',
+                'Consecutive_Players': '',
+                'Status': '',
+                'Score1': '',
+                'Score2': '',
+                'Umpire': '',
+                'Notes': total_affected_players
+            })
+            
+            # add the count of each affected player
+            for player, count in player_counts.most_common():  # sorted by count (descending order)
+                rows.append({
+                    'Batch': '',
+                    'Court': '',
+                    'Match_Type': '',
+                    'Category': '',
+                    'Group': '',
+                    'Player1/Team1': player,
+                    'Player2/Team2': '',
+                    'Consecutive_Players': '',
+                    'Status': '',
+                    'Score1': '',
+                    'Score2': '',
+                    'Umpire': '',
+                    'Notes': f"Consecutive {count} times"
+                })
 
-        wb.save(filename)
-        return filename
+            print(f"Debug: About to write Excel file with {len(rows)} rows")
+
+            # Write to Excel file
+            df = pd.DataFrame(rows)
+            df.to_excel(filename, index=False, sheet_name='MatchSchedule')
+
+            print(f"Debug: Excel file written successfully")
+
+            # Use openpyxl to add color markers
+            wb = load_workbook(filename)
+            ws = wb['MatchSchedule']
+            
+            # Yellow for marking consecutive players
+            yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+            
+            # Green for marking regular match rows
+            green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+            
+            # Blue for marking stats info
+            blue_fill = PatternFill(start_color="87CEEB", end_color="87CEEB", fill_type="solid")
+            
+            # Red for marking affected players
+            red_fill = PatternFill(start_color="FFB6C1", end_color="FFB6C1", fill_type="solid")
+            
+            for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=ws.max_column), 2):
+                consecutive_cell = row[11]  # Consecutive_Players row (修正索引)
+                category_cell = row[7]      # Category row (修正索引)
+                batch_cell = row[1]         # Batch row (修正索引)
+                match_id_cell = row[0]      # Match_ID row
+                
+                # 調試信息
+                print(f"Row {row_idx}: Batch={batch_cell.value}, Category={category_cell.value}, Consecutive={consecutive_cell.value}, MatchID={match_id_cell.value}")
+                
+                # 首先檢查是否是統計行
+                if batch_cell.value == 'Stats':
+                    for cell in row:
+                        cell.fill = blue_fill
+                    print(f"  -> Blue (Stats)")
+                elif batch_cell.value == 'Total Affected Players':
+                    for cell in row:
+                        cell.fill = red_fill
+                    print(f"  -> Red (Total Affected Players)")
+                elif batch_cell.value == '' and row[9].value and 'Consecutive' in str(row[16].value or ''):  # 修正索引
+                    for cell in row:
+                        cell.fill = red_fill
+                    print(f"  -> Red (Affected Players Detail)")
+                # 然後檢查是否是比賽行
+                elif match_id_cell.value and category_cell.value:  # 這是一個比賽行
+                    if consecutive_cell.value and consecutive_cell.value.strip():  # 有 consecutive players
+                        for cell in row:
+                            cell.fill = yellow_fill
+                        print(f"  -> Yellow (Has Consecutive Players)")
+                    else:  # 沒有 consecutive players
+                        for cell in row:
+                            cell.fill = green_fill
+                        print(f"  -> Green (Regular Match)")
+                else:
+                    print(f"  -> No color applied")
+
+            wb.save(filename)
+            return filename
+        
+        except Exception as e:
+            print(f"Error in _write_schedule: {str(e)}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            traceback.print_exc()
+            # 即使出錯，也創建一個基本的文件
+            try:
+                basic_data = [{
+                    'Status': 'Schedule Generation Error',
+                    'Message': str(e),
+                    'Total Courts': self.total_court,
+                    'Total Matches': len(self.all_matches) if hasattr(self, 'all_matches') else 0,
+                    'Scheduled Matches': len(self.scheduled_matches) if hasattr(self, 'scheduled_matches') else 0
+                }]
+                df = pd.DataFrame(basic_data)
+                df.to_excel(filename, index=False, sheet_name='ErrorReport')
+                return filename
+            except Exception as e2:
+                print(f"Error creating error report: {str(e2)}")
+                raise e
 
     def _organize_matches_into_batches(self):
-        """
-        organized matches into batches
-        batches: a list of list [[batch1], [batch2], [batch3], ...]
-        """
-        batches = []
-        current_batch = []
+        """重新組織比賽到批次中，包含 ScheduleItem 資訊"""
+        batches = {}
         
         for match in self.scheduled_matches:
-            current_batch.append(match)
+            # 獲取對應的 ScheduleItem
+            schedule_item = ScheduleItem.query.filter_by(match_id=match.id).first()
             
-            if len(current_batch) >= self.total_court:
-                batches.append(current_batch)
-                current_batch = []
-        
-        # handle with the last incomplete batch 
-        if current_batch:
-            batches.append(current_batch)
+            if schedule_item:
+                batch_num = schedule_item.batch_number
+                if batch_num not in batches:
+                    batches[batch_num] = []
+                
+                # 返回包含所有資訊的字典
+                batches[batch_num].append({
+                    'match': match,
+                    'schedule_item': schedule_item
+                })
         
         return batches
 
@@ -672,12 +833,14 @@ class TournamentScheduler:
         players = set()
         batches = self._organize_matches_into_batches()
         
-        if 0 <= batch_idx - 1 < len(batches):
-            batch = batches[batch_idx - 1]
-            for match in batch:
+        # 檢查 batch_idx 是否在 batches 字典中
+        if batch_idx in batches:
+            batch = batches[batch_idx]
+            for match_info in batch:
+                match = match_info['match']
                 match_players = self._get_match_players(match)
                 players.update(match_players)
-        
+    
         return players
         
     def _players_not_in_selected_players(self, match, seelcted_players):
@@ -760,9 +923,9 @@ class TournamentScheduler:
     
     def _can_schedule_match(self, match):
         """check if the match can be scheduled (elimination dependency)"""
-        # skip by matches
+        # 跳過 BYE 比賽，不納入 schedule
         if self._is_bye_match(match):
-            return False
+            return False  # 改回 False，跳過 BYE 比賽
         
         if not match.round or match.round == 1:
             return True
@@ -854,7 +1017,7 @@ class TournamentScheduler:
             
             # compute time for each batch
             batch_start_time = schedule.start_time  # 9:00
-            batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 9:30
+            batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=schedule.match_duration)
             batch_end_time = batch_end_time.time()
             
             for i, match in enumerate(self.scheduled_matches):
@@ -864,15 +1027,15 @@ class TournamentScheduler:
                     order_in_batch = 0
                     
                     # compute the time for next batch
-                    batch_start_time = batch_end_time  # 9:30
-                    batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 10:00
+                    batch_start_time = batch_end_time
+                    batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=schedule.match_duration)
                     batch_end_time = batch_end_time.time()
                     
                     # check if the time exceed endtime, if so, need to process at the next day
-                    if batch_start_time >= schedule.end_time:  # if exceed  18:00
+                    if batch_start_time >= schedule.end_time:
                         current_date += timedelta(days=1)
-                        batch_start_time = schedule.start_time  # set to 9:00
-                        batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=30)  # 9:30
+                        batch_start_time = schedule.start_time
+                        batch_end_time = datetime.combine(datetime.today(), batch_start_time) + timedelta(minutes=schedule.match_duration)
                         batch_end_time = batch_end_time.time()
                 
                 # if current date exceed tournament.end_date
@@ -900,13 +1063,13 @@ class TournamentScheduler:
             
             db.session.commit()
 
-            # process the bye matches after schedule
-            try:
-                TournamentService.process_bye_matches_after_schedule(tournament_id)
-            except Exception as e:
-                print(f"Error processing bye matches after schedule: {e}")
-                db.session.rollback()
-                raise e
+            # 暫時跳過 BYE 匹配處理
+            # try:
+            #     TournamentService.process_bye_matches_after_schedule(tournament_id)
+            # except Exception as e:
+            #     print(f"Error processing bye matches after schedule: {e}")
+            #     db.session.rollback()
+            #     raise e
 
             return schedule.id
             
@@ -919,3 +1082,10 @@ class TournamentScheduler:
         dt = datetime.combine(datetime.today(), time)
         new_dt = dt + timedelta(minutes=minutes)
         return new_dt.time()
+
+
+    def update_schedule_item(self, file):
+        """user upload the schedule, update the schedule_items"""
+        excel_data = pd.read_excel(file, engine='openpyxl')
+        # for row in excel_data:
+        #     schedule_item = ScheduleItem.query.filter_by(schedule_id=)

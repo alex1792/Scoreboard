@@ -237,8 +237,9 @@ npm --version
 ### Backend Setup
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone -b https://github.com/alex1792/scoreboard
 cd scoreboard
+
 
 # Create virtual environment
 python -m venv .venv
@@ -270,7 +271,7 @@ cd frontend
 npm run build
 
 # Set environment variables
-export REACT_APP_API_URL=https://your-domain.com
+export REACT_APP_API_URL=https://itsyuhungkung.sc-heduling.com
 
 # Serve frontend
 serve -s build -l 3000
@@ -971,4 +972,18 @@ serve -s build -l 3000
 - fix the update match status logic
 - cascade update the match info if restart the elimination match
 - cascade socketio emit match update
+---
+
+### 2025/09/08
+- IDEAS: upload customized schedule
+- IDEAS: player profile to show player's game history
+- IDEAS: create another group, and create matches in that group
+- IDEAS: ranking board down below the group page
+- IDEAS: type score in the scoreboard page
+- Fix schedule time errors
+---
+
+### 2025/09/09
+- Fix scheduling bug
+- Write more columns into the schedule.xlsx file
 ---
