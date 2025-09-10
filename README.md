@@ -987,3 +987,7 @@ serve -s build -l 3000
 - Fix scheduling bug
 - Write more columns into the schedule.xlsx file
 ---
+
+### 2025/09/10
+- Create the player history page
+---

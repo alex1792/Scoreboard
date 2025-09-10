@@ -1,7 +1,9 @@
-from sqlalchemy import false
+from sqlalchemy import false, or_
 from ..models import Tournament, Event, Group, Format, db, Registration, Match, Schedule
 from datetime import datetime
 import random
+from ..utils import get_match_data
+
 
 class TournamentService:
     """Tournament related business logic services"""
@@ -970,3 +972,56 @@ class TournamentService:
                     next_match.team2_player2_name = names[1].strip()
             else:
                 next_match.player2_name = actual_player
+
+    @staticmethod
+    def query_players_history(player_name, tournament_id):
+        """查詢選手的比賽歷史"""
+        try:
+            # 查詢該選手在指定 tournament 中的所有比賽
+            matches = Match.query.filter(
+                Match.tournament_id == tournament_id,
+                db.or_(
+                    # 單打比賽
+                    Match.player1_name == player_name,
+                    Match.player2_name == player_name,
+                    # 雙打比賽
+                    Match.team1_player1_name == player_name,
+                    Match.team1_player2_name == player_name,
+                    Match.team2_player1_name == player_name,
+                    Match.team2_player2_name == player_name
+                )
+            ).all()
+
+            # 使用 get_match_data 獲取完整的 match 資料
+            match_history = [get_match_data(match) for match in matches]
+            
+            # 計算統計資料
+            total_matches = len(match_history)
+            completed_matches = len([m for m in match_history if m['status'] == 'Finished'])
+            wins = len([m for m in match_history if m.get('winner') and player_name in m.get('winner', '')])
+            losses = completed_matches - wins
+            win_rate = (wins / completed_matches * 100) if completed_matches > 0 else 0
+            
+            return {
+                'status': 'success',
+                'message': f'Found {total_matches} matches for player {player_name}',
+                'data': {
+                    'player_name': player_name,
+                    'tournament_id': tournament_id,
+                    'statistics': {
+                        'total_matches': total_matches,
+                        'completed_matches': completed_matches,
+                        'wins': wins,
+                        'losses': losses,
+                        'win_rate': round(win_rate, 1)
+                    },
+                    'match_history': match_history  # 現在是完整的 get_match_data 格式
+                }
+            }
+            
+        except Exception as e:
+            print(f"Error querying players history: {e}")
+            return {
+                'status': 'error',
+                'message': str(e)
+            }

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './MatchCard.css';
+import { useMatchInfoListener } from '../../api/socketService';
 
 // If I want to dispaly the match card with different buttons, just set the parameter to true
 // eg: if the admin or host has the permission to delete match, set showDeleteButton = True 
@@ -22,56 +23,143 @@ const MatchCard = ({
   showPredecessors = true,
   isClickable = false,
   className = '',
-  animating = false
+  animating = false,
+  enableWebSocket = false,
 }) => {
+  const [currentMatch, setCurrentMatch] = useState(match);
+  const [isAnimating, setIsAnimating] = useState(animating);
+  const socketRef = useRef(null);
+
+  // 當外部 match prop 更新時，同步內部狀態
+  useEffect(() => {
+    setCurrentMatch(match);
+  }, [match]);
+
+  // 創建一個只包含當前 match 的數組
+  const [matches, setMatches] = useState([match]);
+
+  // 處理比賽更新的函數
+  const handleMatchUpdate = (updatedMatch) => {
+    if (updatedMatch.id === currentMatch.id) {
+      setCurrentMatch(updatedMatch);
+      setIsAnimating(true);
+      
+      // 動畫結束後重置
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 1000);
+    }
+  };
+
+  // 處理動畫的函數
+  const handleAnimatingMatchId = (matchId) => {
+    if (matchId === currentMatch.id) {
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 1000);
+    }
+  };
+
+  // 使用 WebSocket Hook
+  useMatchInfoListener(socketRef, { 
+    setMatches: enableWebSocket ? (prev) => {
+      // prev 是一個 matches 數組，我們需要找到更新的 match
+      const updatedMatch = prev.find(m => m.id === currentMatch.id);
+      if (updatedMatch) {
+        handleMatchUpdate(updatedMatch);
+      }
+      return prev; // 返回更新後的數組
+    } : () => {}, // 如果禁用 WebSocket，提供空函數
+    setAnimatingMatchId: enableWebSocket ? handleAnimatingMatchId : () => {}
+  });
+
+  // 清理 WebSocket 連接
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
   const statusColorMap = {
     ended: '#4CAF50',
     ongoing: '#FFC107',
     pending: '#9E9E9E'
   };
 
-  const statusColor = statusColorMap[match.status?.toLowerCase()] || '#ccc';
+  const statusColor = statusColorMap[currentMatch.status?.toLowerCase()] || '#ccc';
 
   // 修正勝者判斷邏輯 - 處理 BYE match
   const getWinnerInfo = () => {
-    if (match.status !== 'Finished' || !match.winner) {
+    if (currentMatch.status !== 'Finished' || !currentMatch.winner) {
       return { player1Winner: false, player2Winner: false };
     }
     
     // 檢查是否為 BYE match
-    const isByeMatch = match.player1 === 'BYE' || match.player2 === 'BYE';
+    const isByeMatch = currentMatch.player1 === 'BYE' || currentMatch.player2 === 'BYE';
     
     if (isByeMatch) {
       // BYE match 的勝者判斷
-      if (match.player1 === 'BYE') {
+      if (currentMatch.player1 === 'BYE') {
         return { player1Winner: false, player2Winner: true };
-      } else if (match.player2 === 'BYE') {
+      } else if (currentMatch.player2 === 'BYE') {
         return { player1Winner: true, player2Winner: false };
       }
     }
     
     // 一般比賽的勝者判斷
-    const player1Winner = match.winner === match.player1;
-    const player2Winner = match.winner === match.player2;
+    const player1Winner = currentMatch.winner === currentMatch.player1;
+    const player2Winner = currentMatch.winner === currentMatch.player2;
     return { player1Winner, player2Winner };
   };
 
   const { player1Winner, player2Winner } = getWinnerInfo();
 
-  // 修改分數顯示邏輯 - 修復狀態判斷
+  // 修改分數顯示邏輯 - 從各局分數計算遊戲勝負
   const getScoreDisplay = () => {
-    if (match.status === 'Finished') {
-      // 比賽結束時顯示總局數勝負
+    if (currentMatch.status === 'Finished') {
+      // 如果 player1_game_won 和 player2_game_won 為 0，嘗試從各局分數計算
+      let gameWon1 = currentMatch.player1_game_won || 0;
+      let gameWon2 = currentMatch.player2_game_won || 0;
+      
+      // 如果遊戲勝負為 0，嘗試從各局分數計算
+      if (gameWon1 === 0 && gameWon2 === 0) {
+        // 檢查各局分數
+        if (currentMatch.game1_score1 !== undefined && currentMatch.game1_score2 !== undefined) {
+          if (currentMatch.game1_score1 > currentMatch.game1_score2) {
+            gameWon1++;
+          } else if (currentMatch.game1_score1 < currentMatch.game1_score2) {
+            gameWon2++;
+          }
+        }
+        
+        if (currentMatch.game2_score1 !== undefined && currentMatch.game2_score2 !== undefined) {
+          if (currentMatch.game2_score1 > currentMatch.game2_score2) {
+            gameWon1++;
+          } else if (currentMatch.game2_score1 < currentMatch.game2_score2) {
+            gameWon2++;
+          }
+        }
+        
+        if (currentMatch.game3_score1 !== undefined && currentMatch.game3_score2 !== undefined) {
+          if (currentMatch.game3_score1 > currentMatch.game3_score2) {
+            gameWon1++;
+          } else if (currentMatch.game3_score1 < currentMatch.game3_score2) {
+            gameWon2++;
+          }
+        }
+      }
+      
       return {
-        score1: match.player1_game_won || 0,
-        score2: match.player2_game_won || 0,
+        score1: gameWon1,
+        score2: gameWon2,
         showGames: true
       };
-    } else if (match.status === 'Ongoing') {
+    } else if (currentMatch.status === 'Ongoing') {
       // 比賽進行中顯示當前局分數
       return {
-        score1: match.score1 || 0,
-        score2: match.score2 || 0,
+        score1: currentMatch.player1_score || 0,
+        score2: currentMatch.player2_score || 0,
         showGames: false
       };
     } else {
@@ -87,25 +175,25 @@ const MatchCard = ({
   const { score1, score2, showGames } = getScoreDisplay();
 
   // 檢查是否為 BYE match
-  const isByeMatch = match.player1 === 'BYE' || match.player2 === 'BYE';
+  const isByeMatch = currentMatch.player1 === 'BYE' || currentMatch.player2 === 'BYE';
   // 修復：只有 Ongoing 和 Finished 狀態才顯示分數
-  const shouldShowScore = (match.status === 'Ongoing' || match.status === 'Finished') && !isByeMatch;
+  const shouldShowScore = (currentMatch.status === 'Ongoing' || currentMatch.status === 'Finished') && !isByeMatch;
 
   // 修正：遊戲歷史顯示邏輯
   const renderGameHistory = () => {
     const games = [];
     
     // 檢查每一局是否有分數
-    if (match.game1_score1 > 0 || match.game1_score2 > 0) {
-      games.push(`G1: ${match.game1_score1}-${match.game1_score2}`);
+    if (currentMatch.game1_score1 > 0 || currentMatch.game1_score2 > 0) {
+      games.push(`G1: ${currentMatch.game1_score1}-${currentMatch.game1_score2}`);
     }
     
-    if (match.game2_score1 > 0 || match.game2_score2 > 0) {
-      games.push(`G2: ${match.game2_score1}-${match.game2_score2}`);
+    if (currentMatch.game2_score1 > 0 || currentMatch.game2_score2 > 0) {
+      games.push(`G2: ${currentMatch.game2_score1}-${currentMatch.game2_score2}`);
     }
     
-    if (match.game3_score1 > 0 || match.game3_score2 > 0) {
-      games.push(`G3: ${match.game3_score1}-${match.game3_score2}`);
+    if (currentMatch.game3_score1 > 0 || currentMatch.game3_score2 > 0) {
+      games.push(`G3: ${currentMatch.game3_score1}-${currentMatch.game3_score2}`);
     }
     
     // 如果沒有任何遊戲歷史，不顯示
@@ -123,30 +211,30 @@ const MatchCard = ({
   };
 
   // 調試信息
-  console.log('MatchCard Debug:', {
-    id: match.id,
-    status: match.status,
-    winner: match.winner,
-    player1: match.player1,
-    player2: match.player2,
-    player1Winner,
-    player2Winner,
-    score1,
-    score2,
-    showGames
-  });
+  // console.log('MatchCard Debug:', {
+  //   id: currentMatch.id,
+  //   status: currentMatch.status,
+  //   winner: currentMatch.winner,
+  //   player1: currentMatch.player1,
+  //   player2: currentMatch.player2,
+  //   player1Winner,
+  //   player2Winner,
+  //   score1,
+  //   score2,
+  //   showGames
+  // });
 
   const cardContent = (
     <div
-      className={`match-card status-${match.status?.toLowerCase()} ${animating ? 'animating' : ''} ${className}`}
-      data-match-id={match.id}
+      className={`match-card status-${currentMatch.status?.toLowerCase()} ${isAnimating ? 'animating' : ''} ${className}`}
+      data-match-id={currentMatch.id}
       style={showDeleteButton ? { position: 'relative' } : {}}
     >
       {showDeleteButton && (
         <button
           className="close-btn"
           aria-label="Close"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(match.id); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(currentMatch.id); }}
           type="button"
         >
           &times;
@@ -154,19 +242,19 @@ const MatchCard = ({
       )}
       
       <div className="match-header">
-        <div className="match-id">#{match.id}</div>
+        <div className="match-id">#{currentMatch.id}</div>
         <div className="match-category">
-          {match.round && match.match_number ? (
-            `${match.category}-${match.group} : Round ${match.round} - Match ${match.match_number}`
+          {currentMatch.round && currentMatch.match_number ? (
+            `${currentMatch.category}-${currentMatch.group} : Round ${currentMatch.round} - Match ${currentMatch.match_number}`
           ) : (
-            `${match.category}-${match.group}`
+            `${currentMatch.category}-${currentMatch.group}`
           )}
         </div>
       </div>
       
-      {showPredecessors && match.prev_match1_id && (
+      {showPredecessors && currentMatch.prev_match1_id && (
         <div className="match-predecessors">
-          <small>Winner of Match #{match.prev_match1_id} vs Winner of Match #{match.prev_match2_id}</small>
+          <small>Winner of Match #{currentMatch.prev_match1_id} vs Winner of Match #{currentMatch.prev_match2_id}</small>
         </div>
       )}
       
@@ -182,7 +270,7 @@ const MatchCard = ({
           <div className="player-info">
             <span className="player-name">
               {player1Winner && <span className="winner-crown">👑</span>}
-              {match.player1}
+              {currentMatch.player1}
             </span>
           </div>
           {shouldShowScore && (
@@ -197,7 +285,7 @@ const MatchCard = ({
           <div className="player-info">
             <span className="player-name">
               {player2Winner && <span className="winner-crown">👑</span>}
-              {match.player2}
+              {currentMatch.player2}
             </span>
           </div>
           {shouldShowScore && (
@@ -211,21 +299,21 @@ const MatchCard = ({
 
       <div className="status">
         <span
-          className={`status-badge status-${match.status?.toLowerCase()}`}
+          className={`status-badge status-${currentMatch.status?.toLowerCase()}`}
           style={{ backgroundColor: statusColor + '20', color: statusColor }}
         >
-          {match.status?.toUpperCase()}
+          {currentMatch.status?.toUpperCase()}
         </span>
       </div>
 
       <div className="umpire-section">
         <span className="umpire-label">
           Umpire: <span className="umpire-name">
-            {typeof match.umpire === 'object' ? match.umpire.username : (match.umpire || 'To Be Assigned')}
+            {typeof currentMatch.umpire === 'object' ? currentMatch.umpire.username : (currentMatch.umpire || 'To Be Assigned')}
           </span>
         </span>
         {showAssignUmpireButton && (
-          <button className="set-umpire-btn" onClick={() => onAssignUmpire(match.id)}>
+          <button className="set-umpire-btn" onClick={() => onAssignUmpire(currentMatch.id)}>
             Assign Umpire
           </button>
         )}
@@ -236,7 +324,7 @@ const MatchCard = ({
   // 如果可點擊，包裝在 Link 中
   if (isClickable) {
     return (
-      <Link to={`/matches/${match.id}`} className="match-card-link">
+      <Link to={`/matches/${currentMatch.id}`} className="match-card-link">
         {cardContent}
       </Link>
     );

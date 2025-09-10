@@ -534,14 +534,13 @@
 /* 篩選器容器 */
 .filters-container {
   display: flex;
-  gap: 1rem;
+  gap: 15px;
   align-items: center;
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
   flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
 
 .filter-group {
@@ -610,6 +609,28 @@
 /* 把刪除按鈕推到右側 */
 .filters-container .delete-all-matches-btn {
   margin-left: auto;
+}
+
+.player-history-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.player-history-btn:hover {
+  background-color: #218838;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 @media (min-width: 769px) {

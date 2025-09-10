@@ -23,6 +23,7 @@ import GenerateSchedulePage from './pages/admin/GenerateSchedulePage';
 import SchedulePage from './pages/tournament/SchedulePage';
 import TournamentBracketPage from './pages/tournament/TournamentBracketPage';
 import AboutPage from './pages/about/AboutPage';
+import PlayerHistoryPage from './pages/tournament/PlayerHistoryPage';
 import { AuthProvider } from './context/AuthContext';
 import { PrivateRoute, AdminRoute, UmpireRoute, HostRoute, HostOrUmpireRoute } from './components/PrivateRoute';
 
@@ -52,13 +53,14 @@ function App() {
             <Route path="tournaments/:tournamentId/upload-registration" element={<UploadRegistrationPage />} />
             <Route path="tournaments/:tournamentId/schedule" element={<SchedulePage />} />
             <Route path="tournaments/:tournamentId/bracket" element={<TournamentBracketPage />} />
+            <Route path="tournaments/:tournamentId/player-history" element={<PlayerHistoryPage />} />
             
             {/* Admin Features */}
             <Route path="/admin/set-umpire" element={<AdminRoute><AssignUmpirePage /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><Users /></AdminRoute>} />
             <Route path="admin/manage-matches" element={<AdminRoute><ManageMatch /></AdminRoute>} />
             <Route path="admin/update-user-role" element={<AdminRoute><ChangeUserStaus /></AdminRoute>} />
-            <Route path="/admin/upload-schedule" element={<AdminRoute><UploadSchedule /></AdminRoute>} />
+            <Route path="/admin/:tournamentId/upload-schedule" element={<AdminRoute><UploadSchedule /></AdminRoute>} />
             <Route path="/admin/tournaments/:tournamentId/generate-schedule" element={<AdminRoute><GenerateSchedulePage /></AdminRoute>} />
             
 

@@ -45,6 +45,7 @@ const AssignUmpirePage = () => {
               showAssignUmpireButton={true}
               showPredecessors={false}
               animating={animatingMatchId === match.id}
+              enableWebSocket={true}
             />
           ))}
         </div>

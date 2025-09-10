@@ -430,16 +430,12 @@ class TournamentScheduler:
     def _write_schedule(self, filename):
         """write schedule to Excel file, including color markers and stats"""
         try:
-            print(f"Debug: Starting _write_schedule")
-            print(f"Debug: self.scheduled_matches length: {len(self.scheduled_matches) if hasattr(self, 'scheduled_matches') else 'No scheduled_matches'}")
-            print(f"Debug: self.all_matches length: {len(self.all_matches) if hasattr(self, 'all_matches') else 'No all_matches'}")
-            
             rows = []
             all_consecutive_players = []
             
             # reorganize scheduled_matches into batches
             batches = self._organize_matches_into_batches()
-            print(f"Debug: batches: {batches}")
+            # print(f"Debug: batches: {batches}")
             
             # 如果沒有已安排的比賽，創建一個狀態報告
             if not batches:
@@ -536,12 +532,13 @@ class TournamentScheduler:
                                 consecutive_str = ""
                             
                             batch_rows.append({
-                                'Match_ID': match.id,
+                                'Schedule_Item_ID': schedule_item.id,
                                 'Batch': batch_idx,
-                                'Court': f"Court {court_idx}",
+                                'Court': court_idx,
                                 'Date': schedule_item.scheduled_date.strftime('%Y-%m-%d'),
                                 'Start_Time': schedule_item.scheduled_start_time.strftime('%H:%M'),
                                 'End_Time': schedule_item.scheduled_end_time.strftime('%H:%M'),
+                                'Match_ID': match.id,
                                 'Match_Type': match_type,
                                 'Category': category,
                                 'Group': flight,
@@ -557,12 +554,13 @@ class TournamentScheduler:
                         else:
                             print(f"Debug: Match {match.id} has no schedule_item")
                             batch_rows.append({
-                                'Match_ID': match.id,
+                                'Schedule_Item_ID': '',
                                 'Batch': batch_idx,
-                                'Court': f"Court {court_idx}",
+                                'Court': court_idx,
                                 'Date': '',
                                 'Start_Time': '',
                                 'End_Time': '',
+                                'Match_ID': match.id,
                                 'Match_Type': '',
                                 'Category': '',
                                 'Group': '',
@@ -579,12 +577,13 @@ class TournamentScheduler:
                     # fill empty rows to reach the total_court number
                     for court_idx in range(len(batch) + 1, self.total_court + 1):
                         batch_rows.append({
-                            'Match_ID': '',
+                            'Schedule_Item_ID': '',
                             'Batch': batch_idx,
-                            'Court': f"Court {court_idx}",
+                            'Court': court_idx,
                             'Date': '',
                             'Start_Time': '',
                             'End_Time': '',
+                            'Match_ID': '',
                             'Match_Type': '',
                             'Category': '',
                             'Group': '',
@@ -611,12 +610,13 @@ class TournamentScheduler:
                     
                     # 處理未安排的比賽
                     batch_rows.append({
-                        'Match_ID': match.id,
+                        'Schedule_Item_ID': '',
                         'Batch': 'Unscheduled',
-                        'Court': f"Court {court_idx}",
+                        'Court': court_idx,
                         'Date': 'TBD',
                         'Start_Time': 'TBD',
                         'End_Time': 'TBD',
+                        'Match_ID': match.id,
                         'Match_Type': 'Single' if match.event_type in ['MS', 'WS'] else 'Double',
                         'Category': match.event_type,
                         'Group': 'TBD',
@@ -633,12 +633,13 @@ class TournamentScheduler:
                 if batch_rows:
                     rows.append({})  # empty row
                     rows.append({
-                        'Match_ID': 'Unscheduled Matches',
+                        'Schedule_Item_ID': '',
                         'Batch': '',
                         'Court': '',
                         'Date': '',
                         'Start_Time': '',
                         'End_Time': '',
+                        'Match_ID': 'Unscheduled Matches',
                         'Match_Type': '',
                         'Category': '',
                         'Group': '',
@@ -735,10 +736,10 @@ class TournamentScheduler:
             red_fill = PatternFill(start_color="FFB6C1", end_color="FFB6C1", fill_type="solid")
             
             for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=ws.max_column), 2):
-                consecutive_cell = row[11]  # Consecutive_Players row (修正索引)
-                category_cell = row[7]      # Category row (修正索引)
-                batch_cell = row[1]         # Batch row (修正索引)
-                match_id_cell = row[0]      # Match_ID row
+                consecutive_cell = row[12]  # Consecutive_Players row (修正索引)
+                category_cell = row[8]      # Category row (修正索引)
+                batch_cell = row[1]         # Batch row (保持不變)
+                match_id_cell = row[6]      # Match_ID row (修正索引)
                 
                 # 調試信息
                 print(f"Row {row_idx}: Batch={batch_cell.value}, Category={category_cell.value}, Consecutive={consecutive_cell.value}, MatchID={match_id_cell.value}")
@@ -752,7 +753,7 @@ class TournamentScheduler:
                     for cell in row:
                         cell.fill = red_fill
                     print(f"  -> Red (Total Affected Players)")
-                elif batch_cell.value == '' and row[9].value and 'Consecutive' in str(row[16].value or ''):  # 修正索引
+                elif batch_cell.value == '' and row[10].value and 'Consecutive' in str(row[17].value or ''):  # 修正索引
                     for cell in row:
                         cell.fill = red_fill
                     print(f"  -> Red (Affected Players Detail)")
@@ -1083,9 +1084,265 @@ class TournamentScheduler:
         new_dt = dt + timedelta(minutes=minutes)
         return new_dt.time()
 
-
     def update_schedule_item(self, file):
         """user upload the schedule, update the schedule_items"""
         excel_data = pd.read_excel(file, engine='openpyxl')
         # for row in excel_data:
         #     schedule_item = ScheduleItem.query.filter_by(schedule_id=)
+
+    def process_uploaded_schedule(self, file, tournament_id):
+        """處理上傳的 Excel 檔案 - 包含讀取、驗證和更新"""
+        try:
+            # 1. 讀取 Excel 檔案
+            read_result = self._read_excel_file(file)
+            if not read_result['success']:
+                return read_result
+            
+            excel_data = read_result['data']
+            
+            # 2. 驗證格式
+            validation_result = self.validate_excel_format(excel_data)
+            if not validation_result['is_valid']:
+                return {
+                    'status': 'error',
+                    'message': 'Excel format validation failed',
+                    'details': validation_result
+                }
+            
+            # 3. 驗證 tournament 存在
+            tournament = Tournament.query.get(tournament_id)
+            if not tournament:
+                return {
+                    'status': 'error',
+                    'message': 'Tournament not found'
+                }
+            
+            # 4. 更新賽程表
+            update_result = self.update_schedule_from_excel(tournament_id, excel_data)
+            
+            return {
+                'status': update_result['status'],
+                'message': 'Schedule processed successfully' if update_result['status'] == 'success' else 'Schedule processed with some issues',
+                'details': update_result
+            }
+            
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Processing failed: {str(e)}'
+            }
+
+    def _read_excel_file(self, file):
+        """讀取 Excel 檔案"""
+        try:
+            # 檢查檔案
+            if not file or file.filename == '':
+                return {'success': False, 'message': 'No file selected'}
+            
+            if not file.filename.endswith('.xlsx'):
+                return {'success': False, 'message': 'Please upload .xlsx file'}
+            
+            # 讀取 Excel
+            df = pd.read_excel(file)
+            excel_data = df.to_dict('records')
+            
+            if not excel_data:
+                return {'success': False, 'message': 'Excel file is empty'}
+            
+            return {
+                'success': True,
+                'data': excel_data,
+                'columns': list(df.columns)
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error reading Excel file: {str(e)}'
+            }
+
+    def validate_excel_format(self, excel_data):
+        """驗證 Excel 格式和基本資料"""
+        errors = []
+        warnings = []
+        
+        # 檢查必要欄位
+        required_columns = ['Schedule_Item_ID', 'Match_ID', 'Batch', 'Court', 'Date', 'Start_Time', 'End_Time']
+        
+        if not excel_data:
+            errors.append("Excel file is empty")
+            return {'errors': errors, 'warnings': warnings, 'is_valid': False}
+        
+        # 檢查第一行的欄位
+        first_row = excel_data[0]
+        missing_columns = [col for col in required_columns if col not in first_row]
+        if missing_columns:
+            errors.append(f"Missing required columns: {missing_columns}")
+        
+        # 檢查資料完整性
+        for row_idx, row in enumerate(excel_data, 1):
+            if not row.get('Schedule_Item_ID'):
+                warnings.append(f"Row {row_idx}: Missing Schedule_Item_ID")
+            
+            if not row.get('Match_ID'):
+                warnings.append(f"Row {row_idx}: Missing Match_ID")
+        
+        return {
+            'errors': errors,
+            'warnings': warnings,
+            'is_valid': len(errors) == 0
+        }
+
+    def update_schedule_from_excel(self, tournament_id, excel_data):
+        """從 Excel 資料更新賽程表 - 處理 Match_ID 交換"""
+        try:
+            updated_count = 0
+            errors = []
+            
+            for row_idx, row in enumerate(excel_data, 1):
+                try:
+                    schedule_item_id = row.get('Schedule_Item_ID')
+                    
+                    # 跳過空的 Schedule_Item_ID
+                    if not schedule_item_id or str(schedule_item_id).lower() == 'nan':
+                        continue
+                    
+                    # 查找對應的 ScheduleItem
+                    schedule_item = ScheduleItem.query.get(schedule_item_id)
+                    if not schedule_item:
+                        errors.append(f"Row {row_idx}: ScheduleItem ID {schedule_item_id} not found")
+                        continue
+                    
+                    # 驗證是否屬於正確的 tournament
+                    if schedule_item.schedule.tournament_id != tournament_id:
+                        errors.append(f"Row {row_idx}: ScheduleItem {schedule_item_id} doesn't belong to tournament {tournament_id}")
+                        continue
+                    
+                    # 更新基本資訊（這些不應該改變，但我們可以驗證）
+                    if 'Batch' in row and row['Batch'] and str(row['Batch']).strip():
+                        try:
+                            batch_num = int(row['Batch'])
+                            if schedule_item.batch_number != batch_num:
+                                errors.append(f"Row {row_idx}: Batch number mismatch. Expected {schedule_item.batch_number}, got {batch_num}")
+                                continue
+                        except (ValueError, TypeError):
+                            errors.append(f"Row {row_idx}: Invalid batch number '{row['Batch']}'")
+                            continue
+                    
+                    if 'Court' in row and row['Court'] and str(row['Court']).strip():
+                        try:
+                            court_num = int(row['Court'])
+                            if schedule_item.court_number != court_num:
+                                errors.append(f"Row {row_idx}: Court number mismatch. Expected {schedule_item.court_number}, got {court_num}")
+                                continue
+                        except (ValueError, TypeError):
+                            errors.append(f"Row {row_idx}: Invalid court number '{row['Court']}'")
+                            continue
+                    
+                    # 驗證日期和時間（修正時間比較邏輯）
+                    if 'Date' in row and row['Date']:
+                        try:
+                            if isinstance(row['Date'], str):
+                                new_date = datetime.strptime(row['Date'], '%Y-%m-%d').date()
+                            else:
+                                new_date = row['Date']
+                        
+                            if schedule_item.scheduled_date != new_date:
+                                errors.append(f"Row {row_idx}: Date mismatch. Expected {schedule_item.scheduled_date}, got {new_date}")
+                                continue
+                        except (ValueError, TypeError) as e:
+                            errors.append(f"Row {row_idx}: Invalid date format '{row['Date']}': {str(e)}")
+                            continue
+                    
+                    if 'Start_Time' in row and row['Start_Time']:
+                        try:
+                            if isinstance(row['Start_Time'], str):
+                                new_start_time = datetime.strptime(row['Start_Time'], '%H:%M').time()
+                            else:
+                                new_start_time = row['Start_Time']
+                        
+                            # 修正：比較時間部分，而不是完整的 datetime
+                            if schedule_item.scheduled_start_time:
+                                if isinstance(schedule_item.scheduled_start_time, datetime):
+                                    db_start_time = schedule_item.scheduled_start_time.time()
+                                else:
+                                    db_start_time = schedule_item.scheduled_start_time
+                                
+                                if db_start_time != new_start_time:
+                                    errors.append(f"Row {row_idx}: Start time mismatch. Expected {db_start_time}, got {new_start_time}")
+                                    continue
+                        except (ValueError, TypeError) as e:
+                            errors.append(f"Row {row_idx}: Invalid start time format '{row['Start_Time']}': {str(e)}")
+                            continue
+                    
+                    if 'End_Time' in row and row['End_Time']:
+                        try:
+                            if isinstance(row['End_Time'], str):
+                                new_end_time = datetime.strptime(row['End_Time'], '%H:%M').time()
+                            else:
+                                new_end_time = row['End_Time']
+                        
+                            # 修正：比較時間部分，而不是完整的 datetime
+                            if schedule_item.scheduled_end_time:
+                                if isinstance(schedule_item.scheduled_end_time, datetime):
+                                    db_end_time = schedule_item.scheduled_end_time.time()
+                                else:
+                                    db_end_time = schedule_item.scheduled_end_time
+                                
+                                if db_end_time != new_end_time:
+                                    errors.append(f"Row {row_idx}: End time mismatch. Expected {db_end_time}, got {new_end_time}")
+                                    continue
+                        except (ValueError, TypeError) as e:
+                            errors.append(f"Row {row_idx}: Invalid end time format '{row['End_Time']}': {str(e)}")
+                            continue
+                    
+                    # 更新 Match_ID（這是主要的變更）
+                    if 'Match_ID' in row and row['Match_ID']:
+                        try:
+                            new_match_id = int(row['Match_ID'])
+                            if schedule_item.match_id != new_match_id:
+                                # 驗證新的 Match_ID 是否存在
+                                new_match = Match.query.get(new_match_id)
+                                if not new_match:
+                                    errors.append(f"Row {row_idx}: Match ID {new_match_id} not found")
+                                    continue
+                                
+                                # 驗證新的 Match 是否屬於同一個 tournament
+                                if new_match.tournament_id != tournament_id:
+                                    errors.append(f"Row {row_idx}: Match ID {new_match_id} doesn't belong to tournament {tournament_id}")
+                                    continue
+                                
+                                # 更新 Match_ID
+                                schedule_item.match_id = new_match_id
+                        except (ValueError, TypeError):
+                            errors.append(f"Row {row_idx}: Invalid Match_ID '{row['Match_ID']}'")
+                            continue
+                    
+                    # 更新 updated_at 時間戳
+                    schedule_item.updated_at = datetime.utcnow()
+                    
+                    updated_count += 1
+                    
+                except Exception as e:
+                    errors.append(f"Row {row_idx}: Unexpected error: {str(e)}")
+                    continue
+            
+            # 提交所有更改
+            if updated_count > 0:
+                db.session.commit()
+            
+            return {
+                'status': 'success' if not errors else 'partial_success',
+                'updated_items': updated_count,
+                'total_items': len(excel_data),
+                'errors': errors
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            return {
+                'status': 'error',
+                'message': f'Database error: {str(e)}',
+                'updated_items': 0,
+                'total_items': len(excel_data)
+            }

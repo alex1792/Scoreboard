@@ -42,6 +42,7 @@ const ManageMatchPage = () => {
               onDelete={handleDeleteMatch}
               showDeleteButton={true}
               showPredecessors={true}
+              enableWebSocket={true}
             />
           ))}
         </div>

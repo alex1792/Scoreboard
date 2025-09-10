@@ -253,13 +253,22 @@ const MatchesPage = () => {  // 移除 currentUser prop
           <button onClick={resetFilters} className="reset-filters-btn">
             Reset
           </button>
+          
+          {/* 新增 Player History 按鈕 */}
+          <Link 
+            to={`/tournaments/${tournamentId}/player-history`}
+            className="player-history-btn"
+          >
+            Player History
+          </Link>
+          
           {hasAdminAccess() && (
             <button
               onClick={deleteAllMatches}
-              className="delete-all-matches-btn"
-              disabled={deletingAll || matches.length === 0}
+              disabled={deletingAll}
+              className="delete-all-btn"
             >
-              {deletingAll ? 'Deleting…' : 'Delete All Matches'}
+              {deletingAll ? 'Deleting...' : 'Delete All'}
             </button>
           )}
         </div>
@@ -278,6 +287,7 @@ const MatchesPage = () => {  // 移除 currentUser prop
                 showDeleteButton={true}
                 showPredecessors={true}
                 animating={animatingMatchId === match.id}
+                enableWebSocket={true}
               />
               ) : (
                 <MatchCard
@@ -286,6 +296,7 @@ const MatchesPage = () => {  // 移除 currentUser prop
                 isClickable={true}
                 animating={animatingMatchId === match.id}
                 showPredecessors={true}
+                enableWebSocket={true}
               />
               )
             ))

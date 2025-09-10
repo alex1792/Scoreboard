@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { getTournamentSchedule } from '../../api/api';
 import '../../styles/pages/tournament/SchedulePage.css';
 
@@ -70,7 +70,15 @@ const SchedulePage = () => {
 
   const renderDate = (date, batches) => (
     <div key={date} className="date-section">
-      <h2>{date}</h2>
+      <div className="date-header">
+        <h2>{date}</h2>
+        <Link 
+          to={`/admin/${tournamentId}/upload-schedule`}
+          className="upload-schedule-btn"
+        >
+          Upload Custom Schedule
+        </Link>
+      </div>
       {Object.entries(batches).map(([batchNumber, matches]) => 
         renderBatch(batchNumber, matches)
       )}

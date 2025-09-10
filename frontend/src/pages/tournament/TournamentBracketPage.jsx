@@ -478,6 +478,7 @@ const TournamentBracketPage = () => {
                 animating={animatingMatchId === match.id}
                 className="round-robin-match-card"
                 isClickable={true}
+                enableWebSocket={true}
               />
             ))}
           </div>

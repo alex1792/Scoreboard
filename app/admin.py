@@ -11,6 +11,8 @@ from .match_generator import generate_match
 from .services.user_service import UserService
 from .services.match_service import MatchService
 from .services.schedule_service import TournamentScheduler
+from .models import Tournament, ScheduleItem
+from datetime import datetime
 
 
 """
@@ -334,6 +336,36 @@ def generate_schedule_for_tournament(tournament_id):
             "message": f"Error generating schedule: {str(e)}"
         }), 500
 
+@admin_bp.route('/tournament/<int:tournament_id>/upload-schedule', methods=['POST'])
+@jwt_required()
+def upload_schedule(tournament_id):
+    """上傳修改後的賽程表"""
+    try:
+        print(f"Uploading schedule for tournament {tournament_id}")
+        # 檢查檔案
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'message': 'No file selected'}), 400
+        
+        file = request.files['file']
+        
+        # 建立 scheduler 實例並處理上傳
+        scheduler = TournamentScheduler(1)  # total_court 暫時設為 1，因為這裡不需要
+        result = scheduler.process_uploaded_schedule(file, tournament_id)
+        
+        # 根據結果返回適當的 HTTP 狀態碼
+        if result['status'] == 'error':
+            return jsonify(result), 400
+        elif result['status'] == 'partial_success':
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Upload failed: {str(e)}'
+        }), 500
+    
 # ------------- WebSocket events for user role updates ----------------
 @socketio.on('connect', namespace='/user_role_update')
 def handle_connect():

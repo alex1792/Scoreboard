@@ -424,4 +424,33 @@ def get_connection_info(match):
         'position': position
     }]
 
-    
+@tournament_bp.route('/<int:tournament_id>/player-history', methods=['POST'])
+def get_player_history(tournament_id):
+    """query history of a player"""
+    try:
+        data = request.get_json()
+        player_name = data.get('player_name')
+        
+        if not player_name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Player name is required'
+            }), 400
+        
+        # use tournament_service to get the player history
+        result = TournamentService.query_players_history(player_name, tournament_id)
+        
+        # 如果 TournamentService 返回成功，直接返回其 data 部分
+        if result.get('status') == 'success':
+            return jsonify({
+                'status': 'success',
+                'data': result.get('data')  # 只返回內層的 data
+            })
+        else:
+            return jsonify(result)  # 返回錯誤信息
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Error: {str(e)}'
+        }), 500
