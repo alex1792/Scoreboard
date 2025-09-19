@@ -279,12 +279,18 @@
 }
 
 .create-match-card .player-input {
-  font-size: 1.05em;
+  font-size: 0.9em !important; /* 稍微縮小字體，使用 !important 確保優先級 */
   padding: 0.4rem 0;
   border-bottom: 2px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: font-size 0.2s ease;
 }
 
 .create-match-card .player-input:focus {
+  font-size: 0.95em !important; /* 聚焦時稍微放大 */
   border-bottom-color: #1976d2;
 }
 
@@ -534,13 +540,25 @@
 /* 篩選器容器 */
 .filters-container {
   display: flex;
-  gap: 15px;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
+  gap: 15px;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
 }
 
 .filter-group {
@@ -698,5 +716,268 @@
 .match-predecessors small {
   font-style: italic;
 }
+
+/* Create Match Button 樣式 */
+.create-match-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.create-match-btn:hover {
+  background-color: #45a049;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 雙打表單樣式 */
+.doubles-form {
+  margin-bottom: 1rem;
+}
+
+.team-section {
+  margin-bottom: 1rem;
+}
+
+.team-section h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+.vs-section {
+  text-align: center;
+  font-weight: 700;
+  color: #666;
+  font-size: 1.1em;
+  margin: 0.5rem 0;
+}
+
+.doubles-form .players {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.doubles-form .vs {
+  font-weight: 600;
+  color: #999;
+  margin: 0 0.5rem;
+}
+
+/* 臨時測試樣式 */
+.create-match-card .player-input {
+  font-size: 0.8em !important;
+  color: red !important; /* 臨時測試：讓文字變紅色 */
+  padding: 0.4rem 0 !important;
+  border-bottom: 2px solid transparent !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: font-size 0.2s ease !important;
+}
+
+/* 修改字體大小和輸入框寬度 */
+.create-match-card .player-input {
+  font-size: 0.8em !important;
+  color: #333 !important; /* 恢復正常顏色 */
+  padding: 0.4rem 0 !important;
+  border-bottom: 2px solid transparent !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: font-size 0.2s ease !important;
+}
+
+.create-match-card .player-input:focus {
+  font-size: 0.9em !important;
+  border-bottom-color: #1976d2 !important;
+}
+
+/* 調整輸入框的父容器寬度 */
+.create-match-card .player {
+  flex: 1.3 !important; /* 增加寬度，從 1 改為 1.3 */
+  min-width: 0 !important; /* 允許收縮 */
+}
+
+.create-match-card .player .player-name {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* 確保雙打表單也有足夠空間 */
+.create-match-card .doubles-form .player {
+  flex: 1.2 !important;
+  min-width: 0 !important;
+}
+
+/* 調整整個players容器的寬度 */
+.create-match-card .players {
+  width: 100% !important;
+  gap: 0.5rem !important; /* 減少間距，給更多空間給輸入框 */
+}
+
+/* 調整VS文字的大小，釋放更多空間 */
+.create-match-card .vs {
+  font-weight: 700 !important;
+  color: #666 !important;
+  font-size: 0.9em !important; /* 稍微縮小VS文字 */
+  margin: 0 0.3rem !important; /* 減少左右間距 */
+}
+
+/* CreateMatchPage 專用樣式 */
+.create-match-card .match-card {
+  max-width: 600px !important; /* 大幅增加寬度 */
+  width: 100% !important;
+  padding: 2rem !important; /* 增加內邊距 */
+  font-size: 1.05em !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  border-left: 5px solid #9E9E9E !important;
+}
+
+/* 調整輸入框寬度 */
+.create-match-card .player {
+  flex: 1.4 !important; /* 進一步增加寬度 */
+  min-width: 0 !important;
+}
+
+/* 調整VS文字 */
+.create-match-card .vs {
+  font-weight: 700 !important;
+  color: #666 !important;
+  font-size: 0.9em !important;
+  margin: 0 0.2rem !important; /* 進一步減少間距 */
+}
+
+/* 確保players容器有足夠空間 */
+.create-match-card .players {
+  width: 100% !important;
+  gap: 0.3rem !important; /* 減少間距 */
+}
+
+/* 導出按鈕樣式 */
+.export-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.export-btn:hover {
+  background: #218838;
+}
+
+/* 確保頁面標題和按鈕在同一行 */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-header .page-title {
+  margin: 0;
+}
+
+.court-section {
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.court-label {
+  font-weight: 500;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.court-select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  background-color: white;
+  min-width: 120px;
+}
+
+.court-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* 添加 court 過濾器樣式 */
+.court-select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  background-color: white;
+  min-width: 120px;
+}
+
+.court-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* 確保過濾器容器有足夠空間 */
+.filters {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.filter-stats {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
 
 

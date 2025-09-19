@@ -91,7 +91,7 @@ class TournamentScheduler:
                     'end_time': '18:00',
                     'match_duration': 30
                 }
-            print(f"schedule_data: {schedule_data}")
+            # print(f"schedule_data: {schedule_data}")
             self.create_schedule(tournament_id, schedule_data)
 
     def _group_by_round(self, matches):
@@ -302,7 +302,7 @@ class TournamentScheduler:
         if not remaining_matches:
             return
         
-        print(f"Found {len(remaining_matches)} remaining matches to schedule")
+        # print(f"Found {len(remaining_matches)} remaining matches to schedule")
         
         # sort the remaining matches by round
         remaining_matches.sort(key=lambda x: (x.round or 1, x.match_number or 1))
@@ -315,13 +315,13 @@ class TournamentScheduler:
         still_remaining = [match for match in self.all_matches if match.id in remaining_match_ids]
         
         if still_remaining:
-            print(f"Creating new batches for {len(still_remaining)} remaining matches")
+            # print(f"Creating new batches for {len(still_remaining)} remaining matches")
             self._create_new_batches_for_remaining(still_remaining)
         
         # final check
         final_remaining = [match for match in self.all_matches if match not in self.scheduled_matches]
         if final_remaining:
-            print(f"Warning: {len(final_remaining)} matches still not scheduled")
+            # print(f"Warning: {len(final_remaining)} matches still not scheduled")
             for match in final_remaining:
                 print(f"  - Match {match.id}: {match.player1_name} vs {match.player2_name} (Round {match.round})")
 
@@ -439,7 +439,7 @@ class TournamentScheduler:
             
             # 如果沒有已安排的比賽，創建一個狀態報告
             if not batches:
-                print("Debug: No batches found, creating status report")
+                # print("Debug: No batches found, creating status report")
                 rows.append({
                     'Match_ID': 'Schedule Status',
                     'Batch': 'Report',
@@ -460,10 +460,10 @@ class TournamentScheduler:
                     'Notes': f'Total matches: {len(self.all_matches) if hasattr(self, "all_matches") else 0}, Scheduled: {len(self.scheduled_matches) if hasattr(self, "scheduled_matches") else 0}'
                 })
             else:
-                print(f"Debug: Processing {len(batches)} batches")
+                # print(f"Debug: Processing {len(batches)} batches")
                 # 處理已安排的比賽
                 for batch_num, batch in batches.items():
-                    print(f"Debug: Processing batch {batch_num} with {len(batch)} matches")
+                    # print(f"Debug: Processing batch {batch_num} with {len(batch)} matches")
                     if batch_num == 'Unscheduled':
                         continue
                         
@@ -472,13 +472,13 @@ class TournamentScheduler:
                     
                     # add actual matches
                     for court_idx, match_info in enumerate(batch, 1):
-                        print(f"Debug: Processing match {court_idx} in batch {batch_num}")
+                        # print(f"Debug: Processing match {court_idx} in batch {batch_num}")
                         # 現在 match_info 是字典 {'match': match, 'schedule_item': schedule_item}
                         match = match_info['match']
                         schedule_item = match_info['schedule_item']
                         
                         if schedule_item:
-                            print(f"Debug: Processing match {match.id} with schedule_item")
+                            # print(f"Debug: Processing match {match.id} with schedule_item")
                             # get match info (using Match object attributes)
                             category = match.event_type
                             group = Group.query.filter_by(id=match.group_id).first()
@@ -552,7 +552,7 @@ class TournamentScheduler:
                                 'Notes': ''
                             })
                         else:
-                            print(f"Debug: Match {match.id} has no schedule_item")
+                            # print(f"Debug: Match {match.id} has no schedule_item")
                             batch_rows.append({
                                 'Schedule_Item_ID': '',
                                 'Batch': batch_idx,
@@ -711,13 +711,13 @@ class TournamentScheduler:
                     'Notes': f"Consecutive {count} times"
                 })
 
-            print(f"Debug: About to write Excel file with {len(rows)} rows")
+            # print(f"Debug: About to write Excel file with {len(rows)} rows")
 
             # Write to Excel file
             df = pd.DataFrame(rows)
             df.to_excel(filename, index=False, sheet_name='MatchSchedule')
 
-            print(f"Debug: Excel file written successfully")
+            # print(f"Debug: Excel file written successfully")
 
             # Use openpyxl to add color markers
             wb = load_workbook(filename)
@@ -742,40 +742,41 @@ class TournamentScheduler:
                 match_id_cell = row[6]      # Match_ID row (修正索引)
                 
                 # 調試信息
-                print(f"Row {row_idx}: Batch={batch_cell.value}, Category={category_cell.value}, Consecutive={consecutive_cell.value}, MatchID={match_id_cell.value}")
+                # print(f"Row {row_idx}: Batch={batch_cell.value}, Category={category_cell.value}, Consecutive={consecutive_cell.value}, MatchID={match_id_cell.value}")
                 
                 # 首先檢查是否是統計行
                 if batch_cell.value == 'Stats':
                     for cell in row:
                         cell.fill = blue_fill
-                    print(f"  -> Blue (Stats)")
+                    # print(f"  -> Blue (Stats)")
                 elif batch_cell.value == 'Total Affected Players':
                     for cell in row:
                         cell.fill = red_fill
-                    print(f"  -> Red (Total Affected Players)")
+                    # print(f"  -> Red (Total Affected Players)")
                 elif batch_cell.value == '' and row[10].value and 'Consecutive' in str(row[17].value or ''):  # 修正索引
                     for cell in row:
                         cell.fill = red_fill
-                    print(f"  -> Red (Affected Players Detail)")
+                    # print(f"  -> Red (Affected Players Detail)")
                 # 然後檢查是否是比賽行
                 elif match_id_cell.value and category_cell.value:  # 這是一個比賽行
                     if consecutive_cell.value and consecutive_cell.value.strip():  # 有 consecutive players
                         for cell in row:
                             cell.fill = yellow_fill
-                        print(f"  -> Yellow (Has Consecutive Players)")
+                        # print(f"  -> Yellow (Has Consecutive Players)")
                     else:  # 沒有 consecutive players
                         for cell in row:
                             cell.fill = green_fill
-                        print(f"  -> Green (Regular Match)")
+                        # print(f"  -> Green (Regular Match)")
                 else:
-                    print(f"  -> No color applied")
+                    # print(f"  -> No color applied")
+                    pass
 
             wb.save(filename)
             return filename
         
         except Exception as e:
-            print(f"Error in _write_schedule: {str(e)}")
-            print(f"Error type: {type(e)}")
+            # print(f"Error in _write_schedule: {str(e)}")
+            # print(f"Error type: {type(e)}")
             import traceback
             traceback.print_exc()
             # 即使出錯，也創建一個基本的文件
@@ -791,7 +792,7 @@ class TournamentScheduler:
                 df.to_excel(filename, index=False, sheet_name='ErrorReport')
                 return filename
             except Exception as e2:
-                print(f"Error creating error report: {str(e2)}")
+                # print(f"Error creating error report: {str(e2)}")
                 raise e
 
     def _organize_matches_into_batches(self):

@@ -40,7 +40,7 @@ const PlayerHistoryPage = () => {
       });
 
       const data = await response.json();
-      console.log('Response data:', data);
+      // console.log('Response data:', data);
       
       if (data.status === 'success') {
         setPlayerHistory(data.data);
@@ -89,7 +89,7 @@ const PlayerHistoryPage = () => {
         <div className="search-form">
           <input
             type="text"
-            placeholder="輸入選手姓名"
+            placeholder="Enter Player Name"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -98,7 +98,7 @@ const PlayerHistoryPage = () => {
             onClick={handleSearch}
             disabled={loading}
           >
-            {loading ? '查詢中...' : '查詢'}
+            {loading ? 'Searching...' : 'Search'}
           </button>
         </div>
       </div>
@@ -134,9 +134,9 @@ const PlayerHistoryPage = () => {
 
           {/* 比賽歷史 - 使用 MatchCard */}
           <div className="matches-section">
-            <h3>比賽記錄</h3>
+            <h3>Match History</h3>
             {playerHistory.match_history.length === 0 ? (
-              <div className="no-matches">沒有找到比賽記錄</div>
+              <div className="no-matches">No matches found</div>
             ) : (
               <div className="matches-grid">
                 {playerHistory.match_history.map((match) => (

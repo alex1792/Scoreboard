@@ -49,7 +49,7 @@ def upload_file():
         else:
             return jsonify({"status": "error", "message": "File type not allowed"}), 400
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to upload file"}), 500
 
 @file_bp.route('/download/<filename>', methods=['GET'])
@@ -69,7 +69,7 @@ def download_file(filename):
         
         return send_file(file_path, as_attachment=True)
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to download file"}), 500
 
 @file_bp.route('/list', methods=['GET'])
@@ -101,7 +101,7 @@ def list_files():
             "data": files
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to list files"}), 500
 
 @file_bp.route('/<filename>', methods=['DELETE'])
@@ -126,5 +126,5 @@ def delete_file(filename):
             "message": f"File {filename} deleted successfully"
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to delete file"}), 500

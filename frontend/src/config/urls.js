@@ -104,4 +104,9 @@ export const getDeleteTournamentUrl = (tournamentId) => `${BASE_URL}/api/tournam
 
 // get tournament bracket url
 export const getTournamentBracketUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}/bracket`;
+
+// 可以添加一個新的函數來生成帶 tournament ID 的 URL
+export const getCreateMatchUrl = (tournamentId) => `${BASE_URL}/api/tournaments/${tournamentId}/matches/create_match`;
        
+
+export const getUpdateMatchPlayerNameUrl = (matchId) => `${BASE_URL}/api/matches/${matchId}/update_player_name`;

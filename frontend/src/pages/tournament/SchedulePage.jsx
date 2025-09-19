@@ -16,18 +16,18 @@ const SchedulePage = () => {
   const loadSchedule = async () => {
     try {
         setLoading(true);
-        console.log('Loading schedule for tournament:', tournamentId);
+        // console.log('Loading schedule for tournament:', tournamentId);
         
         const response = await getTournamentSchedule(tournamentId);
-        console.log('Schedule response:', response);
+        // console.log('Schedule response:', response);
         
         // 修正：檢查 response.schedule 和 response.schedule.schedule_by_date
         if (response && response.status === 'success' && response.schedule && response.schedule.schedule_by_date) {
             setScheduleData(response.schedule);
-            console.log('Schedule data set successfully:', response.schedule);
+            // console.log('Schedule data set successfully:', response.schedule);
         } else {
-            console.log('Response structure:', response);
-            console.log('No schedule data found in response');
+            // console.log('Response structure:', response);
+            // console.log('No schedule data found in response');
             setError('No schedule data available');
         }
     } catch (err) {

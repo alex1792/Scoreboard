@@ -58,7 +58,7 @@ def update_user_role():
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to update user role"}), 500
 
 """
@@ -79,7 +79,7 @@ def get_all_users():
             "data": users_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get users"}), 500
 
 """
@@ -113,7 +113,7 @@ def update_user_roles():
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to update user role"}), 500
 
 """
@@ -161,7 +161,7 @@ def upload_match_schedule():
 
         return jsonify({"status": "success", "message": "Matches created successfully", "matches": created_matches}), 200
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to upload match schedule"}), 500
 
 """
@@ -206,7 +206,7 @@ def generate_match_schedule():
 
         return send_file(output_path, as_attachment=True, download_name='round_robin_schedule.xlsx')
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Error creating match schedule"}), 500
 
 """
@@ -275,7 +275,7 @@ def upload_participants():
 
         return send_file(output_path, as_attachment=True, download_name='all_matches.xlsx')
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Error creating match schedule"}), 500
 
 @admin_bp.route('/<int:tournament_id>/generate_schedule_for_tournament', methods=['POST'])
@@ -330,7 +330,7 @@ def generate_schedule_for_tournament(tournament_id):
         )
             
     except Exception as e:
-        print(f"Error generating schedule for tournament: {str(e)}")
+        # print(f"Error generating schedule for tournament: {str(e)}")
         return jsonify({
             "status": "error",
             "message": f"Error generating schedule: {str(e)}"
@@ -341,7 +341,7 @@ def generate_schedule_for_tournament(tournament_id):
 def upload_schedule(tournament_id):
     """上傳修改後的賽程表"""
     try:
-        print(f"Uploading schedule for tournament {tournament_id}")
+        # print(f"Uploading schedule for tournament {tournament_id}")
         # 檢查檔案
         if 'file' not in request.files:
             return jsonify({'status': 'error', 'message': 'No file selected'}), 400

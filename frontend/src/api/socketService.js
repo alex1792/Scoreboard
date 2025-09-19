@@ -19,8 +19,7 @@ export function useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchI
             ? `${PROD_BASE_URL}`  
             : `${DEV_BASE_URL}`;  
 
-        console.log('🔗 嘗試連接WebSocket到:', socketUrl);
-        console.log('🌍 當前環境:', process.env.NODE_ENV);
+        console.log('🔗 MatchesPage connecting to WebSocket:', `${socketUrl}/scoreboard`);
 
         // 修復：直接連接到正確的namespace
         socketRef.current = io(`${socketUrl}/scoreboard`, {
@@ -31,47 +30,79 @@ export function useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchI
         });
 
         socketRef.current.on('connect', () => {
-            console.log('✅ WebSocket 已連接！Socket ID:', socketRef.current.id);
-            console.log('Namespace:', socketRef.current.nsp);
+            console.log('✅ MatchesPage WebSocket connected! Socket ID:', socketRef.current.id);
         });
 
         socketRef.current.on('match_update', (data) => {
-            console.log('📡 收到比賽更新:', data);
+            console.log('📡 MatchesPage received match update:', data);
+            console.log('Match status:', data.status);
+            console.log('Match scores:', { score1: data.score1, score2: data.score2 });
             
             setMatches(prev => {
-                const updated = prev.map(m => m.id === data.id ? { ...m, ...data } : m);
-                console.log('🔄 更新比賽列表:', updated);
+                if (!Array.isArray(prev)) {
+                    console.error('setMatches received non-array:', prev);
+                    return prev;
+                }
+                
+                const updated = prev.map(m => {
+                    if (m.id === data.id) {
+                        const merged = { ...m, ...data };
+                        console.log('Updating match:', m.id);
+                        console.log('Before:', { 
+                            score1: m.score1, 
+                            score2: m.score2, 
+                            player1_score: m.player1_score, 
+                            player2_score: m.player2_score 
+                        });
+                        console.log('After:', { 
+                            score1: merged.score1, 
+                            score2: merged.score2, 
+                            player1_score: merged.player1_score, 
+                            player2_score: merged.player2_score 
+                        });
+                        return merged;
+                    }
+                    return m;
+                });
+                
+                console.log('Updated matches list length:', updated.length);
                 return updated;
             });
 
             // animating effect
-            setAnimatingMatchId(true);
-            setTimeout(() => setAnimatingMatchId(false), 200);
+            if (setAnimatingMatchId) {
+                setAnimatingMatchId(data.id);
+                setTimeout(() => setAnimatingMatchId(null), 1000);
+            }
         });
 
         socketRef.current.on('match_delete', (data) => {
-            console.log('🗑️ Match Deleted:', data);
+            console.log('️ Match Deleted:', data);
             
-            setMatches(prev => 
-                prev.filter(m => m.id !== data.id)
-            );
+            setMatches(prev => {
+                if (!Array.isArray(prev)) {
+                    console.error('setMatches received non-array:', prev);
+                    return prev;
+                }
+                
+                return prev.filter(m => m.id !== data.id);
+            });
         });
 
         socketRef.current.on('connect_error', (err) => {
-            console.error('❌ WebSocket 連接錯誤:', err.message);
-            console.error('錯誤詳情:', err);
+            console.error('❌ MatchesPage WebSocket connection error:', err.message);
         });
 
         socketRef.current.on('disconnect', (reason) => {
-            console.log('🔌 WebSocket 斷開連接:', reason);
+            console.log(' MatchesPage WebSocket disconnected:', reason);
         });
 
         // remove function
         return () => {
             if (socketRef.current) {
-                console.log('🧹 清理WebSocket連接');
+                console.log('🧹 Cleaning up MatchesPage WebSocket connection');
                 socketRef.current.disconnect();
             }
         };
-    }, [setMatches, setAnimatingMatchId]);
+    }, []); // 移除依賴項
 }

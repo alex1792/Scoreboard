@@ -54,7 +54,7 @@ def register():
         db.session.flush()
 
         # 生成 JWT Token（有效期 7 天）
-        print('產生 token 時 identity: ', new_user.id, type(new_user.id))
+        # print('產生 token 時 identity: ', new_user.id, type(new_user.id))
         access_token = create_access_token(
             identity=str(new_user.id),
             expires_delta=datetime.timedelta(days=7)
@@ -78,7 +78,7 @@ def register():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Registration error: {e}")  # 添加錯誤日誌
+        # print(f"Registration error: {e}")  # 添加錯誤日誌
         return jsonify({
             "status": "error",
             "message": "Registration failed."

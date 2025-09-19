@@ -1,321 +1,372 @@
-import { useRef, useState, useContext, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useMatchInfoListener } from '../../api/socketService';
-import { useFetchMatchInfoByTournament } from '../../api/api';
-import { useAuth } from '../../context/AuthContext'; 
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import MatchCard from '../../components/match/MatchCard';
-import { deleteMatch, assignUmpire, deleteAllMatch } from '../../api/api';
+import { fetchInfoFromBackend } from '../../api/api';
+import { getTournamentUrl, getTournamentMatchesUrl } from '../../config/urls';
+import { createMatch } from '../../api/api';
 import '../../styles/pages/match/matches.css';
-import { getTournamentUrl } from '../../config/urls';
+import { updateMatchScore } from '../../api/api';
+import { useMatchInfoListener } from '../../api/socketService';
 
-const MatchesPage = () => {  // 移除 currentUser prop
-  const { currentUser } = useAuth();  // 使用 useAuth hook
+const MatchesPage = () => {
+  const { tournamentId } = useParams();
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  
+  // 狀態管理
   const [matches, setMatches] = useState([]);
   const [filteredMatches, setFilteredMatches] = useState([]);
-  const [animatingMatchId, setAnimatingMatchId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Socket.IO 相關
   const socketRef = useRef(null);
-  const { tournamentId } = useParams();
-  const [tournament, setTournament] = useState(null);
-
-  // 篩選狀態
+  const [animatingMatchId, setAnimatingMatchId] = useState(null);
+  
+  // 使用 Socket.IO hook
+  useMatchInfoListener(socketRef, { 
+    setMatches, 
+    setAnimatingMatchId 
+  });
+  
+  // 過濾器狀態
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [selectedGroup, setSelectedGroup] = useState('all');
+  const [selectedCourt, setSelectedCourt] = useState('all');
+  
+  // 可用選項
   const [availableEvents, setAvailableEvents] = useState([]);
   const [availableGroups, setAvailableGroups] = useState([]);
-  const [eventGroups, setEventGroups] = useState({}); // 存儲每個 event 對應的 groups
+  const [eventGroups, setEventGroups] = useState({});
 
-  // 檢查用戶權限
-  const hasAdminAccess = () => {
-    if(!currentUser) return false;
+  // 權限檢查
+  const isHostOrAdmin = currentUser && (currentUser.role === 'host' || currentUser.role === 'admin');
 
-    // admin
-    if(currentUser?.role === 'admin') return true;
-
-    // host, and tournament.host_id === currentUser.id
-    if(currentUser?.role === 'host' && tournament) {
-      return tournament.host_id === currentUser.id;
-    }
-    
-    return false;
-  };
-
-  // fetch match info from backend
-  useFetchMatchInfoByTournament(setMatches, tournamentId, setTournament);
-
-  // match info listener
-  useMatchInfoListener(socketRef, { setMatches, setAnimatingMatchId });
-
-  // get tournament info from backend
+  // 載入比賽數據和可用選項
   useEffect(() => {
-    const fetchTournament = async () => {
+    const loadMatchesAndOptions = async () => {
       try {
-        const response = await fetch(`${getTournamentUrl(tournamentId)}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTournament(data.data);
+        setLoading(true);
+        
+        // 載入比賽數據
+        const result = await fetchInfoFromBackend(getTournamentMatchesUrl(tournamentId));
+        
+        if (result.status === 'success') {
+          // 即使 result.data 是空數組也是正常的
+          setMatches(result.data || []);
+          
+          // 從現有比賽提取可用的事件和組別
+          const events = [...new Set((result.data || []).map(match => match.category))];
+          const groups = [...new Set((result.data || []).map(match => match.group))];
+          
+          setAvailableEvents(events);
+          setAvailableGroups(groups);
+          
+          // 建立事件與組別的對應關係
+          const eventGroupMap = {};
+          (result.data || []).forEach(match => {
+            if (!eventGroupMap[match.category]) {
+              eventGroupMap[match.category] = new Set();
+            }
+            eventGroupMap[match.category].add(match.group);
+          });
+          
+          // 轉換 Set 為 Array
+          Object.keys(eventGroupMap).forEach(event => {
+            eventGroupMap[event] = Array.from(eventGroupMap[event]);
+          });
+          
+          setEventGroups(eventGroupMap);
+          
+          // 清除之前的錯誤狀態
+          setError(null);
+        } else {
+          // 只有在真正的錯誤時才設置錯誤狀態
+          setError(result.message || 'Failed to load matches');
         }
-      } catch (error) {
-        console.error('Error fetching tournament:', error);
+      } catch (err) {
+        console.error('Error loading matches:', err);
+        // 只有在網絡錯誤或其他異常時才設置錯誤狀態
+        setError('Network error. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchTournament();
+    loadMatchesAndOptions();
   }, [tournamentId]);
 
-  // 設置 events 和 groups 選項
+  // 過濾比賽
   useEffect(() => {
-    if (matches.length > 0) {
-      // 提取所有唯一的 events
-      const events = [...new Set(matches.map(match => match.category))];
-      setAvailableEvents(events);
-      
-      // 設置 event-groups 映射
-      const groupsMap = {};
-      events.forEach(event => {
-        const eventMatches = matches.filter(match => match.category === event);
-        const groups = [...new Set(eventMatches.map(match => match.group))];
-        groupsMap[event] = groups;
-      });
-      setEventGroups(groupsMap);
-    }
-  }, [matches]);
-
-  // 當選擇 event 時，更新 groups 選項
-  useEffect(() => {
-    if (selectedEvent !== 'all' && eventGroups[selectedEvent]) {
-      setAvailableGroups(eventGroups[selectedEvent]);
-    } else {
-      setAvailableGroups([]);
-    }
-    setSelectedGroup('all'); // 重置 group 選項
-  }, [selectedEvent, eventGroups]);
-
-  // 當選擇 event 或 group 時，篩選比賽
-  useEffect(() => {
-    filterMatches();
-  }, [matches, selectedEvent, selectedGroup]);
-
-  const filterMatches = () => {
     let filtered = [...matches];
 
-    // 按 event 篩選
     if (selectedEvent !== 'all') {
       filtered = filtered.filter(match => match.category === selectedEvent);
     }
 
-    // 按 group 篩選
     if (selectedGroup !== 'all') {
       filtered = filtered.filter(match => match.group === selectedGroup);
     }
 
-    setFilteredMatches(filtered);
-  };
+    if (selectedCourt !== 'all') {
+      filtered = filtered.filter(match => {
+        const court = match.court_number || match.court;
+        return court && court.toString() === selectedCourt;
+      });
+    }
 
+    setFilteredMatches(filtered);
+  }, [matches, selectedEvent, selectedGroup, selectedCourt]);
+
+  // 重置過濾器
   const resetFilters = () => {
     setSelectedEvent('all');
     setSelectedGroup('all');
+    setSelectedCourt('all');
   };
 
-  // state
-  const [deletingAll, setDeletingAll] = useState(false);
-
-  // handler
-  const deleteAllMatches = async () => {
-    if (!hasAdminAccess()) return;
-    if (!window.confirm('Do you want to delete all matches in this tournament? This action cannot be undone.')) return;
-    try {
-      setDeletingAll(true);
-      const success = await deleteAllMatch(tournamentId);
-      if (success) {
-        setMatches([]);
-        setFilteredMatches([]);
-        resetFilters();
-        alert('All matches are deleted');
-      } else {
-        alert('Delete failed, please try again later');
-      }
-    } finally {
-      setDeletingAll(false);
-    }
+  // 創建比賽
+  const handleCreateMatch = () => {
+    navigate(`/admin/tournaments/${tournamentId}/create-match`);
   };
 
-
-  const getStatusColor = (status) => {
-    const colorMap = {
-      ended: '#4CAF50',
-      ongoing: '#FFC107',
-      pending: '#9E9E9E'
-    };
-    return {
-      backgroundColor: `${colorMap[status.toLowerCase()]}20`,
-      color: colorMap[status.toLowerCase()]
-    };
+  // 分數更新處理
+  const handleScoreUpdate = (matchId, score1, score2) => {
+    console.log('Score updated:', { matchId, score1, score2 });
   };
 
-  const getEventType = (eventName) => {
-    if (eventName.includes('MS')) return 'Men Singles';
-    if (eventName.includes('WS')) return 'Women Singles';
-    if (eventName.includes('MD')) return 'Men Doubles';
-    if (eventName.includes('WD')) return 'Women Doubles';
-    if (eventName.includes('XD')) return 'Mixed Doubles';
-    return eventName;
-  };
-
-  // Handle match deletion with local state update
+  // 刪除比賽處理
   const handleDeleteMatch = async (matchId) => {
-    if(!window.confirm('Are you sure you want to delete this match?')) {
-      return;
-    }
-    
-    const success = await deleteMatch(matchId);
-    if (success) {
-      setMatches(prev => prev.filter(match => match.id !== matchId));
-      setFilteredMatches(prev => prev.filter(match => match.id !== matchId));
-    } else {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:5001/api/matches/${matchId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        setMatches(prev => prev.filter(match => match.id !== matchId));
+        setFilteredMatches(prev => prev.filter(match => match.id !== matchId));
+      } else {
+        alert('Failed to delete match');
+      }
+    } catch (error) {
+      console.error('Delete match error:', error);
       alert('Failed to delete match');
     }
   };
 
-  return (
-    <>
-      <div className="container">
-        <h1 className="page-title">Tournament Matches</h1>
-        
-        {hasAdminAccess() && (
-          <div className="generate-match-schedule-btn-container">
-            <Link to={`/admin/tournaments/${tournamentId}/generate-schedule`}>
-              <button className="generate-match-schedule-btn">
-                Generate Schedule
-              </button>
-            </Link>
-          </div>
-        )}
+  // 導出結果
+  const handleExportResults = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}/export/results`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-        {/* 統計信息 */}
-        <div className="stats-container">
-          <div className="stat-card">
-            <h3>Total Matches</h3>
-            <p className="stat-number">{matches.length}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Filtered Results</h3>
-            <p className="stat-number">{filteredMatches.length}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Ongoing</h3>
-            <p className="stat-number">{matches.filter(m => m.status === 'ongoing').length}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Completed</h3>
-            <p className="stat-number">{matches.filter(m => m.status === 'ended').length}</p>
-          </div>
-        </div>
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tournament_${tournamentId}_results.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Failed to export results');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export results');
+    }
+  };
 
-        {/* 篩選器 */}
-        <div className="filters-container">
-          <div className="filter-group">
-            <label htmlFor="event-filter">Event:</label>
-            <select 
-              id="event-filter"
-              value={selectedEvent}
-              onChange={(e) => setSelectedEvent(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Events</option>
-              {availableEvents.map(event => (
-                <option key={event} value={event}>
-                  {getEventType(event)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="group-filter">Group:</label>
-            <select 
-              id="group-filter"
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="filter-select"
-              disabled={selectedEvent === 'all'}
-            >
-              <option value="all">
-                {selectedEvent === 'all' ? 'Select Event First' : 'All Groups'}
-              </option>
-              {availableGroups.map(group => (
-                <option key={group} value={group}>
-                  {group}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button onClick={resetFilters} className="reset-filters-btn">
-            Reset
-          </button>
-          
-          {/* 新增 Player History 按鈕 */}
-          <Link 
-            to={`/tournaments/${tournamentId}/player-history`}
-            className="player-history-btn"
+  // 渲染過濾器和控制區域（始終顯示）
+  const renderFiltersAndControls = () => (
+    <div className="filters-container">
+      <div className="filters">
+        <div className="filter-group">
+          <label htmlFor="event-filter">Event:</label>
+          <select
+            id="event-filter"
+            value={selectedEvent}
+            onChange={(e) => {
+              setSelectedEvent(e.target.value);
+              setSelectedGroup('all'); // 重置組別選擇
+            }}
           >
-            Player History
-          </Link>
-          
-          {hasAdminAccess() && (
-            <button
-              onClick={deleteAllMatches}
-              disabled={deletingAll}
-              className="delete-all-btn"
-            >
-              {deletingAll ? 'Deleting...' : 'Delete All'}
-            </button>
-          )}
+            <option value="all">All Events</option>
+            {/* 始終顯示常見的羽球項目 */}
+            <option value="MS">MS (Men's Singles)</option>
+            <option value="WS">WS (Women's Singles)</option>
+            <option value="MD">MD (Men's Doubles)</option>
+            <option value="WD">WD (Women's Doubles)</option>
+            <option value="XD">XD (Mixed Doubles)</option>
+            {/* 如果有其他自定義事件，也顯示 */}
+            {availableEvents.filter(event => !['MS', 'WS', 'MD', 'WD', 'XD'].includes(event)).map(event => (
+              <option key={event} value={event}>{event}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="matches-grid">
-          {filteredMatches.length > 0 ? (
-            filteredMatches.map((match) => (
-              hasAdminAccess() ? (
-                <MatchCard
-                key={match.id}
-                match={match}
-                isClickable={true}
-                onAssignUmpire={assignUmpire}
-                onDelete={handleDeleteMatch}
-                showAssignUmpireButton={true}
-                showDeleteButton={true}
-                showPredecessors={true}
-                animating={animatingMatchId === match.id}
-                enableWebSocket={true}
-              />
-              ) : (
-                <MatchCard
-                key={match.id}
-                match={match}
-                isClickable={true}
-                animating={animatingMatchId === match.id}
-                showPredecessors={true}
-                enableWebSocket={true}
-              />
-              )
-            ))
-          ) : (
-            <div className="no-matches">
-              {matches.length === 0 
-                ? "No matches found for this tournament."
-                : "No matches match the selected filters."
-              }
+        <div className="filter-group">
+          <label htmlFor="group-filter">Group:</label>
+          <select
+            id="group-filter"
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            disabled={selectedEvent === 'all'}
+          >
+            <option value="all">All Groups</option>
+            {/* 始終顯示常見的組別 */}
+            <option value="Default">Default</option>
+            <option value="A">Group A</option>
+            <option value="B">Group B</option>
+            <option value="C">Group C</option>
+            <option value="D">Group D</option>
+            <option value="E">Group E</option>
+            <option value="F">Group F</option>
+            {/* 如果有其他自定義組別，也顯示 */}
+            {selectedEvent !== 'all' && eventGroups[selectedEvent]?.filter(group => 
+              !['Default', 'A', 'B', 'C', 'D', 'E', 'F'].includes(group)
+            ).map(group => (
+              <option key={group} value={group}>{group}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="court-filter">Court:</label>
+          <select
+            id="court-filter"
+            value={selectedCourt}
+            onChange={(e) => setSelectedCourt(e.target.value)}
+          >
+            <option value="all">All Courts</option>
+            {Array.from({ length: 20 }, (_, i) => (
+              <option key={i + 1} value={i + 1}>Court {i + 1}</option>
+            ))}
+          </select>
+        </div>
+
+        <button onClick={resetFilters} className="reset-filters-btn">
+          Reset Filters
+        </button>
+      </div>
+
+      <div className="filter-actions">
+        {isHostOrAdmin && (
+          <button 
+            onClick={handleCreateMatch}
+            className="create-match-btn"
+          >
+            ➕ Create New Match
+          </button>
+        )}
+      </div>
+
+      <div className="filter-stats">
+        Showing {filteredMatches.length} of {matches.length} matches
+      </div>
+    </div>
+  );
+
+  // 渲染頁面內容
+  const renderPageContent = () => {
+    if (loading) {
+      return (
+        <>
+          {renderFiltersAndControls()}
+          <div className="loading">Loading matches...</div>
+        </>
+      );
+    }
+
+    if (error) {
+      return (
+        <>
+          {renderFiltersAndControls()}
+          <div className="error">Error: {error}</div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        {renderFiltersAndControls()}
+        
+        {filteredMatches.length === 0 ? (
+          <div className="no-matches">
+            <div className="no-matches-content">
+              <div className="no-matches-icon">🏸</div>
+              <h3>No matches found</h3>
+              <p>
+                {matches.length === 0 
+                  ? "This tournament doesn't have any matches yet. Use the filters above to see available options for creating matches."
+                  : "No matches match your current filter criteria."
+                }
+              </p>
+              {isHostOrAdmin && (
+                <div className="no-matches-actions">
+                  <button onClick={handleCreateMatch} className="create-first-match-btn">
+                    ➕ Create Your First Match
+                  </button>
+                  <div className="create-match-hint">
+                    <small>
+                       Tip: Use the Event and Group filters above to see what types of matches you can create
+                    </small>
+                  </div>
+                </div>
+              )}
               {matches.length > 0 && (
-                <button onClick={resetFilters} className="reset-filters-btn">
-                  Reset Filters
+                <button onClick={resetFilters} className="clear-filters-btn">
+                  Clear Filters
                 </button>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="matches-grid">
+            {filteredMatches.map(match => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                onDelete={handleDeleteMatch}
+                showDeleteButton={isHostOrAdmin}
+                showAssignUmpireButton={isHostOrAdmin}
+                isClickable={true}
+                enableWebSocket={false} // 改為 false，因為 MatchCard 不再處理 Socket.IO
+                canEditScore={isHostOrAdmin}
+                onScoreUpdate={handleScoreUpdate}
+                animating={animatingMatchId === match.id} // 添加動畫效果
+              />
+            ))}
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className="matches-page">
+      <div className="page-header">
+        <h1>Tournament Matches</h1>
+        {isHostOrAdmin && (
+          <button onClick={handleExportResults} className="export-btn">
+            📊 Export Results
+          </button>
+        )}
       </div>
-    </>
+
+      {renderPageContent()}
+    </div>
   );
 };
 

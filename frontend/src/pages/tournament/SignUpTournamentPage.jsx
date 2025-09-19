@@ -24,9 +24,9 @@ const SignUpTournamentPage = () => {
     useEffect(() => {
         const fetchTournament = async () => {
             try {
-                console.log('Fetching tournament details for ID:', tournamentId);
+                // console.log('Fetching tournament details for ID:', tournamentId);
                 const data = await fetchInfoFromBackend(`${getTournamentUrl(tournamentId)}`);
-                console.log('Tournament data:', data);
+                // console.log('Tournament data:', data);
                 
                 if (data.status === 'success') {
                     setTournament(data.data);
@@ -165,9 +165,9 @@ const SignUpTournamentPage = () => {
         // }
 
         try {
-            console.log('Submitting:', submissionData);
+            // console.log('Submitting:', submissionData);
             const response = await fetchInfoToBackend(`${signUpTournamentUrl(tournament.id)}`, submissionData);
-            console.log('Response:', response);
+            // console.log('Response:', response);
             if (response.status === 'success') {
                 alert('Registration successful!');
                 navigate('/tournaments');

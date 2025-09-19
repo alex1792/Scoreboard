@@ -30,40 +30,6 @@ def get_all_matches():
 # ----------------------------------------------------------------------
 
 """
-This function is used to create a new match. It will create a new match record in the database.
-It will return the match info to the frontend. Then, the frontend will show the match in the /matches page.
-"""
-# ------------------------- create a new match ---------------------------
-@match_bp.route('/create_match', methods=['POST'])
-@jwt_required()
-def create_match():
-    try:
-        authorization = check_authorization('host')
-        if authorization:
-            return authorization
-
-        data = request.get_json()
-        match_data = {
-            'player1_name': data['player1_username'],
-            'player2_name': data['player2_username'],
-            'category': data['category'],
-            'status': 'Scheduled'
-        }
-
-        new_match_data = MatchService.create_match(match_data)
-        # new_match_data = create_match_record(data['player1_username'], data['player2_username'], data['category'], 'Scheduled')
-
-        return jsonify({
-            "status": "success",
-            "data": new_match_data
-        }), 201
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"status": "error", "message": "Failed to create match"}), 500
-
-    
-
-"""
 This function is used to assign an umpire to a specific match. It will update the umpire_id of the match.
 It will return the match info to the frontend. Then, the frontend will show the match in the /matches page.
 """
@@ -88,7 +54,7 @@ def assign_umpire(match_id):
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to assign umpire"}), 500
 
 
@@ -105,7 +71,7 @@ def get_match_by_umpire(umpire_id):
             return jsonify({"status": "error", "message": "No match found for this umpire"}), 404
         return jsonify({"status": "success", "data": {"id": match_data['id']}})
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get match by umpire"}), 500
 # ----------------------------------------------------------------------
 
@@ -123,7 +89,7 @@ def get_match_scoreboard(match_id):
             return jsonify({"status": "error", "message": "No match found"}), 404
         return jsonify({"status": "success", "data": match})
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get match by umpire"}), 500
 # ----------------------------------------------------------------------
 
@@ -140,17 +106,38 @@ function to achieve the real-time scoreboard.
 @jwt_required()
 def update_score(match_id):
     try:
+        print(f"=== Update Score Debug ===")
+        print(f"Match ID: {match_id}")
+        
         authorization = check_authorization('umpire')
         if authorization:
             return authorization
 
         data = request.get_json()
+        print(f"Received data: {data}")
+        
         action_type = data.get('action_type')
+        print(f"Action type: {action_type}")
         
         if action_type == 'update_score':
-            player = data.get('player')
-            score = int(data.get('score'))
-            match_data = MatchService.update_score(match_id, player, score)
+            # 檢查是否有 score1 和 score2（直接設置分數）
+            if 'score1' in data and 'score2' in data:
+                score1 = int(data.get('score1', 0))
+                score2 = int(data.get('score2', 0))
+                print(f"Direct score update: {score1} - {score2}")
+                match_data = MatchService.update_match_score(match_id, score1, score2)
+                print(f"Updated match data: {match_data}")
+            # 檢查是否有 player 和 score（增量更新）
+            elif 'player' in data and 'score' in data:
+                player = data.get('player')
+                score = int(data.get('score', 0))
+                print(f"Incremental score update: {player} + {score}")
+                match_data = MatchService.update_score(match_id, player, score)
+                print(f"Updated match data: {match_data}")
+            else:
+                print(f"Invalid parameters: {data}")
+                return jsonify({"status": "error", "message": "Invalid score update parameters"}), 400
+                
         elif action_type == 'change_status':
             new_status = data.get('new_status')
             result = MatchService.update_match_status(match_id, new_status)
@@ -161,20 +148,25 @@ def update_score(match_id):
             # 如果有下一輪比賽的更新，也發送
             if result['next_match_data']:
                 socketio.emit('match_update', result['next_match_data'], namespace='/scoreboard')
-                print(f"Emitted update for next match {result['next_match_data']['id']}")
             
             return jsonify({"status": "success", "data": result['match_data']})
         else:
             return jsonify({"status": "error", "message": "Invalid action type"}), 400
 
         # Socket.IO broadcast
+        print("Broadcasting match update via Socket.IO...")
+        print(f"Broadcasting data: {match_data}")
         socketio.emit('match_update', match_data, namespace='/scoreboard')
+        print("Socket.IO broadcast completed")
         
         return jsonify({"status": "success", "data": match_data})
     except ValueError as e:
+        print(f"ValueError: {e}")
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Exception: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"status": "error", "message": "Failed to update score"}), 500
 
 # ----------------------------------------------------------------------
@@ -195,7 +187,7 @@ def clear_all_matches():
         MatchService.clear_all_matches()
         return jsonify({"status": "success", "message": "All matches cleared"}), 200
     except Exception as e:
-        print(f"Error clearing matches: {e}")
+        # print(f"Error clearing matches: {e}")
         return jsonify({"status": "error", "message": "Failed to clear matches"}), 500
 # ----------------------------------------------------------------------    
 
@@ -219,7 +211,7 @@ def delete_match(match_id):
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to delete match"}), 500
 # ----------------------------------------------------------------------  
 
@@ -240,14 +232,14 @@ def next_game(match_id):
 
         if match_data and match_data.get('next_match_id'):
             next_match_data = get_match_data(Match.query.get(match_data['next_match_id']))
-            print(f"next match data: {next_match_data}")
+            # print(f"next match data: {next_match_data}")
             if next_match_data:
                 socketio.emit('match_update', next_match_data, namespace='/scoreboard')
-                print('emit next match data...')
+                # print('emit next match data...')
 
         return jsonify({"status": "success", "message": "Next game set successfully"})
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to set next game"}), 500
 
 """
@@ -266,17 +258,55 @@ def end_match(match_id):
 
         if match_data and match_data.get('next_match_id'):
             next_match_data = get_match_data(Match.query.get(match_data['next_match_id']))
-            print(f"next match data: {next_match_data}")
+            # print(f"next match data: {next_match_data}")
             if next_match_data:
                 socketio.emit('match_update', next_match_data, namespace='/scoreboard')
-                print('emit next match data...')
+                # print('emit next match data...')
             
         return jsonify({"status": "success", "message": "Match ended successfully"})
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to end match"}), 500
+
+@match_bp.route('<int:match_id>/update_player_name', methods=['POST'])
+@jwt_required()
+def update_match_player_name(match_id):
+    try:
+        auth = check_authorization('host')
+        if auth:
+            return auth
+
+        data = request.get_json()
+        player1_name = data.get('player1_name')
+        player2_name = data.get('player2_name')
+
+        match_data = MatchService.update_match_player_name(match_id, player1_name, player2_name)
+        socketio.emit('match_update', match_data, namespace='/scoreboard')
+
+        return jsonify({"status": "success", "message": "Match player name updated successfully"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Failed to update match player name"}), 500
+
+# @match_bp.route('<int:match_id>/update_score', methods=['POST'])
+# @jwt_required()
+# def update_match_score(match_id):
+#     try:
+#         auth = check_authorization('umpire')
+#         if auth:
+#             return auth
+
+#         data = request.get_json()
+#         score1 = data.get('score1')
+#         score2 = data.get('score2')
+
+#         match_data = MatchService.update_match_score(match_id, score1, score2)
+#         socketio.emit('match_update', match_data, namespace='/scoreboard')
+
+#         return jsonify({"status": "success", "message": "Match score updated successfully"})
+#     except Exception as e:
+#         return jsonify({"status": "error", "message": "Failed to update match score"}), 500
 
 # socket io
 """
@@ -304,11 +334,11 @@ def test_socket():
             'player2_score': 5
         }
         
-        print(f"[TEST] 發送測試事件: {test_data}")
+        # print(f"[TEST] 發送測試事件: {test_data}")
         socketio.emit('match_update', test_data, namespace='/scoreboard')
-        print(f"[TEST] 測試事件發送完成")
+        # print(f"[TEST] 測試事件發送完成")
         
         return jsonify({"status": "success", "message": "Test event sent"})
     except Exception as e:
-        print(f"[TEST] 發送失敗: {e}")
+        # print(f"[TEST] 發送失敗: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500

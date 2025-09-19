@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { API_URLS, getMatchUrl, getTournamentUrl, getMatchByUmpireUrl, uploadRegistrationFileUrl, generateScheduleForTournamentUrl, getRegistrationStatusUrl, getDeleteTournamentUrl } from '../config/urls';
+import { API_URLS, getMatchUrl, getTournamentUrl, 
+    getMatchByUmpireUrl, uploadRegistrationFileUrl, 
+    generateScheduleForTournamentUrl, getRegistrationStatusUrl, 
+    getDeleteTournamentUrl, getCreateMatchUrl, getMatchScoreUrl } from '../config/urls';
 
 // ================================================================================
 // ================================================================================
@@ -79,7 +82,7 @@ export async function assignUmpire(matchId) {
         );
 
         if(!response.ok) {
-            console.log('failed to assign umpire...');
+            // console.log('failed to assign umpire...');
         }
     } catch (err) {
         console.error('Fetch error:', err);
@@ -110,7 +113,7 @@ export async function deleteMatch(matchId) {
         );
 
         if(!response.ok) {
-            console.log('Failed to delete match...');
+            // console.log('Failed to delete match...');
             return false;
         }
         
@@ -137,7 +140,7 @@ export async function deleteAllMatch(tournamentId) {
         });
 
         if(!response.ok) {
-            console.log('Failed to delete all match...');
+            // console.log('Failed to delete all match...');
             return false;
         }
 
@@ -154,11 +157,11 @@ export async function deleteAllMatch(tournamentId) {
 // ================================================================================
 // ================================================================================
 
-export async function createMatch(matchData) {
+export async function createMatch(matchData, tournament_id) {
     try {
         const token = localStorage.getItem('access_token');
         const response = await fetch(
-            `${API_URLS.CREATE_MATCH}`, 
+            `${getCreateMatchUrl(tournament_id)}`, 
             {
                 method: 'POST',
                 headers: {
@@ -370,7 +373,7 @@ export async function fetchInfoToBackend(url, data) {
         if(response.ok) {
             return await response.json();
         } else {
-            console.log('Failed to fetch info to backend');
+            // console.log('Failed to fetch info to backend');
             return response.json();
         }
     } catch(err) {
@@ -380,7 +383,7 @@ export async function fetchInfoToBackend(url, data) {
 };
 
 export async function fetchInfoFromBackend(url) {
-    console.log('Fetching info from backend:', url);
+    // console.log('Fetching info from backend:', url);
     try {
         // const token = localStorage.getItem('access_token');
         const response = await fetch(url, { method: 'GET' });
@@ -551,3 +554,74 @@ export async function deleteTournament(tournamentId) {
         throw err;
     }
 };
+
+// ================================================================================
+// ================================================================================
+// ========================= Update Match Score ===================================
+// ================================================================================
+// ================================================================================
+
+export async function updateMatchScore(matchId, score1, score2) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(
+            `${getMatchScoreUrl(matchId)}`, 
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action_type: 'update_score',
+                    score1: score1,
+                    score2: score2
+                })
+            });
+
+        if(!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Update score failed');
+        }
+
+        return await response.json();
+    } catch (err) {
+        console.error('Update score error:', err);
+        throw err;
+    }
+}
+
+// ================================================================================
+// ================================================================================
+// ========================= Update Match Status ==================================
+// ================================================================================
+// ================================================================================
+
+export async function updateMatchStatus(matchId, newStatus) {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(
+            `${getMatchScoreUrl(matchId)}`, 
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action_type: 'change_status',
+                    new_status: newStatus
+                })
+            });
+
+        if(!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Update status failed');
+        }
+
+        return await response.json();
+    } catch (err) {
+        console.error('Update status error:', err);
+        throw err;
+    }
+}

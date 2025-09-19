@@ -219,4 +219,30 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1.2rem;
 }
 
+/* Back 按鈕容器 */
+.back-button-container {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* Back 按鈕樣式 - 純文字版本 */
+.back-btn {
+  background: none; /* 移除背景色 */
+  color: #6c757d; /* 使用灰色文字 */
+  border: none;
+  padding: 0.5rem 0; /* 減少左右 padding */
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s; /* 只改變顏色過渡 */
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none; /* 移除下劃線 */
+}
+
+.back-btn:hover {
+  color: #495057; /* hover 時變深一點 */
+  background: none; /* 確保沒有背景色 */
+}
+
 

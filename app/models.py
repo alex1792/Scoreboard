@@ -60,7 +60,7 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
-    format_id = db.Column(db.Integer, db.ForeignKey('formats.id'), nullable=False)
+    format_id = db.Column(db.Integer, db.ForeignKey('formats.id'), nullable=True)
     
     # cascade relationships
     matches = db.relationship('Match', backref='group', lazy=True, cascade='all, delete-orphan')

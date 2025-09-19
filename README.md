@@ -990,4 +990,20 @@ serve -s build -l 3000
 
 ### 2025/09/10
 - Create the player history page
+- Implemented Create-Match funciton back to the system
+---
+
+### 2025/09/16
+- IDEAS: create match, assign court number
+- IDEAS: undo match status, need to undo the winning status too✅
+- IDEAS: adding a page that shows current on-going match(filter by match.status)
+- IDEAS: adding court number to match database model(create match)✅
+- IDEAS: edit name, score(add two functions)
+---
+
+### 2025/09/19
+- create match with particular court
+- fix bugs
+- at matches page, add filter by court
+- match score can be typed in
 ---

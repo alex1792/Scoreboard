@@ -150,7 +150,7 @@ class MatchService:
         if new_status == 'Finished':
             try:
                 winner_info = MatchService.determine_winner(match_id)
-                print(f"Winner determined: {winner_info}")  # add debug info
+                # print(f"Winner determined: {winner_info}")  # add debug info
             except ValueError as e:
                 raise ValueError(f"Cannot finish match: {str(e)}")
         
@@ -258,9 +258,9 @@ class MatchService:
         if match.player1_game_won > match.player2_game_won:
             """Player 1 wins the match"""
             if match.event_type in ['MS', 'WS']:
-                print(f"Single match - Player 1 wins")
-                print(f"Setting winner1_id = {match.player1_id}")
-                print(f"Setting loser1_id = {match.player2_id}")
+                # print(f"Single match - Player 1 wins")
+                # print(f"Setting winner1_id = {match.player1_id}")
+                # print(f"Setting loser1_id = {match.player2_id}")
                 
                 match.winner1_id = match.player1_id
                 match.winner2_id = None
@@ -270,11 +270,11 @@ class MatchService:
                 loser_name = match.player2_name
             # double matches
             else:
-                print(f"Double match - Team 1 wins")
-                print(f"Setting winner1_id = {match.team1_player1_id}")
-                print(f"Setting winner2_id = {match.team1_player2_id}")
-                print(f"Setting loser1_id = {match.team2_player1_id}")
-                print(f"Setting loser2_id = {match.team2_player2_id}")
+                # print(f"Double match - Team 1 wins")
+                # print(f"Setting winner1_id = {match.team1_player1_id}")
+                # print(f"Setting winner2_id = {match.team1_player2_id}")
+                # print(f"Setting loser1_id = {match.team2_player1_id}")
+                # print(f"Setting loser2_id = {match.team2_player2_id}")
                 
                 match.winner1_id = match.team1_player1_id
                 match.winner2_id = match.team1_player2_id
@@ -286,9 +286,9 @@ class MatchService:
             """Player 2 wins the match"""
             # single match
             if match.event_type in ['MS', 'WS']:
-                print(f"Single match - Player 2 wins")
-                print(f"Setting winner1_id = {match.player2_id}")
-                print(f"Setting loser1_id = {match.player1_id}")
+                # print(f"Single match - Player 2 wins")
+                # print(f"Setting winner1_id = {match.player2_id}")
+                # print(f"Setting loser1_id = {match.player1_id}")
                 
                 match.winner1_id = match.player2_id
                 match.winner2_id = None
@@ -298,11 +298,11 @@ class MatchService:
                 loser_name = match.player1_name
             # double matches
             else:
-                print(f"Double match - Team 2 wins")
-                print(f"Setting winner1_id = {match.team2_player1_id}")
-                print(f"Setting winner2_id = {match.team2_player2_id}")
-                print(f"Setting loser1_id = {match.team1_player1_id}")
-                print(f"Setting loser2_id = {match.team1_player2_id}")
+                # print(f"Double match - Team 2 wins")
+                # print(f"Setting winner1_id = {match.team2_player1_id}")
+                # print(f"Setting winner2_id = {match.team2_player2_id}")
+                # print(f"Setting loser1_id = {match.team1_player1_id}")
+                # print(f"Setting loser2_id = {match.team1_player2_id}")
                 
                 match.winner1_id = match.team2_player1_id
                 match.winner2_id = match.team2_player2_id
@@ -317,10 +317,10 @@ class MatchService:
         
         db.session.commit()
 
-        print(f"Match next_match_id: {match.next_match_id}")
+        # print(f"Match next_match_id: {match.next_match_id}")
 
         if match.next_match_id:
-            print(f"Updating next round match: {match.next_match_id}")
+            # print(f"Updating next round match: {match.next_match_id}")
             MatchService.update_next_round_match(match_id)
 
         
@@ -439,7 +439,7 @@ class MatchService:
             # winner id does not exist, use winner_name
             winner_name = match.winner_name
 
-        print(f"winner name: {winner_name}")
+        # print(f"winner name: {winner_name}")
         # update the next match
         if next_match.prev_match1_id == match_id:
             if match.event_type in ['MS', 'WS']:
@@ -457,12 +457,12 @@ class MatchService:
                 next_match.team2_player2_name = names[1].strip() if len(names) > 1 else ""
         db.session.commit()
         
-        print(f"next match player1_name: {next_match.player1_name}")
-        print(f"next match player2_name: {next_match.player2_name}")
-        print(f"next match team1_player1_name: {next_match.team1_player1_name}")
-        print(f"next match team1_player2_name: {next_match.team1_player2_name}")
-        print(f"next match team2_player1_name: {next_match.team2_player1_name}")
-        print(f"next match team2_player2_name: {next_match.team2_player2_name}")
+        # print(f"next match player1_name: {next_match.player1_name}")
+        # print(f"next match player2_name: {next_match.player2_name}")
+        # print(f"next match team1_player1_name: {next_match.team1_player1_name}")
+        # print(f"next match team1_player2_name: {next_match.team1_player2_name}")
+        # print(f"next match team2_player1_name: {next_match.team2_player1_name}")
+        # print(f"next match team2_player2_name: {next_match.team2_player2_name}")
 
         
         return get_match_data(next_match)  
@@ -517,3 +517,36 @@ class MatchService:
         
         # 返回下一輪比賽的數據，讓 Controller 層處理 WebSocket 發送
         return get_match_data(next_match) 
+
+    @staticmethod
+    def update_match_player_name(match_id, player1_name, player2_name):
+        """update the player name of a match"""
+        match  = Match.query.get(match_id)
+        if not match:
+            return ValueError("Match not found")
+        
+        if match.event_type in ['MS', 'WS']:
+            match.player1_name = player1_name[0]
+            match.player2_name = player2_name[0]
+        else:
+            match.team1_player1_name = player1_name[0]
+            match.team1_player2_name = player1_name[1]
+            match.team2_player1_name = player2_name[0]
+            match.team2_player2_name = player2_name[1]
+        
+        db.session.commit()
+        return get_match_data(match)
+
+    @staticmethod
+    def update_match_score(match_id, score1, score2):
+        """umpire / host / admin can just assign score to the match"""
+        print(f"Updating match score: {match_id}, {score1}, {score2}")
+        match = Match.query.get(match_id)
+        if not match:
+            raise ValueError("Match not found")
+        
+        match.player1_score = score1
+        match.player2_score = score2
+
+        db.session.commit()
+        return get_match_data(match)

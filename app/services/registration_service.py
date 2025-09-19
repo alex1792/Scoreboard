@@ -193,7 +193,7 @@ class RegistrationService:
                     continue
                 key = (event.name, group.name)
                 group_map[key] = group.id
-                print(f"Group mapping: {event.name}-{group.name} -> Group ID {group.id}")
+                # print(f"Group mapping: {event.name}-{group.name} -> Group ID {group.id}")
 
             # to track the processed pairs in each event-group combination
             processed_pairs = {}  # {(event_id, group_id): set of player pairs}
@@ -229,7 +229,7 @@ class RegistrationService:
                     event_id = event_map[event_name]
                     group_id = group_map[group_key]
 
-                    print(f"Row {row_num}: {event_name}-{group_name} -> Event ID {event_id}, Group ID {group_id}")
+                    # print(f"Row {row_num}: {event_name}-{group_name} -> Event ID {event_id}, Group ID {group_id}")
 
                     # check if the registration is a doubles match
                     is_doubles = bool(partner_first_name and partner_last_name)

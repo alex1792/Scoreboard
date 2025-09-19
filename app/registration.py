@@ -43,7 +43,7 @@ def sign_up_tournament(tournament_id):
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({'status': 'error', 'message': 'Failed to sign up tournament'}), 500
 
 
@@ -89,14 +89,14 @@ def get_registrations(tournament_id):
             "data": registrations_data
         }), 200
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get registrations"}), 500
 
 
 @registration_bp.route('/tournament/<int:tournament_id>/upload', methods=['POST'])
 @jwt_required()
 def upload_registration_file(tournament_id):
-    print(f"Uploading registration file for tournament {tournament_id}")
+    # print(f"Uploading registration file for tournament {tournament_id}")
     try:
         file = request.files['file']
         if not file:
@@ -107,7 +107,7 @@ def upload_registration_file(tournament_id):
         return jsonify({"status": "success", "message": registration_result}), 200
             
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to upload registration file"}), 500
 
 
@@ -135,6 +135,6 @@ def update_registration_status(registration_id):
         return jsonify({"status": "success", "message": "Registration status updated successfully"}), 200
 
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to update registration status"}), 500
 

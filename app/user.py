@@ -22,7 +22,7 @@ def get_users():
             "data": users_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get users"}), 500
 
 @user_bp.route('/<int:user_id>', methods=['GET'])
@@ -48,7 +48,7 @@ def get_user_by_id(user_id):
             "data": user_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get user"}), 500
 
 @user_bp.route('/profile', methods=['GET'])
@@ -76,7 +76,7 @@ def get_current_user_profile():
             "data": user_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get user profile"}), 500
 
 @user_bp.route('/profile', methods=['PUT'])
@@ -117,7 +117,7 @@ def update_current_user_profile():
             "data": user_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to update profile"}), 500
 
 @user_bp.route('/<int:user_id>', methods=['PUT'])
@@ -163,7 +163,7 @@ def update_user(user_id):
             "data": user_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to update user"}), 500
 
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
@@ -188,7 +188,7 @@ def delete_user(user_id):
             "message": f"User {user.username} deleted successfully"
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to delete user"}), 500
 
 @user_bp.route('/search', methods=['GET'])
@@ -235,7 +235,7 @@ def search_users():
             "data": users_data
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to search users"}), 500
 
 @user_bp.route('/stats', methods=['GET'])
@@ -267,5 +267,5 @@ def get_user_stats():
             "data": stats
         })
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get user stats"}), 500

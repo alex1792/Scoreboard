@@ -598,3 +598,93 @@
     transform: translateY(0);
   }
 }
+
+/* 新增：可編輯分數的樣式 */
+.score-number.editable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.score-number.editable:hover {
+  background-color: #f0f8ff;
+  border: 2px solid #007bff;
+}
+
+.score-input {
+  width: 80px;
+  height: 80px;
+  padding: 8px;
+  border: 3px solid #007bff;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  background-color: #fff;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.score-input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+}
+
+.score-input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 編輯狀態下的樣式調整 */
+.score-display.editing .score-box {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+/* 編輯控制按鈕樣式 */
+.score-edit-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.btn-save, .btn-cancel {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.btn-save:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.btn-cancel:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}

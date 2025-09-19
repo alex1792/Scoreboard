@@ -71,16 +71,16 @@ const TournamentBracketPage = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 開始載入錦標賽數據...');
+      // console.log('🔄 開始載入錦標賽數據...');
       
       // 載入錦標賽資訊
       const tournamentResponse = await fetchInfoFromBackend(getTournamentUrl(tournamentId));
       
       if (tournamentResponse.status === 'success') {
         setTournament(tournamentResponse.data);
-        console.log('✅ 錦標賽資訊載入成功:', tournamentResponse.data);
+        // console.log('✅ 錦標賽資訊載入成功:', tournamentResponse.data);
       } else {
-        console.error('❌ Tournament API error:', tournamentResponse.message);
+        // console.error('❌ Tournament API error:', tournamentResponse.message);
         setError(tournamentResponse.message || 'Failed to load tournament');
         return;
       }
@@ -90,25 +90,25 @@ const TournamentBracketPage = () => {
       
       if (matchesResponse.status === 'success') {
         const matchesData = matchesResponse.matches || [];
-        console.log('✅ 比賽資訊載入成功，共', matchesData.length, '場比賽');
+        // console.log('✅ 比賽資訊載入成功，共', matchesData.length, '場比賽');
         
         // 調試：檢查第一場比賽的數據結構
         if (matchesData.length > 0) {
-          console.log('🔍 第一場比賽數據結構:', matchesData[0]);
-          console.log('📊 比賽狀態統計:', {
-            pending: matchesData.filter(m => m.status === 'Pending').length,
-            ongoing: matchesData.filter(m => m.status === 'Ongoing').length,
-            finished: matchesData.filter(m => m.status === 'Finished').length
-          });
+          // console.log('🔍 第一場比賽數據結構:', matchesData[0]);
+          // console.log('📊 比賽狀態統計:', {
+          //   pending: matchesData.filter(m => m.status === 'Pending').length,
+          //   ongoing: matchesData.filter(m => m.status === 'Ongoing').length,
+          //   finished: matchesData.filter(m => m.status === 'Finished').length
+          // });
         }
         
         setMatches(matchesData);
       } else {
-        console.error('❌ Matches API error:', matchesResponse.message);
+        // console.error('❌ Matches API error:', matchesResponse.message);
         setMatches([]);
       }
     } catch (error) {
-      console.error('❌ Error loading tournament data:', error);
+      // console.error('❌ Error loading tournament data:', error);
       setError('Failed to load tournament data');
     } finally {
       setLoading(false);
@@ -251,14 +251,14 @@ const TournamentBracketPage = () => {
     const shouldShowScore = (match.status === 'Ongoing' || match.status === 'Finished') && !isByeMatch;
 
     // 調試：檢查勝場數數據
-    console.log(`🔍 Match ${match.id} 勝場數數據:`, {
-      status: match.status,
-      player1_game_won: match.player1_game_won,
-      player2_game_won: match.player2_game_won,
-      score1,
-      score2,
-      showGames
-    });
+    // console.log(`🔍 Match ${match.id} 勝場數數據:`, {
+    //   status: match.status,
+    //   player1_game_won: match.player1_game_won,
+    //   player2_game_won: match.player2_game_won,
+    //   score1,
+    //   score2,
+    //   showGames
+    // });
 
     return (
       <div className={`match-box ${animatingMatchId === match.id ? 'animate-update' : ''}`}>

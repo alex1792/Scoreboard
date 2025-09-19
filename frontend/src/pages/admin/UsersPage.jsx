@@ -20,12 +20,12 @@ const UserCard = ({ user, onRoleUpdate, currentUserRole }) => {
   const canEdit = currentUserRole === 'admin';
   
   // 調試信息
-  console.log('UserCard Debug:', {
-    currentUserRole,
-    canEdit,
-    userRole: user.role,
-    username: user.username
-  });
+  // console.log('UserCard Debug:', {
+  //   currentUserRole,
+  //   canEdit,
+  //   userRole: user.role,
+  //   username: user.username
+  // });
 
   const handleRoleChange = async (newRole) => {
     if (!canEdit || newRole === user.role) return;
@@ -97,11 +97,11 @@ const Users = () => {
   const { currentUser } = useContext(AuthContext);
 
   // 調試信息
-  console.log('Users Component Debug:', {
-    currentUser,
-    currentUserRole: currentUser?.role,
-    isAdmin: currentUser?.role === 'admin'
-  });
+  // console.log('Users Component Debug:', {
+  //   currentUser,
+  //   currentUserRole: currentUser?.role,
+  //   isAdmin: currentUser?.role === 'admin'
+  // });
 
   // fetch users data
   const loadUsers = async () => {
@@ -135,11 +135,11 @@ const Users = () => {
     });
 
     socketRef.current.on('connect', () => {
-      console.log('Socket connected!');
+      // console.log('Socket connected!');
     });
 
     socketRef.current.on('user_role_updated', (data) => {
-      console.log('User role updated:', data);
+      // console.log('User role updated:', data);
       loadUsers(); // reload users data
     });
 

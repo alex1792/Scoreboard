@@ -532,3 +532,19 @@
         font-size: 16px; /* 避免 iOS 縮放 */
     }
 } 
+
+.create-match-card .player .player-name .player-input {
+  font-size: 0.9em !important; /* 使用 !important 確保優先級 */
+  padding: 0.4rem 0;
+  border-bottom: 2px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: font-size 0.2s ease;
+}
+
+.create-match-card .player .player-name .player-input:focus {
+  font-size: 0.95em !important;
+  border-bottom-color: #1976d2;
+}

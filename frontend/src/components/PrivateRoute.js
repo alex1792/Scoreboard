@@ -22,12 +22,12 @@ export const AdminRoute = ({ children }) => {
     }
     
     if (!isAuthenticated) {
-        console.log('Not authenticated, redirecting to login');
+        // console.log('Not authenticated, redirecting to login');
         return <Navigate to="/login" />;
     }
     
     if (currentUser?.role !== 'admin') {
-        console.log('Not admin, redirecting to home');
+        // console.log('Not admin, redirecting to home');
         return <Navigate to='/' />;
     }
     

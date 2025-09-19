@@ -65,11 +65,10 @@ function App() {
             
 
             {/* Host Features */}
-            <Route path="admin/create-match" element={<HostRoute><CreateMatch /></HostRoute>} />
+            <Route path="admin/tournaments/:tournamentId/create-match" element={<HostRoute><CreateMatch /></HostRoute>} />
             <Route path="/admin/scheduler" element={<HostRoute><SchedulerPage /></HostRoute>} />
             <Route path="/admin/match-generator" element={<HostRoute><MatchGenerator /></HostRoute>} />
             <Route path="/admin/create-tournament" element={<HostRoute><CreateTournament /></HostRoute>} />
-            <Route path="admin/create-match" element={<HostRoute><CreateMatch /></HostRoute>} />
 
             {/* About */}
             <Route path="/about" element={<AboutPage />} />

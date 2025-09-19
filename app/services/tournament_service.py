@@ -1,8 +1,15 @@
 from sqlalchemy import false, or_
+
+from app import tournament
 from ..models import Tournament, Event, Group, Format, db, Registration, Match, Schedule
 from datetime import datetime
 import random
 from ..utils import get_match_data
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from flask import send_file
+from io import BytesIO
 
 
 class TournamentService:
@@ -83,9 +90,9 @@ class TournamentService:
             tournament: a dictionary of tournament data
         """
         try:
-            print(f"=== Creating tournament ===")
-            print(f"Tournament info: {tournament_info}")
-            print(f"Events info: {events_info}")
+            # print(f"=== Creating tournament ===")
+            # print(f"Tournament info: {tournament_info}")
+            # print(f"Events info: {events_info}")
             
             # Convert date strings to datetime objects
             if 'start_date' in tournament_info and tournament_info['start_date']:
@@ -109,12 +116,12 @@ class TournamentService:
             tournament = Tournament(**tournament_info)
             db.session.add(tournament)
             db.session.flush()
-            print(f"Created tournament with ID: {tournament.id}")
+            # print(f"Created tournament with ID: {tournament.id}")
 
             # Create events
             for event_info in events_info:
-                print(f"=== Creating event ===")
-                print(f"Event info: {event_info}")
+                # print(f"=== Creating event ===")
+                # print(f"Event info: {event_info}")
                 
                 # Map event names to categories
                 category_mapping = {
@@ -126,7 +133,7 @@ class TournamentService:
                 }
                 
                 event_info['category'] = category_mapping.get(event_info['name'], 'MS')
-                print(f"Mapped category: {event_info['category']}")
+                # print(f"Mapped category: {event_info['category']}")
 
                 event = Event()
                 event.name = event_info['name']
@@ -134,7 +141,7 @@ class TournamentService:
                 event.tournament_id = tournament.id
                 db.session.add(event)
                 db.session.flush()
-                print(f"Created event: {event.name} (ID: {event.id})")
+                # print(f"Created event: {event.name} (ID: {event.id})")
 
                 # Create groups for each event
                 for group_info in event_info['groups']:
@@ -155,7 +162,7 @@ class TournamentService:
             
         except Exception as e:
             db.session.rollback()
-            print(f"Error in create_tournament: {e}")
+            # print(f"Error in create_tournament: {e}")
             raise e
 
     @staticmethod
@@ -171,7 +178,7 @@ class TournamentService:
             return True
         except Exception as e:
             db.session.rollback()
-            print(f"Error in delete_tournament: {e}")
+            # print(f"Error in delete_tournament: {e}")
             raise e
             return False
                 
@@ -189,7 +196,7 @@ class TournamentService:
         try:
             # 1. get all registrations for the tournament
             registrations = Registration.query.filter_by(tournament_id=tournament_id).all()
-            print(f"Found {len(registrations)} registrations for tournament {tournament_id}")
+            # print(f"Found {len(registrations)} registrations for tournament {tournament_id}")
             
             if not registrations:
                 raise ValueError("No registrations found for this tournament")
@@ -244,12 +251,12 @@ class TournamentService:
                     else:
                         print(f"Failed to create match for data: {match_data}")
             
-            print(f"Total matches created: {len(all_matches)}")
+            # print(f"Total matches created: {len(all_matches)}")
             return all_matches
             
         except Exception as e:
             db.session.rollback()
-            print(f"Error in generate_matches_by_registration: {e}")
+            # print(f"Error in generate_matches_by_registration: {e}")
             raise e
 
     @staticmethod
@@ -443,24 +450,24 @@ class TournamentService:
         Returns:
             list: a list of match data
         """
-        print(f"Generating matches for {len(players_data)} players")
-        print(f"Format type: {format.type}")
+        # print(f"Generating matches for {len(players_data)} players")
+        # print(f"Format type: {format.type}")
         
         if len(players_data) < 2:
-            print(f"Not enough players ({len(players_data)}) to generate matches")
+            # print(f"Not enough players ({len(players_data)}) to generate matches")
             return []
         
         # generate matches according to the format type
         if format.type == 'round_robin':
             matches = TournamentService._generate_round_robin_matches(players_data, event, group)
-            print(f"Generated {len(matches)} round-robin matches")
+            # print(f"Generated {len(matches)} round-robin matches")
             return matches
         elif format.type == 'elimination':
             matches = TournamentService._generate_elimination_matches(players_data, event, group, event.tournament_id)
-            print(f"Generated {len(matches)} elimination matches")
+            # print(f"Generated {len(matches)} elimination matches")
             return matches
         else:
-            print(f"Unknown format type: {format.type}")
+            # print(f"Unknown format type: {format.type}")
             return []
 
     @staticmethod
@@ -469,9 +476,9 @@ class TournamentService:
         matches = []
         match_number = 1
         
-        print(f"=== Generating pure round robin matches ===")
-        print(f"Total players: {len(players_data)}")
-        print(f"Players: {[p['user_name'] for p in players_data]}")
+        # print(f"=== Generating pure round robin matches ===")
+        # print(f"Total players: {len(players_data)}")
+        # print(f"Players: {[p['user_name'] for p in players_data]}")
         
         # generate the matches according to the number of players
         for i in range(len(players_data)):
@@ -498,8 +505,8 @@ class TournamentService:
         
         # verify the number of matches: C(n,2) = n * (n-1) / 2
         expected_matches = len(players_data) * (len(players_data) - 1) // 2
-        print(f"Total matches created: {len(matches)}")
-        print(f"Expected matches (C({len(players_data)},2)): {expected_matches}")
+        # print(f"Total matches created: {len(matches)}")
+        # print(f"Expected matches (C({len(players_data)},2)): {expected_matches}")
         
         if len(matches) != expected_matches:
             print(f"WARNING: Created {len(matches)} matches, expected {expected_matches}")
@@ -512,23 +519,23 @@ class TournamentService:
         all_matches = []  # to store all the matches
         
         if len(players_data) < 2:
-            print("Not enough players for elimination")
+            # print("Not enough players for elimination")
             return all_matches
         
         # calculate the total number of slots
         total_slots = TournamentService._next_power_of_two(len(players_data))
         num_byes = total_slots - len(players_data)
-        print(f"Total slots: {total_slots}, Byes: {num_byes}")
+        # print(f"Total slots: {total_slots}, Byes: {num_byes}")
         
         # 確保第一輪有正確數量的比賽
         first_round_matches = total_slots // 2
-        print(f"First round should have {first_round_matches} matches")
+        # print(f"First round should have {first_round_matches} matches")
         
         # randomly assign bye to players in the first round if needed
         players_copy = players_data.copy()
         random.shuffle(players_copy)
         byes = players_copy[:num_byes]
-        print(f"Bye players: {[p['user_name'] for p in byes]}")
+        # print(f"Bye players: {[p['user_name'] for p in byes]}")
         
         # re-shuffle the players
         random.shuffle(players_copy)
@@ -555,7 +562,7 @@ class TournamentService:
                     'player1_from_match': None,
                     'player2_from_match': None
                 }
-                print(f"Created BYE vs BYE match")
+                # print(f"Created BYE vs BYE match")
             elif idx == len(players_copy) - 1:
                 # last player, his opponent is BYE
                 match_data = {
@@ -571,7 +578,7 @@ class TournamentService:
                     'player1_from_match': None,
                     'player2_from_match': None
                 }
-                print(f"Created BYE match for last player: {players_copy[idx]['user_name']}")
+                # print(f"Created BYE match for last player: {players_copy[idx]['user_name']}")
                 idx += 1
             elif players_copy[idx] in byes:
                 # BYE Match
@@ -588,7 +595,7 @@ class TournamentService:
                     'player1_from_match': None,
                     'player2_from_match': None
                 }
-                print(f"Created BYE match for: {players_copy[idx]['user_name']}")
+                # print(f"Created BYE match for: {players_copy[idx]['user_name']}")
                 idx += 1
             else:
                 # Regular Match
@@ -605,13 +612,13 @@ class TournamentService:
                     'player1_from_match': None,
                     'player2_from_match': None
                 }
-                print(f"Created normal match: {players_copy[idx]['user_name']} vs {players_copy[idx + 1]['user_name']}")
+                # print(f"Created normal match: {players_copy[idx]['user_name']} vs {players_copy[idx + 1]['user_name']}")
                 idx += 2
             
             current_round.append(match_data)
             match_number += 1
         
-        print(f"First round matches: {len(current_round)}")
+        # print(f"First round matches: {len(current_round)}")
         
         # 繼續生成後續輪次...
         # next rounds - need to save the previous round matches
@@ -638,7 +645,7 @@ class TournamentService:
                         'player1_from_match': prev_match_data.get('id'),
                         'player2_from_match': None
                     }
-                    print(f"Created BYE match for odd player in round {round_number}")
+                    # print(f"Created BYE match for odd player in round {round_number}")
                     next_round.append(match_data)
                     match_number += 1
                     break
@@ -660,7 +667,7 @@ class TournamentService:
                     'player1_from_match': prev_match1_data.get('id'),
                     'player2_from_match': prev_match2_data.get('id')
                 }
-                print(f"Created next round match: Winner of Match {prev_match1_data['match_number']} vs Winner of Match {prev_match2_data['match_number']}")
+                # print(f"Created next round match: Winner of Match {prev_match1_data['match_number']} vs Winner of Match {prev_match2_data['match_number']}")
                 next_round.append(match_data)
                 match_number += 1
             
@@ -669,12 +676,12 @@ class TournamentService:
             
             # update current_round to the next round
             current_round = next_round
-            print(f"Round {round_number} matches: {len(next_round)}")
+            # print(f"Round {round_number} matches: {len(next_round)}")
             
         # add the last round matches to all_matches (final match)
         all_matches.extend(current_round)
         
-        print(f"Total elimination matches: {len(all_matches)}")
+        # print(f"Total elimination matches: {len(all_matches)}")
         return all_matches
 
     @staticmethod
@@ -708,23 +715,23 @@ class TournamentService:
     def _create_match_record(match_data, tournament_id):
         """create a match record"""
         try:
-            print(f"=== Creating match record ===")
+            # print(f"=== Creating match record ===")
             
             p1_data = match_data['player1_data']
             p2_data = match_data['player2_data']
             
-            print(f"Player 1: {p1_data}")
-            print(f"Player 2: {p2_data}")
+            # print(f"Player 1: {p1_data}")
+            # print(f"Player 2: {p2_data}")
             
             # check if the match is a bye match
             is_bye_match = (p1_data['user_name'] == 'BYE' or p2_data['user_name'] == 'BYE')
-            print(f"Is BYE match: {is_bye_match}")
+            # print(f"Is BYE match: {is_bye_match}")
             
             # check if the match is a doubles match
             is_doubles = (match_data['event_type'] in ['MD', 'WD', 'XD'] or 
                          p1_data.get('is_doubles', False) or 
                          p2_data.get('is_doubles', False))
-            print(f"Is doubles: {is_doubles}")
+            # print(f"Is doubles: {is_doubles}")
             
             # basic match data
             match_dict = {
@@ -831,12 +838,12 @@ class TournamentService:
             
             db.session.commit()
             
-            print(f"Successfully created match {match.id}")
+            # print(f"Successfully created match {match.id}")
             return match
             
         except Exception as e:
             db.session.rollback()
-            print(f"Error creating match record: {e}")
+            # print(f"Error creating match record: {e}")
             return None
 
     @staticmethod
@@ -852,8 +859,8 @@ class TournamentService:
                 Format.type == 'elimination'
             ).order_by(Match.round, Match.match_number).all()
             
-            print(f"Processing BYE matches for tournament {tournament_id}")
-            print(f"Found {len(elimination_matches)} elimination matches")
+            # print(f"Processing BYE matches for tournament {tournament_id}")
+            # print(f"Found {len(elimination_matches)} elimination matches")
             
             # group by round
             matches_by_round = {}
@@ -865,13 +872,13 @@ class TournamentService:
             
             # start from the first round
             for round_num in sorted(matches_by_round.keys()):
-                print(f"Processing Round {round_num}")
+                # print(f"Processing Round {round_num}")
                 round_matches = matches_by_round[round_num]
                 
                 for match in round_matches:
                     # check if the match is a bye match
                     if TournamentService._is_bye_match(match):
-                        print(f"Found BYE match: {match.id}")
+                        # print(f"Found BYE match: {match.id}")
                         
                         # determine which one is the bye, which one is the actual player
                         bye_player, actual_player = TournamentService._identify_bye_and_actual_player(match)
@@ -883,15 +890,15 @@ class TournamentService:
                             # update the next match
                             TournamentService._update_next_match_after_bye(match, actual_player)
                             
-                            print(f"BYE match {match.id} processed: {actual_player} advances")
+                            # print(f"BYE match {match.id} processed: {actual_player} advances")
             
             db.session.commit()
-            print("BYE matches processing completed")
+            # print("BYE matches processing completed")
             return True
             
         except Exception as e:
             db.session.rollback()
-            print(f"Error processing BYE matches: {e}")
+            # print(f"Error processing BYE matches: {e}")
             raise e
 
     @staticmethod
@@ -951,7 +958,7 @@ class TournamentService:
         if not next_match:
             return
         
-        print(f"Updating next match {next_match.id} after BYE")
+        # print(f"Updating next match {next_match.id} after BYE")
         
         # determine which position the bye match corresponds to in next_match
         if next_match.prev_match1_id == match.id:
@@ -1020,8 +1027,201 @@ class TournamentService:
             }
             
         except Exception as e:
-            print(f"Error querying players history: {e}")
+            # print(f"Error querying players history: {e}")
             return {
                 'status': 'error',
                 'message': str(e)
             }
+
+    @staticmethod
+    def export_tournament_results_to_excel(tournament_id):
+        """導出比賽結果到 Excel - 使用與 schedule 相同的方式
+        
+        Args:
+            tournament_id: 比賽ID
+        
+        Returns:
+            str: 生成的文件路徑
+        """
+        try:
+            import pandas as pd
+            import os
+            from flask import current_app
+            
+            # 獲取比賽數據
+            matches = Match.query.filter_by(tournament_id=tournament_id).all()
+            
+            if not matches:
+                raise ValueError("No matches found for this tournament")
+            
+            print(f"Found {len(matches)} matches for tournament {tournament_id}")
+            
+            # 準備數據行
+            rows = []
+            
+            # 獲取比賽信息
+            tournament = Tournament.query.get(tournament_id)
+            
+            for match in matches:
+                try:
+                    # 獲取 Event 和 Group 信息
+                    event = Event.query.get(match.event_id) if match.event_id else None
+                    group = Group.query.get(match.group_id) if match.group_id else None
+                    
+                    # 處理玩家名稱
+                    if match.event_type in ['MD', 'WD', 'XD']:
+                        # 雙打
+                        player1_name = f"{match.team1_player1_name or 'TBD'} / {match.team1_player2_name or 'TBD'}"
+                        player2_name = f"{match.team2_player1_name or 'TBD'} / {match.team2_player2_name or 'TBD'}"
+                        match_type = "Double"
+                    else:
+                        # 單打
+                        player1_name = str(match.player1_name or 'TBD')
+                        player2_name = str(match.player2_name or 'TBD')
+                        match_type = "Single"
+                    
+                    # 處理分數 - 顯示每一局的具體分數
+                    game_scores = []
+                    
+                    # Game 1
+                    if match.game1_score1 > 0 or match.game1_score2 > 0:
+                        game_scores.append(f"{match.game1_score1}-{match.game1_score2}")
+                    
+                    # Game 2
+                    if match.game2_score1 > 0 or match.game2_score2 > 0:
+                        game_scores.append(f"{match.game2_score1}-{match.game2_score2}")
+                    
+                    # Game 3
+                    if match.game3_score1 > 0 or match.game3_score2 > 0:
+                        game_scores.append(f"{match.game3_score1}-{match.game3_score2}")
+                    
+                    # 如果沒有分數，顯示 "No Score"
+                    if not game_scores:
+                        score = "No Score"
+                    else:
+                        score = ", ".join(game_scores)
+                    
+                    # 處理勝者
+                    winner = str(match.winner_name or 'TBD')
+                    
+                    # 創建數據行 - 確保所有值都是字符串
+                    row_data = {
+                        'Event': str(event.name if event else match.event_type or 'N/A'),
+                        'Group': str(group.name if group else 'N/A'),
+                        'Player/Team 1': str(player1_name),
+                        'Player/Team 2': str(player2_name),
+                        'Match Type': str(match_type),
+                        'Score': str(score),
+                        'Winner': str(winner),
+                        'Status': str(match.status or 'Scheduled'),
+                        'Round': str(match.round or 'N/A'),
+                        'Match Number': str(match.match_number or 'N/A')
+                    }
+                    
+                    rows.append(row_data)
+                    
+                except Exception as e:
+                    print(f"Error processing match {match.id}: {e}")
+                    continue
+            
+            print(f"Processed {len(rows)} matches successfully")
+            
+            # 如果沒有數據，創建一個基本的行
+            if not rows:
+                rows.append({
+                    'Event': 'No Data',
+                    'Group': 'Available',
+                    'Player/Team 1': 'Please',
+                    'Player/Team 2': 'Check',
+                    'Match Type': 'Database',
+                    'Score': 'For',
+                    'Winner': 'Matches',
+                    'Status': 'In',
+                    'Round': 'This',
+                    'Match Number': 'Tournament'
+                })
+            
+            # 創建輸出檔案路徑 - 使用絕對路徑
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            instance_path = os.path.join(base_dir, 'instance')
+            
+            print(f"Base directory: {base_dir}")
+            print(f"Instance path: {instance_path}")
+            
+            # 檢查 instance_path 是否存在
+            if not os.path.exists(instance_path):
+                print(f"Creating instance directory: {instance_path}")
+                os.makedirs(instance_path, exist_ok=True)
+            else:
+                print(f"Instance directory exists: {instance_path}")
+            
+            # 檢查目錄權限
+            if os.access(instance_path, os.W_OK):
+                print(f"Directory is writable: {instance_path}")
+            else:
+                print(f"Directory is NOT writable: {instance_path}")
+                raise Exception(f"Cannot write to directory: {instance_path}")
+            
+            output_filename = f"tournament_{tournament_id}_results.xlsx"
+            output_path = os.path.join(instance_path, output_filename)
+            
+            print(f"Full output path: {output_path}")
+            print(f"Absolute output path: {os.path.abspath(output_path)}")
+            
+            # 使用 pandas 創建 DataFrame 並寫入 Excel
+            df = pd.DataFrame(rows)
+            print(f"DataFrame shape: {df.shape}")
+            print(f"DataFrame columns: {df.columns.tolist()}")
+            
+            # 確保所有數據都是字符串類型
+            for col in df.columns:
+                df[col] = df[col].astype(str)
+            
+            print("Attempting to write Excel file...")
+            
+            # 寫入 Excel 文件 - 使用更明確的參數
+            with pd.ExcelWriter(output_path, engine='openpyxl', mode='w') as writer:
+                df.to_excel(writer, sheet_name='Tournament Results', index=False)
+            
+            print("Excel file written successfully")
+            
+            # 檢查文件是否存在
+            if not os.path.exists(output_path):
+                raise Exception("Failed to create Excel file")
+            
+            file_size = os.path.getsize(output_path)
+            print(f"Excel file created: {output_path}")
+            print(f"File size: {file_size} bytes")
+            print(f"File permissions: {oct(os.stat(output_path).st_mode)}")
+            
+            if file_size == 0:
+                raise Exception("Generated Excel file is empty")
+            
+            # 驗證文件是否可讀
+            try:
+                test_df = pd.read_excel(output_path, sheet_name='Tournament Results')
+                print(f"File verification successful, read {len(test_df)} rows")
+            except Exception as e:
+                print(f"File verification failed: {e}")
+                raise Exception(f"Generated file is corrupted: {e}")
+            
+            return output_path
+            
+        except Exception as e:
+            print(f"Error in export_tournament_results_to_excel: {e}")
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Error exporting tournament results: {str(e)}")
+
+    @staticmethod
+    def remove_all_registrations(tournament_id):
+        """remove all the registrations of the tournament"""
+        try:
+            registrations = Registration.query.filter_by(tournament_id=tournament_id).all()
+            for registration in registrations:
+                db.session.delete(registration)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            return False

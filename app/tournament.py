@@ -1,4 +1,5 @@
-from flask import jsonify, Blueprint
+from itertools import chain
+from flask import jsonify, Blueprint, send_file
 from .models import Tournament, Format, Event, Group, Match, User
 from .models import db
 from .utils import check_authorization
@@ -33,7 +34,7 @@ def get_tournaments():
             "data": tournaments_data
         }), 200
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get tournaments"}), 500
 
 """
@@ -55,7 +56,7 @@ def get_tournament_details(tournament_id):
             "data": tournament_data
         }), 200
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get tournament details"}), 500
 
 
@@ -98,7 +99,7 @@ def create_tournament():
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 400
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Error creating tournament"}), 500
 
 """
@@ -108,7 +109,7 @@ This function is used to generate matches by registration records.
 @jwt_required()
 def generate_matches_by_registration(tournament_id):
     """generate matches by registration records from tournament_service"""
-    print('generate_matches_by_registration')
+    # print('generate_matches_by_registration')
     try:
         auth = check_authorization('host')
         if auth:
@@ -141,7 +142,7 @@ def generate_matches_by_registration(tournament_id):
         
         return jsonify({"status": "success", "message": "Matches generated successfully", "data": matches_data}), 200
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to generate matches"}), 500
 
 """
@@ -160,7 +161,7 @@ def get_matches_by_tournament(tournament_id):
         # print(matches)
         return jsonify({"status": "success", "message": "Matches fetched successfully", "data": matches}), 200
     except Exception as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         return jsonify({"status": "error", "message": "Failed to get matches"}), 500
 
 """
@@ -224,13 +225,13 @@ def delete_tournament(tournament_id):
 
 @tournament_bp.route('/<int:tournament_id>/bracket', methods=['GET'])
 def get_tournament_bracket(tournament_id):
-    print('get_tournament_bracket')
+    # print('get_tournament_bracket')
     try:
         matches = Match.query.filter_by(tournament_id=tournament_id).all()
         
-        print(f"Total matches found: {len(matches)}")
-        for match in matches:
-            print(f"Processing match {match.id}: Round {match.round}, Match {match.match_number}")
+        # print(f"Total matches found: {len(matches)}")
+        # for match in matches:
+        #     print(f"Processing match {match.id}: Round {match.round}, Match {match.match_number}")
         
         match_data = []
         for match in matches:
@@ -281,7 +282,7 @@ def get_tournament_bracket(tournament_id):
                             winner_name = winner1.get_full_name()
             
             # 計算比賽在 bracket 中的位置
-            print(f"Calculating position for match {match.id} (Round {match.round}, Match {match.match_number})")
+            # print(f"Calculating position for match {match.id} (Round {match.round}, Match {match.match_number})")
             bracket_position = calculate_bracket_position(match)
             
             connections = get_connection_info(match)
@@ -320,14 +321,14 @@ def get_tournament_bracket(tournament_id):
                 'connections': connections
             })
         
-        print(f"Found {len(match_data)} matches for tournament {tournament_id}")
+        # print(f"Found {len(match_data)} matches for tournament {tournament_id}")
         return jsonify({
             'status': 'success',
             'matches': match_data
         })
         
     except Exception as e:
-        print(f"Error in get_tournament_bracket: {e}")
+        # print(f"Error in get_tournament_bracket: {e}")
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -417,7 +418,7 @@ def get_connection_info(match):
         position = 'top' if match.match_number % 2 == 1 else 'bottom'
     
     # 添加調試信息
-    print(f"Match {match.id} (Round {match.round}, Match {match.match_number}) -> Next Match {next_match.id} (Round {next_match.round}, Match {next_match.match_number}) with position {position}")
+    # print(f"Match {match.id} (Round {match.round}, Match {match.match_number}) -> Next Match {next_match.id} (Round {next_match.round}, Match {next_match.match_number}) with position {position}")
     
     return [{
         'match_id': next_match.id,
@@ -454,3 +455,212 @@ def get_player_history(tournament_id):
             'status': 'error',
             'message': f'Error: {str(e)}'
         }), 500
+
+@tournament_bp.route('/<int:tournament_id>/matches/create_match', methods=['POST'])
+@jwt_required()
+def create_match(tournament_id):
+    try:
+        # print(f"=== Create Match Debug ===")
+        # print(f"Tournament ID: {tournament_id}")
+        
+        authorization = check_authorization('host')
+        if authorization:
+            # print(f"Authorization failed: {authorization}")
+            return authorization
+
+        data = request.get_json()
+        # print(f"Received data: {data}")
+        
+        # 檢查必填欄位
+        required_fields = ['category']
+        for field in required_fields:
+            if field not in data:
+                # print(f"Missing field: {field}")
+                return jsonify({"status": "error", "message": f"Missing required field: {field}"}), 400
+        
+        # 將 category 轉換為 event_type
+        category_to_event_type = {
+            "Men's Single": "MS",
+            "Men's Doubles": "MD", 
+            "Women's Singles": "WS",
+            "Women's Doubles": "WD",
+            "Mixed Doubles": "XD"
+        }
+        
+        event_type = category_to_event_type.get(data['category'])
+        if not event_type:
+            # print(f"Invalid category: {data['category']}")
+            return jsonify({"status": "error", "message": "Invalid category"}), 400
+        
+        # print(f"Event type: {event_type}")
+
+        
+        # 判斷是否為雙打
+        is_doubles = event_type in ['MD', 'WD', 'XD']
+        
+        # 檢查對應的必填欄位
+        if is_doubles:
+            doubles_fields = ['team1_player1_name', 'team1_player2_name', 'team2_player1_name', 'team2_player2_name']
+            for field in doubles_fields:
+                if field not in data:
+                    # print(f"Missing doubles field: {field}")
+                    return jsonify({"status": "error", "message": f"Missing required field: {field}"}), 400
+        else:
+            singles_fields = ['player1_username', 'player2_username']
+            for field in singles_fields:
+                if field not in data:
+                    # print(f"Missing singles field: {field}")
+                    return jsonify({"status": "error", "message": f"Missing required field: {field}"}), 400
+        
+        # 查找或創建預設的 event 和 group
+        # 查找對應的 event
+        event = Event.query.filter_by(
+            tournament_id=tournament_id,
+            category=event_type
+        ).first()
+        
+        if not event:
+            # print("Creating new event")
+            # 如果沒有找到 event，創建一個預設的
+            event = Event(
+                tournament_id=tournament_id,
+                category=event_type,
+                name=data['category']
+            )
+            db.session.add(event)
+            db.session.flush()  # 獲取 event.id
+            # print(f"Created event with ID: {event.id}")
+        else:
+            print(f"Found existing event with ID: {event.id}")
+        
+        # 查找或創建預設的 group
+        group = Group.query.filter_by(
+            event_id=event.id,
+            name='Default'
+        ).first()
+        
+        if not group:
+            # print("Creating new group")
+            # 查找一個有效的 format
+            # from ..models import Format
+            default_format = Format.query.first()
+            if not default_format:
+                return jsonify({"status": "error", "message": "No format found in database"}), 500
+            
+            # print(f"Using format ID: {default_format.id}")
+            
+            # 如果沒有找到 group，創建一個預設的
+            group = Group(
+                event_id=event.id,
+                name='Default',
+                format_id=default_format.id
+            )
+            db.session.add(group)
+            db.session.flush()  # 獲取 group.id
+            # print(f"Created group with ID: {group.id}")
+        else:
+            print(f"Found existing group with ID: {group.id}")
+        
+        # 準備 match_data
+        match_data = {
+            'tournament_id': tournament_id,
+            'event_id': event.id,
+            'group_id': group.id,
+            'event_type': event_type,
+            'status': 'Scheduled'
+        }
+
+        if 'court' in data and data['court'] != '':
+            match_data['court'] = data['court']
+        
+        if is_doubles:
+            # 雙打數據
+            match_data.update({
+                'team1_player1_name': data['team1_player1_name'],
+                'team1_player2_name': data['team1_player2_name'],
+                'team2_player1_name': data['team2_player1_name'],
+                'team2_player2_name': data['team2_player2_name']
+            })
+        else:
+            # 單打數據
+            match_data.update({
+                'player1_name': data['player1_username'],
+                'player2_name': data['player2_username']
+            })
+        
+        # print(f"Match data: {match_data}")
+        # print("Calling MatchService.create_match...")
+
+        new_match_data = MatchService.create_match(match_data)
+        # print(f"Match created successfully: {new_match_data}")
+
+        return jsonify({
+            "status": "success",
+            "data": new_match_data
+        }), 201
+    except Exception as e:
+        # print(f"=== ERROR ===")
+        # print(f"Error type: {type(e)}")
+        # print(f"Error message: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Failed to create match: {str(e)}"}), 500
+
+
+@tournament_bp.route('/<int:tournament_id>/export/results', methods=['GET'])
+def export_tournament_results(tournament_id):
+    """導出比賽結果到 Excel"""
+    try:
+        # 檢查比賽是否存在
+        tournament = Tournament.query.get(tournament_id)
+        if not tournament:
+            return jsonify({"status": "error", "message": "Tournament not found"}), 404
+        
+        print(f"Starting export for tournament {tournament_id}")
+        
+        # 使用 TournamentService 導出 Excel 文件
+        output_path = TournamentService.export_tournament_results_to_excel(tournament_id)
+        output_filename = f"tournament_{tournament_id}_results.xlsx"
+        
+        print(f"Excel file generated successfully: {output_path}")
+        
+        # 檢查文件是否存在且可讀
+        import os
+        if not os.path.exists(output_path):
+            return jsonify({"status": "error", "message": "File not found"}), 404
+        
+        file_size = os.path.getsize(output_path)
+        if file_size == 0:
+            return jsonify({"status": "error", "message": "File is empty"}), 400
+        
+        print(f"File size: {file_size} bytes")
+        
+        # 返回文件給用戶下載 - 修改 MIME 類型和參數
+        return send_file(
+            output_path,
+            as_attachment=True,
+            download_name=output_filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+    except Exception as e:
+        print(f"Error in export route: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@tournament_bp.route('/<int:tournament_id>/remove_all_registrations', methods=['POST'])
+@jwt_required()
+def remove_all_registrations(tournament_id):
+    """remove all the registrations of the tournament"""
+    try:
+        auth = check_authorization('host')
+        if auth:
+            return auth
+        
+        ret = TournamentService.remove_all_registrations(tournament_id)
+        if not ret:
+            return jsonify({'status': 'error', 'message': f'Tournament with tournament_id = {tournament_id} is not found'}), 404
+        return jsonify({'status': 'success', 'message': f'All registrations with tournament_id = {tournament_id} are removed'}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Failed to remove all registrations"}), 500

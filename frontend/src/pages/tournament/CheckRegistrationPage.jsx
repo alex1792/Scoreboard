@@ -20,6 +20,7 @@ function CheckRegistrationPage() {
   const [availableGroups, setAvailableGroups] = useState([]);
   const [eventGroups, setEventGroups] = useState({}); // 存儲每個 event 對應的 groups
   const [generating, setGenerating] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false); // 新增狀態
 
   const navigate = useNavigate();
 
@@ -158,7 +159,7 @@ function CheckRegistrationPage() {
       });
 
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       
       if (data.status === 'success') {
         alert(`Successfully generated ${data.data?.length || 0} matches!`);
@@ -218,6 +219,40 @@ function CheckRegistrationPage() {
       alert('Failed to update status, please try again');
     } finally {
       setUpdatingStatus(prev => ({...prev, [registrationId]: false}));
+    }
+  };
+
+  // 新增刪除所有註冊的函數
+  const handleDeleteAllRegistrations = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL registrations for this tournament? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingAll(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:5001/api/tournaments/${tournamentId}/remove_all_registrations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        alert('All registrations have been successfully deleted!');
+        // 重新載入註冊數據
+        fetchRegistrations();
+      } else {
+        alert(`Error: ${data.message || 'Failed to delete registrations'}`);
+      }
+    } catch (error) {
+      console.error('Delete all registrations error:', error);
+      alert('Network error, please try again');
+    } finally {
+      setDeletingAll(false);
     }
   };
 
@@ -298,6 +333,20 @@ function CheckRegistrationPage() {
             <p className="generate-matches-hint">No registrations found. Please wait for players to sign up.</p>
           )}
         </div>
+
+        {/* 新增刪除所有註冊按鈕 */}
+        {registrations.length > 0 && (
+          <div className="delete-all-section">
+            <button 
+              onClick={handleDeleteAllRegistrations}
+              disabled={deletingAll}
+              className="delete-all-btn"
+            >
+              {deletingAll ? 'Deleting...' : '🗑️ Delete All Registrations'}
+            </button>
+            <p className="delete-all-hint">⚠️ This will permanently delete all registrations</p>
+          </div>
+        )}
 
         <div className="upload-registration-section">
         <Link

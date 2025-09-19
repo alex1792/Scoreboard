@@ -19,7 +19,7 @@ function LoginForm() {
     setIsLoading(true);
     
     try {
-      console.log('Attempting login with:', { username, password });
+      // console.log('Attempting login with:', { username, password });
       
       const response = await fetch(API_URLS.LOGIN, {
         method: 'POST',
@@ -28,20 +28,20 @@ function LoginForm() {
       });
       
       const data = await response.json();
-      console.log('Login response:', data);
+      // console.log('Login response:', data);
       
       if (data.status === 'success') {
         // 使用 AuthContext 的 login 方法
         login(data.data.user, data.data.access_token);
-        console.log('Login successful, navigating to home');
+        // console.log('Login successful, navigating to home');
         navigate('/');
       } else {
         setError(data.message || 'Login failed');
-        console.log('Login failed:', data.message);
+        // console.log('Login failed:', data.message);
       }
     } catch (err) {
       setError('Network error, please try again later');
-      console.error("Login error:", err);
+      // console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }

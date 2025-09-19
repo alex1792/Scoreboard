@@ -252,7 +252,7 @@ def generate_match(f, categories, flight, rules, filename):
     try:
         table = read_files(f, categories, flight)
     except Exception as e:
-        print(f"Error reading file: {e}")
+        # print(f"Error reading file: {e}")
         return None
     
     all_match = {}

@@ -138,7 +138,8 @@ def get_match_data(match):
         "game3_score2": match.game3_score2,
         "current_game": match.current_game,
         "player1_game_won": match.player1_game_won,
-        "player2_game_won": match.player2_game_won
+        "player2_game_won": match.player2_game_won,
+        "court_number": match.court,
     }
 
     # check if the match is elimination match
@@ -229,7 +230,7 @@ It will return the User object if found, otherwise return None.
 def get_user_by_name(first_name, last_name):
     user = User.query.filter_by(first_name=first_name, last_name=last_name).first()
     if not user:
-        print(f"User {first_name} {last_name} not found")
+        # print(f"User {first_name} {last_name} not found")
         return None
     return user
 
